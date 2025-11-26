@@ -52,6 +52,7 @@ export interface Medication extends BaseEvent {
   startDate: string;
   endDate?: string;
   isActive: boolean;
+  sideEffects?: string[];
 }
 
 export type InterventionCategory =
@@ -94,5 +95,45 @@ export type HealthEvent =
   | Intervention
   | Metric;
 
-export type CreateEventInput = Omit<HealthEvent, 'id' | 'userId' | 'createdAt' | 'updatedAt'>;
+// Specific input types for each event
+export type CreateLabResultInput = Omit<LabResult, 'id' | 'userId' | 'createdAt' | 'updatedAt'>;
+export type CreateDoctorVisitInput = Omit<DoctorVisit, 'id' | 'userId' | 'createdAt' | 'updatedAt'>;
+export type CreateMedicationInput = Omit<Medication, 'id' | 'userId' | 'createdAt' | 'updatedAt'>;
+export type CreateInterventionInput = Omit<Intervention, 'id' | 'userId' | 'createdAt' | 'updatedAt'>;
+export type CreateMetricInput = Omit<Metric, 'id' | 'userId' | 'createdAt' | 'updatedAt'>;
+
+export type CreateEventInput =
+  | CreateLabResultInput
+  | CreateDoctorVisitInput
+  | CreateMedicationInput
+  | CreateInterventionInput
+  | CreateMetricInput;
+
 export type UpdateEventInput = Partial<CreateEventInput>;
+
+// Filter types for querying events
+export interface EventFilters {
+  eventTypes?: EventType[];
+  startDate?: string;
+  endDate?: string;
+  search?: string;
+}
+
+// Pagination types
+export interface PaginationParams {
+  page?: number;
+  limit?: number;
+}
+
+export interface PaginatedResponse<T> {
+  data: T[];
+  total: number;
+  page: number;
+  limit: number;
+  hasMore: boolean;
+}
+
+// Form validation errors
+export type EventFormErrors = {
+  [key: string]: string | undefined;
+};

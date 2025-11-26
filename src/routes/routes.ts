@@ -4,9 +4,10 @@ export const ROUTES = {
   REGISTER: '/register',
   DASHBOARD: '/dashboard',
   SETTINGS: '/settings',
-  // Phase 2+ routes
+  // Phase 2 routes
   TIMELINE: '/timeline',
   EVENT_NEW: '/event/new',
+  EVENT_NEW_TYPE: '/event/new/:type',
   EVENT_DETAIL: '/event/:id',
   // Phase 4+ routes
   AI_CHAT: '/ai',

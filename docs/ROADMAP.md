@@ -88,28 +88,30 @@ None (first phase)
 
 **Goal:** Users can create and view health events
 
+**Status:** Complete (2025-11-26)
+
 ### Tasks
 
-- [ ] Event type system implementation
-  - [ ] Base event interface
-  - [ ] Lab Result type with biomarkers
-  - [ ] Doctor Visit type
-  - [ ] Medication type
-  - [ ] Intervention type
-  - [ ] Metric type
-- [ ] Supabase tables for all event types
-- [ ] API layer for CRUD operations
-- [ ] Event creation flow
-  - [ ] Event type selector
-  - [ ] Lab Result form (with biomarker entry)
-  - [ ] Doctor Visit form
-  - [ ] Medication form
-  - [ ] Intervention form
-  - [ ] Metric form
-- [ ] Basic timeline view (chronological list)
-- [ ] Event detail view (expand/collapse cards)
-- [ ] Edit event functionality
-- [ ] Delete event functionality (with confirmation)
+- [x] Event type system implementation
+  - [x] Base event interface
+  - [x] Lab Result type with biomarkers
+  - [x] Doctor Visit type
+  - [x] Medication type
+  - [x] Intervention type
+  - [x] Metric type
+- [x] Supabase tables for all event types
+- [x] API layer for CRUD operations
+- [x] Event creation flow
+  - [x] Event type selector
+  - [x] Lab Result form (with biomarker entry)
+  - [x] Doctor Visit form
+  - [x] Medication form
+  - [x] Intervention form
+  - [x] Metric form
+- [x] Basic timeline view (chronological list)
+- [x] Event detail view (expand/collapse cards)
+- [x] Edit event functionality
+- [x] Delete event functionality (with confirmation)
 
 ### Deliverable
 
@@ -121,13 +123,13 @@ User can log all event types and see them in a chronological list.
 
 ### Definition of Done
 
-- [ ] User can create each of the 5 event types
-- [ ] Events persist to database
-- [ ] Events display in timeline (newest first)
-- [ ] User can expand event to see details
-- [ ] User can edit existing events
-- [ ] User can delete events
-- [ ] Form validation working
+- [x] User can create each of the 5 event types
+- [x] Events persist to database
+- [x] Events display in timeline (newest first)
+- [x] User can expand event to see details
+- [x] User can edit existing events
+- [x] User can delete events
+- [x] Form validation working
 
 ---
 

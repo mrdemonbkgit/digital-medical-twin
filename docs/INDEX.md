@@ -1,6 +1,6 @@
 # Documentation Index
 
-> Last Updated: 2025-11-26
+> Last Updated: 2025-11-26 (Phase 2 Complete)
 
 ## Summary
 
@@ -56,8 +56,8 @@ Master index for all project documentation. Search here first to find relevant d
 | Design decisions | /docs/DECISION_LOG.md | Full doc |
 | Version history | /docs/CHANGELOG.md | Full doc |
 | Development roadmap | /docs/ROADMAP.md | Full doc |
-| Phase 1 tasks | /docs/ROADMAP.md | #phase-1-foundation |
-| Phase 2 tasks | /docs/ROADMAP.md | #phase-2-core-data-entry |
+| Phase 1 tasks | /docs/ROADMAP.md | #phase-1-foundation (Complete) |
+| Phase 2 tasks | /docs/ROADMAP.md | #phase-2-core-data-entry (Complete) |
 | Phase 3 tasks | /docs/ROADMAP.md | #phase-3-timeline-polish |
 | Phase 4 tasks | /docs/ROADMAP.md | #phase-4-ai-integration |
 | Phase 5 tasks | /docs/ROADMAP.md | #phase-5-data-enhancement |
@@ -100,7 +100,9 @@ Master index for all project documentation. Search here first to find relevant d
 ### E
 
 - **email**: /docs/architecture/AUTH_SYSTEM.md
-- **events**: /docs/features/DATA_TRACKING.md
+- **events**: /docs/features/DATA_TRACKING.md, src/api/events.ts, src/types/events.ts
+- **EventCard**: src/components/event/EventCard.tsx
+- **EventForm**: src/components/event/forms/
 
 ### F
 
@@ -115,6 +117,7 @@ Master index for all project documentation. Search here first to find relevant d
 
 - **health**: /docs/ONBOARDING.md, /docs/features/DATA_TRACKING.md
 - **historian**: /docs/features/AI_HISTORIAN.md
+- **hooks**: src/hooks/ (useEvents, useEvent, useEventMutation)
 
 ### I
 
@@ -155,18 +158,19 @@ Master index for all project documentation. Search here first to find relevant d
 ### S
 
 - **schema**: /docs/architecture/DATABASE_SCHEMA.md
+- **seed data**: src/utils/seedEvents.ts
 - **serverless**: /docs/DECISION_LOG.md#2025-11-26-ai-api-architecture
 - **setup**: /docs/ONBOARDING.md#setup-instructions
 - **state**: /docs/development/STATE_MANAGEMENT.md
 - **storage**: /docs/architecture/DATABASE_SCHEMA.md
-- **supabase**: /docs/DECISION_LOG.md#2025-11-26-database-provider-selection
+- **supabase**: /docs/DECISION_LOG.md#2025-11-26-database-provider-selection, supabase/migrations/
 
 ### T
 
 - **Tailwind**: /docs/ONBOARDING.md#tech-stack
 - **tech stack**: /docs/ONBOARDING.md#tech-stack
 - **testing**: /docs/development/TESTING_STRATEGY.md
-- **timeline**: /docs/features/TIMELINE.md
+- **timeline**: /docs/features/TIMELINE.md, src/pages/TimelinePage.tsx
 - **TypeScript**: /docs/ONBOARDING.md#tech-stack
 
 ### U

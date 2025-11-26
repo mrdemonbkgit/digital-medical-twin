@@ -34,6 +34,70 @@ Version history and release notes for Digital Medical Twin. Lists all notable ch
 
 ---
 
+## Phase 2 - Core Data Entry
+
+> 2025-11-26
+
+### Added
+
+- **Event CRUD System**
+  - Full create, read, update, delete operations for all 5 event types
+  - Single table inheritance pattern in Supabase with RLS policies
+  - Type-safe API layer with snake_case to camelCase mapping
+
+- **Event Types & Forms**
+  - Lab Result form with dynamic biomarker input (auto-flagging high/low/normal)
+  - Doctor Visit form with specialty, facility, diagnosis array
+  - Medication form with active status, dosage, frequency tracking
+  - Intervention form with category selection (diet, exercise, supplement, sleep, stress)
+  - Metric form with source selection (manual, Whoop, Oura, Apple Health, Garmin)
+
+- **UI Components**
+  - Select dropdown component with label and error support
+  - TextArea component for multi-line input
+  - Modal component for dialogs
+  - DatePicker form component
+  - EventTypeSelector with color-coded buttons
+  - EventCard with expandable details view
+  - BiomarkerInput for dynamic array entry
+
+- **Pages**
+  - TimelinePage with date-grouped event list
+  - EventTypeSelectorPage (step 1 of event creation flow)
+  - EventNewPage (step 2 with type-specific form)
+  - EventDetailPage for viewing/editing existing events
+
+- **Hooks**
+  - useEvents - fetch paginated events with filters
+  - useEvent - fetch single event by ID
+  - useEventMutation - create, update, delete with loading states
+
+- **Dashboard Enhancements**
+  - Recent events display (last 5)
+  - Quick add buttons for each event type
+  - Link to full timeline
+
+- **Developer Tools**
+  - Mock data seeding utility (`seedMockEvents()`)
+  - Clear all events utility (`clearAllEvents()`)
+  - Dev tools bar on Timeline page (development mode only)
+  - 10 realistic mock events covering all event types
+
+- **Database**
+  - Events table with all type-specific columns
+  - Row Level Security (RLS) for user data isolation
+  - Indexes for user_id + date and user_id + type
+  - Auto-updating `updated_at` trigger
+
+### Technical Details
+
+- Two-step event creation flow: type selection → form entry
+- Specific TypeScript input types for proper discriminated union narrowing
+- Type guard functions for safe type casting in API layer
+- Supabase migrations stored in `supabase/migrations/`
+
+---
+
 ## Phase 1 - Foundation
 
 > 2025-11-26

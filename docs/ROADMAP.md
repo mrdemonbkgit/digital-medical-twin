@@ -54,7 +54,7 @@ Phased development plan for Digital Medical Twin. Defines six phases from founda
 ### Tasks
 
 - [x] Project scaffolding (React 19, TypeScript, Tailwind v4, Vite)
-- [ ] Supabase project setup (requires manual setup)
+- [x] Supabase project setup
 - [x] Database schema implementation (users, events tables) - SQL ready
 - [x] Authentication system
   - [x] Registration page
@@ -79,7 +79,7 @@ None (first phase)
 - [x] User can log in and see authenticated dashboard
 - [x] User can log out
 - [x] Unauthenticated users redirected to login
-- [ ] Database connection working (needs Supabase project)
+- [x] Database connection working (Supabase configured)
 - [x] Deployed to Vercel: https://digital-medical-twin.vercel.app/
 
 ---

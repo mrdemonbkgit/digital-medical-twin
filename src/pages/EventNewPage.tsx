@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useParams, useNavigate, Link } from 'react-router-dom';
+import { useParams, useNavigate, Link, Navigate } from 'react-router-dom';
 import { ArrowLeft, Save } from 'lucide-react';
 import { PageWrapper } from '@/components/layout';
 import { Button, Card, CardContent, LoadingSpinner } from '@/components/common';
@@ -26,6 +26,18 @@ import type {
   CreateMedicationInput,
   CreateLabResultInput,
 } from '@/types';
+
+const VALID_EVENT_TYPES: EventType[] = [
+  'lab_result',
+  'doctor_visit',
+  'medication',
+  'intervention',
+  'metric',
+];
+
+function isValidEventType(type: string | undefined): type is EventType {
+  return !!type && VALID_EVENT_TYPES.includes(type as EventType);
+}
 
 function getInitialFormData(type: EventType): CreateEventInput {
   switch (type) {
@@ -105,7 +117,12 @@ export function EventNewPage() {
   const navigate = useNavigate();
   const { create, isCreating, error: mutationError } = useEventMutation();
 
-  const eventType = type as EventType;
+  // Validate the event type from URL - redirect to selector if invalid
+  if (!isValidEventType(type)) {
+    return <Navigate to="/event/new" replace />;
+  }
+
+  const eventType = type;
   const typeInfo = getEventTypeInfo(eventType);
   const Icon = typeInfo.icon;
 

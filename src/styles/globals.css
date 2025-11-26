@@ -1,0 +1,28 @@
+@import "tailwindcss";
+
+@theme {
+  /* Custom colors for the app */
+  --color-primary: #2563eb;
+  --color-primary-dark: #1d4ed8;
+  --color-secondary: #64748b;
+  --color-success: #22c55e;
+  --color-warning: #f59e0b;
+  --color-danger: #ef4444;
+
+  /* Event type colors */
+  --color-lab-result: #ef4444;
+  --color-doctor-visit: #3b82f6;
+  --color-medication: #22c55e;
+  --color-intervention: #f59e0b;
+  --color-metric: #a855f7;
+}
+
+/* Base styles */
+body {
+  @apply bg-gray-50 text-gray-900 antialiased;
+}
+
+/* Focus styles */
+*:focus-visible {
+  @apply outline-2 outline-offset-2 outline-primary;
+}

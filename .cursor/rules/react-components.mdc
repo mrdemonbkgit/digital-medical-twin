@@ -1,0 +1,25 @@
+---
+description: React component patterns and conventions
+globs: ["src/components/**/*.tsx", "src/components/**/*.ts"]
+---
+
+# React Component Rules
+
+## Before Creating/Modifying Components
+
+1. Read /docs/development/COMPONENT_LIBRARY.md for existing patterns
+2. Check /docs/development/CODING_STANDARDS.md#naming-conventions
+3. Review similar components in src/components/ for consistency
+
+## Component Structure
+
+- Use functional components with TypeScript
+- Define props interface above component
+- Export component as default at bottom of file
+- Co-locate component-specific types in same file
+
+## File Naming
+
+- Components: PascalCase (e.g., `TimelineEvent.tsx`)
+- Hooks: camelCase with `use` prefix (e.g., `useTimeline.ts`)
+- Utils: camelCase (e.g., `formatDate.ts`)

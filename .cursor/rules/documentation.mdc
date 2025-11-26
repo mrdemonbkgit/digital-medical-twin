@@ -1,0 +1,41 @@
+---
+description: Documentation maintenance rules
+globs: ["docs/**/*.md", "*.md"]
+---
+
+# Documentation Rules
+
+## Critical Rule
+
+UPDATE /docs/INDEX.md WITH EVERY DOCUMENTATION CHANGE.
+
+## When to Update Docs
+
+| Action | Update Required |
+|--------|-----------------|
+| Add feature | Create /docs/features/[FEATURE].md, update INDEX.md |
+| Change architecture | Update /docs/architecture/*.md, update INDEX.md |
+| Add component | Update COMPONENT_LIBRARY.md, update INDEX.md |
+| Make design decision | Add to DECISION_LOG.md, update INDEX.md |
+| Change data model | Update DATABASE_SCHEMA.md, update INDEX.md |
+| Add/change API | Update API_CONTRACTS.md, update INDEX.md |
+| Release version | Update CHANGELOG.md |
+
+## Document Format
+
+Every doc must include:
+
+1. Title with `# [Document Title]`
+2. Last Updated line: `> Last Updated: YYYY-MM-DD`
+3. Summary section (3-5 sentences)
+4. Keywords section with backtick-wrapped terms
+5. Table of Contents with anchor links
+6. Horizontal rule before main content
+
+## INDEX.md Updates
+
+When adding/modifying docs:
+
+1. Add entry to Quick Reference table if new topic
+2. Add all new keywords to Keyword Search section (alphabetized)
+3. Link to specific sections, not just docs

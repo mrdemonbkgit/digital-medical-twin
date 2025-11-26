@@ -1,0 +1,224 @@
+# AI Historian Feature
+
+> Last Updated: 2025-11-26
+
+## Summary
+
+The AI Historian is a RAG-powered chat interface that answers questions about the user's health history. Users can query trends, find correlations, and generate summaries using their choice of GPT-5.1 or Gemini 3 Pro.
+
+## Keywords
+
+`AI` `historian` `chat` `RAG` `queries` `analysis` `GPT` `Gemini` `questions`
+
+## Table of Contents
+
+- [Feature Overview](#feature-overview)
+- [Chat Interface](#chat-interface)
+- [Query Types](#query-types)
+- [Example Queries](#example-queries)
+- [Configuration](#configuration)
+- [Limitations](#limitations)
+
+---
+
+## Feature Overview
+
+The AI Historian transforms raw health data into actionable insights. Unlike generic chatbots, it has access to the user's complete health timeline and can answer specific questions about their medical history.
+
+### User Stories
+
+- As a user, I can ask questions about my health history in natural language
+- As a user, I can find correlations between interventions and outcomes
+- As a user, I can generate summaries for doctor appointments
+- As a user, I can choose which AI model to use
+- As a user, I can see what data the AI used to answer
+
+---
+
+## Chat Interface
+
+### Layout
+
+```
+┌─────────────────────────────────────────┐
+│  AI Historian              [Settings]   │
+├─────────────────────────────────────────┤
+│                                         │
+│  ┌─────────────────────────────────┐   │
+│  │ 👤 Compare my vitamin D levels   │   │
+│  │    over the past 2 years         │   │
+│  └─────────────────────────────────┘   │
+│                                         │
+│  ┌─────────────────────────────────┐   │
+│  │ 🤖 Based on your lab results:   │   │
+│  │                                  │   │
+│  │ | Date       | Vitamin D |      │   │
+│  │ |------------|-----------|      │   │
+│  │ | 2024-03-15 | 28 ng/mL  | Low  │   │
+│  │ | 2023-09-10 | 45 ng/mL  | OK   │   │
+│  │ | 2023-03-20 | 22 ng/mL  | Low  │   │
+│  │                                  │   │
+│  │ Your vitamin D has fluctuated... │   │
+│  │                                  │   │
+│  │ [Sources: 3 lab results]        │   │
+│  └─────────────────────────────────┘   │
+│                                         │
+│  ┌─────────────────────────────────┐   │
+│  │ Ask about your health history...│   │
+│  │                          [Send] │   │
+│  └─────────────────────────────────┘   │
+└─────────────────────────────────────────┘
+```
+
+### Message Components
+
+**User Message:**
+- User avatar/icon
+- Message text
+- Timestamp
+
+**AI Response:**
+- AI avatar/icon
+- Formatted response (supports markdown tables, lists)
+- Source indicator showing which events were used
+- Timestamp
+
+---
+
+## Query Types
+
+### Trend Analysis
+
+Ask about changes over time.
+
+**Triggers:** "over time", "trend", "history of", "changes in"
+
+**Data Retrieved:** Time-series of relevant biomarkers/metrics
+
+### Comparison
+
+Compare different time periods or interventions.
+
+**Triggers:** "compare", "before and after", "vs", "difference between"
+
+**Data Retrieved:** Events from multiple specified periods
+
+### Correlation
+
+Find relationships between events.
+
+**Triggers:** "related to", "affect", "when I", "did X change Y"
+
+**Data Retrieved:** Events of multiple types around specified dates
+
+### Summarization
+
+Generate summaries or reports.
+
+**Triggers:** "summarize", "overview", "prepare for", "list all"
+
+**Data Retrieved:** Broad selection of relevant events
+
+### Specific Lookup
+
+Find specific information.
+
+**Triggers:** Names, dates, specific tests, medications
+
+**Data Retrieved:** Targeted events matching criteria
+
+---
+
+## Example Queries
+
+### Trend Analysis
+
+```
+"Show me my LDL cholesterol trend over the past 3 years"
+"How has my HRV changed since I started exercising?"
+"What's the history of my thyroid levels?"
+```
+
+### Comparison
+
+```
+"Compare my sleep scores before and after starting magnesium"
+"What were my energy levels in summer vs winter?"
+"Compare my bloodwork from 2023 to 2024"
+```
+
+### Correlation
+
+```
+"I felt tired in November 2023. What were my iron levels then?"
+"Did my blood pressure change after starting meditation?"
+"What was happening when my HRV dropped in March?"
+```
+
+### Summarization
+
+```
+"Summarize my cardiology visits with Dr. Smith"
+"Prepare a health summary for a new doctor"
+"List all medications I've taken for blood pressure"
+```
+
+### Specific Lookup
+
+```
+"When did I start taking metformin?"
+"What was my last HbA1c result?"
+"Show me notes from my endocrinologist visit in January"
+```
+
+---
+
+## Configuration
+
+### Settings Panel
+
+| Setting | Options | Default |
+|---------|---------|---------|
+| AI Provider | OpenAI, Google | OpenAI |
+| Model | GPT-5.1, Gemini 3 Pro | GPT-5.1 |
+| API Key | User input | None (required) |
+| Temperature | 0.0 - 1.0 | 0.7 |
+
+### API Key Entry
+
+- Securely stored (encrypted at rest)
+- Validated on entry
+- Clear error messages for invalid keys
+- Link to provider documentation
+
+---
+
+## Limitations
+
+### What AI Can Do
+
+- Answer questions using data in the timeline
+- Identify patterns and trends
+- Generate tables and summaries
+- Provide context for conversations with doctors
+
+### What AI Cannot Do
+
+- Provide medical advice or diagnoses
+- Access data not in the timeline
+- Remember previous chat sessions (stateless)
+- Guarantee 100% accuracy
+
+### Disclaimer
+
+Every AI response should include or be accompanied by:
+
+> "This is not medical advice. Always consult with healthcare professionals for medical decisions."
+
+---
+
+## Related Documents
+
+- /docs/architecture/AI_INTEGRATION.md — Technical implementation
+- /docs/features/DATA_TRACKING.md — Event types the AI can access
+- /docs/development/API_CONTRACTS.md — AI API endpoints

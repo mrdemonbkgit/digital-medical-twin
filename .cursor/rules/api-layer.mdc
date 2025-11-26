@@ -1,0 +1,24 @@
+---
+description: API layer patterns and conventions
+globs: ["src/api/**/*.ts", "src/api/**/*.tsx"]
+---
+
+# API Layer Rules
+
+## Before Modifying API Code
+
+1. Read /docs/development/API_CONTRACTS.md for existing endpoints
+2. Check /docs/architecture/DATABASE_SCHEMA.md for data models
+3. Review /docs/architecture/AUTH_SYSTEM.md for auth requirements
+
+## API Structure
+
+- Each resource gets its own file (e.g., `events.ts`, `users.ts`)
+- Export typed functions, not raw fetch calls
+- Handle errors consistently using shared error types
+- Include TypeScript types for all request/response shapes
+
+## Naming Conventions
+
+- Functions: verbNoun (e.g., `getEvents`, `createEvent`, `updateEvent`)
+- Types: PascalCase (e.g., `EventResponse`, `CreateEventRequest`)

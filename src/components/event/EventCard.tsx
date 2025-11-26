@@ -20,13 +20,14 @@ import type {
   Intervention,
   Metric,
 } from '@/types';
-import { cn } from '@/utils/cn';
+import { cn, highlightText } from '@/utils';
 import { Button } from '@/components/common';
 
 interface EventCardProps {
   event: HealthEvent;
   onDelete?: (id: string) => void;
   isDeleting?: boolean;
+  searchQuery?: string;
 }
 
 const typeConfig = {
@@ -249,7 +250,7 @@ function EventDetails({ event }: { event: HealthEvent }) {
   }
 }
 
-export function EventCard({ event, onDelete, isDeleting }: EventCardProps) {
+export function EventCard({ event, onDelete, isDeleting, searchQuery }: EventCardProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const navigate = useNavigate();
   const config = typeConfig[event.type];
@@ -287,7 +288,9 @@ export function EventCard({ event, onDelete, isDeleting }: EventCardProps) {
             <Icon className={cn('w-5 h-5', config.iconColor)} />
           </div>
           <div>
-            <h3 className="font-semibold text-gray-900">{event.title}</h3>
+            <h3 className="font-semibold text-gray-900">
+              {searchQuery ? highlightText(event.title, searchQuery) : event.title}
+            </h3>
             <div className="flex items-center gap-2 text-sm text-gray-500">
               <Calendar className="w-3.5 h-3.5" />
               <span>{formatDate(event.date)}</span>
@@ -330,7 +333,7 @@ export function EventCard({ event, onDelete, isDeleting }: EventCardProps) {
             <div className="mt-4 pt-4 border-t border-gray-200">
               <p className="text-sm font-medium text-gray-700 mb-1">Notes:</p>
               <p className="text-sm text-gray-600 whitespace-pre-wrap">
-                {event.notes}
+                {searchQuery ? highlightText(event.notes, searchQuery) : event.notes}
               </p>
             </div>
           )}

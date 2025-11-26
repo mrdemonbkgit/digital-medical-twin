@@ -1,17 +1,87 @@
-import { useState } from 'react';
+import { useState, useMemo, useCallback, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Plus, Calendar, Search, Database, Trash2 } from 'lucide-react';
 import { PageWrapper } from '@/components/layout';
-import { Button, Input, LoadingSpinner } from '@/components/common';
-import { EventCard } from '@/components/event';
-import { useEvents, useEventMutation } from '@/hooks';
+import { Button } from '@/components/common';
+import { EventCard, EventCardSkeletonList } from '@/components/event';
+import {
+  FilterBar,
+  AddEventFAB,
+  TimelineGroup,
+  TimelineEvent,
+  TimelineDateHeader,
+} from '@/components/timeline';
+import {
+  useEvents,
+  useEventMutation,
+  useDebouncedValue,
+  useInfiniteScroll,
+  useTimelineFilters,
+} from '@/hooks';
 import { seedMockEvents, clearAllEvents } from '@/utils/seedEvents';
+import type { HealthEvent } from '@/types';
 
 const isDev = import.meta.env.DEV;
 
 export function TimelinePage() {
-  const { events, isLoading, error, hasMore, loadMore, refetch } = useEvents();
+  // Filter state synced to URL params
+  const {
+    filters,
+    hasActiveFilters,
+    activeFilterCount,
+    setSearch,
+    toggleEventType,
+    setDateRange,
+    clearFilters,
+    clearEventTypes,
+  } = useTimelineFilters();
+
+  // Local search input state (for instant UI feedback)
+  const [searchInput, setSearchInput] = useState(filters.search || '');
+
+  // Debounce search to avoid excessive API calls
+  const debouncedSearch = useDebouncedValue(searchInput, 300);
+
+  // Sync debounced search to URL params
+  const handleSearchChange = useCallback(
+    (value: string) => {
+      setSearchInput(value);
+    },
+    []
+  );
+
+  // Update URL when debounced value changes
+  useEffect(() => {
+    if (debouncedSearch !== (filters.search || '')) {
+      setSearch(debouncedSearch);
+    }
+  }, [debouncedSearch, filters.search, setSearch]);
+
+  // Fetch events with filters
+  const {
+    events,
+    isLoading,
+    error,
+    hasMore,
+    loadMore,
+    refetch,
+    total,
+  } = useEvents({
+    filters: {
+      ...filters,
+      search: debouncedSearch || undefined,
+    },
+  });
+
   const { remove, isDeleting } = useEventMutation();
+
+  // Infinite scroll
+  const sentinelRef = useInfiniteScroll(loadMore, {
+    enabled: hasMore && !isLoading,
+    rootMargin: '200px',
+  });
+
+  // Dev tools state
   const [isSeeding, setIsSeeding] = useState(false);
   const [isClearing, setIsClearing] = useState(false);
 
@@ -48,21 +118,25 @@ export function TimelinePage() {
   };
 
   // Group events by date
-  const groupedEvents = events.reduce(
-    (groups, event) => {
-      const date = event.date;
-      if (!groups[date]) {
-        groups[date] = [];
-      }
-      groups[date].push(event);
-      return groups;
-    },
-    {} as Record<string, typeof events>
-  );
+  const groupedEvents = useMemo(() => {
+    return events.reduce(
+      (groups, event) => {
+        const date = event.date;
+        if (!groups[date]) {
+          groups[date] = [];
+        }
+        groups[date].push(event);
+        return groups;
+      },
+      {} as Record<string, HealthEvent[]>
+    );
+  }, [events]);
 
-  const sortedDates = Object.keys(groupedEvents).sort(
-    (a, b) => new Date(b).getTime() - new Date(a).getTime()
-  );
+  const sortedDates = useMemo(() => {
+    return Object.keys(groupedEvents).sort(
+      (a, b) => new Date(b).getTime() - new Date(a).getTime()
+    );
+  }, [groupedEvents]);
 
   function formatDateHeader(dateString: string): string {
     const date = new Date(dateString);
@@ -85,11 +159,72 @@ export function TimelinePage() {
     });
   }
 
+  // Determine empty state type
+  const getEmptyState = () => {
+    if (isLoading) return null;
+    if (error) return null;
+    if (events.length > 0) return null;
+
+    if (searchInput) {
+      return {
+        icon: Search,
+        title: 'No results found',
+        message: `No events match "${searchInput}"`,
+        action: (
+          <Button variant="secondary" onClick={() => handleSearchChange('')}>
+            Clear search
+          </Button>
+        ),
+      };
+    }
+
+    if (hasActiveFilters) {
+      return {
+        icon: Calendar,
+        title: 'No matching events',
+        message: 'Try adjusting your filters to see more results.',
+        action: (
+          <Button variant="secondary" onClick={clearFilters}>
+            Clear all filters
+          </Button>
+        ),
+      };
+    }
+
+    return {
+      icon: Calendar,
+      title: 'No events yet',
+      message: 'Start tracking your health journey by adding your first event.',
+      action: (
+        <div className="flex flex-col sm:flex-row gap-3 justify-center">
+          <Link to="/event/new">
+            <Button>
+              <Plus className="w-4 h-4 mr-2" />
+              Add Your First Event
+            </Button>
+          </Link>
+          {isDev && (
+            <Button
+              variant="secondary"
+              onClick={handleSeedEvents}
+              disabled={isSeeding}
+            >
+              <Database className="w-4 h-4 mr-2" />
+              {isSeeding ? 'Seeding...' : 'Add Mock Data'}
+            </Button>
+          )}
+        </div>
+      ),
+    };
+  };
+
+  const emptyState = getEmptyState();
+
   return (
     <PageWrapper
       title="Timeline"
       action={
-        <Link to="/event/new">
+        <Link to="/event/new" className="hidden sm:block">
           <Button>
             <Plus className="w-4 h-4 mr-2" />
             Add Event
@@ -97,65 +232,25 @@ export function TimelinePage() {
         </Link>
       }
     >
-      {/* Search placeholder - for Phase 3 */}
+      {/* Filter Bar */}
       <div className="mb-6">
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-          <Input
-            placeholder="Search events... (coming soon)"
-            className="pl-10"
-            disabled
-          />
-        </div>
+        <FilterBar
+          search={searchInput}
+          onSearchChange={handleSearchChange}
+          selectedTypes={filters.eventTypes || []}
+          onToggleType={toggleEventType}
+          onClearTypes={clearEventTypes}
+          startDate={filters.startDate}
+          endDate={filters.endDate}
+          onDateChange={setDateRange}
+          activeFilterCount={activeFilterCount}
+        />
       </div>
 
-      {/* Loading state */}
-      {isLoading && events.length === 0 && (
-        <div className="flex justify-center py-12">
-          <LoadingSpinner size="lg" />
-        </div>
-      )}
-
-      {/* Error state */}
-      {error && (
-        <div className="text-center py-12">
-          <p className="text-red-600 mb-4">{error}</p>
-          <Button variant="secondary" onClick={refetch}>
-            Try Again
-          </Button>
-        </div>
-      )}
-
-      {/* Empty state */}
-      {!isLoading && !error && events.length === 0 && (
-        <div className="text-center py-12">
-          <div className="mx-auto w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
-            <Calendar className="w-8 h-8 text-gray-400" />
-          </div>
-          <h3 className="text-lg font-medium text-gray-900 mb-2">
-            No events yet
-          </h3>
-          <p className="text-gray-500 mb-6">
-            Start tracking your health journey by adding your first event.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-3 justify-center">
-            <Link to="/event/new">
-              <Button>
-                <Plus className="w-4 h-4 mr-2" />
-                Add Your First Event
-              </Button>
-            </Link>
-            {isDev && (
-              <Button
-                variant="secondary"
-                onClick={handleSeedEvents}
-                disabled={isSeeding}
-              >
-                <Database className="w-4 h-4 mr-2" />
-                {isSeeding ? 'Seeding...' : 'Add Mock Data'}
-              </Button>
-            )}
-          </div>
+      {/* Results count */}
+      {!isLoading && events.length > 0 && (
+        <div className="mb-4 text-sm text-gray-500">
+          Showing {events.length} of {total} events
         </div>
       )}
 
@@ -189,41 +284,82 @@ export function TimelinePage() {
         </div>
       )}
 
-      {/* Timeline */}
+      {/* Loading state - initial */}
+      {isLoading && events.length === 0 && (
+        <EventCardSkeletonList count={5} />
+      )}
+
+      {/* Error state */}
+      {error && (
+        <div className="text-center py-12">
+          <p className="text-red-600 mb-4">{error}</p>
+          <Button variant="secondary" onClick={refetch}>
+            Try Again
+          </Button>
+        </div>
+      )}
+
+      {/* Empty state */}
+      {emptyState && (
+        <div className="text-center py-12">
+          <div className="mx-auto w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+            <emptyState.icon className="w-8 h-8 text-gray-400" />
+          </div>
+          <h3 className="text-lg font-medium text-gray-900 mb-2">
+            {emptyState.title}
+          </h3>
+          <p className="text-gray-500 mb-6">{emptyState.message}</p>
+          {emptyState.action}
+        </div>
+      )}
+
+      {/* Timeline with connector */}
       {!isLoading && events.length > 0 && (
         <div className="space-y-8">
-          {sortedDates.map((date) => (
-            <div key={date}>
-              <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-4">
+          {sortedDates.map((date, dateIndex) => (
+            <TimelineGroup key={date}>
+              <TimelineDateHeader>
                 {formatDateHeader(date)}
-              </h2>
+              </TimelineDateHeader>
               <div className="space-y-4">
-                {groupedEvents[date].map((event) => (
-                  <EventCard
-                    key={event.id}
-                    event={event}
-                    onDelete={handleDelete}
-                    isDeleting={isDeleting}
-                  />
-                ))}
+                {groupedEvents[date].map((event, eventIndex) => {
+                  const isLastInGroup = eventIndex === groupedEvents[date].length - 1;
+                  const isLastDate = dateIndex === sortedDates.length - 1;
+                  const isLastEvent = isLastInGroup && isLastDate && !hasMore;
+
+                  return (
+                    <TimelineEvent
+                      key={event.id}
+                      eventType={event.type}
+                      isLast={isLastEvent}
+                    >
+                      <EventCard
+                        event={event}
+                        onDelete={handleDelete}
+                        isDeleting={isDeleting}
+                        searchQuery={debouncedSearch}
+                      />
+                    </TimelineEvent>
+                  );
+                })}
               </div>
-            </div>
+            </TimelineGroup>
           ))}
 
-          {/* Load more */}
-          {hasMore && (
-            <div className="text-center pt-4">
-              <Button
-                variant="secondary"
-                onClick={loadMore}
-                disabled={isLoading}
-              >
-                {isLoading ? 'Loading...' : 'Load More'}
-              </Button>
+          {/* Infinite scroll sentinel */}
+          <div ref={sentinelRef} className="h-4" />
+
+          {/* Loading more indicator */}
+          {isLoading && events.length > 0 && (
+            <div className="pl-6">
+              <EventCardSkeletonList count={2} />
             </div>
           )}
         </div>
       )}
+
+      {/* Floating Action Button */}
+      <AddEventFAB />
     </PageWrapper>
   );
 }

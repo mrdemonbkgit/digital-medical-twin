@@ -284,8 +284,15 @@ export async function getEvents(
   }
 
   if (filters?.search) {
+    // Search across multiple fields for better discoverability
     query = query.or(
-      `title.ilike.%${filters.search}%,notes.ilike.%${filters.search}%`
+      `title.ilike.%${filters.search}%,` +
+      `notes.ilike.%${filters.search}%,` +
+      `doctor_name.ilike.%${filters.search}%,` +
+      `medication_name.ilike.%${filters.search}%,` +
+      `intervention_name.ilike.%${filters.search}%,` +
+      `metric_name.ilike.%${filters.search}%,` +
+      `lab_name.ilike.%${filters.search}%`
     );
   }
 

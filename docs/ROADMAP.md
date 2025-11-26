@@ -80,7 +80,7 @@ None (first phase)
 - [x] User can log out
 - [x] Unauthenticated users redirected to login
 - [ ] Database connection working (needs Supabase project)
-- [ ] Deployed to Vercel (needs Supabase credentials)
+- [x] Deployed to Vercel: https://digital-medical-twin.vercel.app/
 
 ---
 

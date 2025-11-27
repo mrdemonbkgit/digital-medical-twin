@@ -16,7 +16,10 @@ export function AIHistorianPage() {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  const isConfigured = settings?.hasApiKey && settings?.provider;
+  const isConfigured = settings?.provider && (
+    (settings.provider === 'openai' && settings.hasOpenAIKey) ||
+    (settings.provider === 'google' && settings.hasGoogleKey)
+  );
 
   // Loading state
   if (settingsLoading) {

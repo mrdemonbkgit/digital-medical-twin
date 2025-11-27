@@ -671,7 +671,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     // Call AI provider and track elapsed time
     const model = settings.ai_model || (provider === 'openai' ? 'gpt-5.1' : 'gemini-3-pro-preview');
-    const temperature = settings.temperature || 0.7;
+    const temperature = settings.temperature ?? 0.7;
 
     const startTime = Date.now();
     let result: ExtendedAIResponse;

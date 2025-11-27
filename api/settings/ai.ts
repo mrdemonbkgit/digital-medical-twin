@@ -141,7 +141,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(200).json({
         provider: data?.ai_provider || null,
         model: data?.ai_model || null,
-        temperature: data?.temperature || 0.7,
+        temperature: data?.temperature ?? 0.7,
         hasOpenAIKey: !!data?.encrypted_openai_key,
         hasGoogleKey: !!data?.encrypted_google_key,
         // Deprecated but kept for backward compatibility

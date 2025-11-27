@@ -1,6 +1,6 @@
 # Changelog
 
-> Last Updated: 2025-11-26
+> Last Updated: 2025-11-27
 
 ## Summary
 
@@ -13,6 +13,8 @@ Version history and release notes for Digital Medical Twin. Lists all notable ch
 ## Table of Contents
 
 - [Unreleased](#unreleased)
+- [Phase 4.7 - AI Integration](#phase-47---ai-integration)
+- [Phase 2 - Core Data Entry](#phase-2---core-data-entry)
 - [Phase 1 - Foundation](#phase-1---foundation)
 - [Format](#format)
 
@@ -31,6 +33,53 @@ Version history and release notes for Digital Medical Twin. Lists all notable ch
 ### Fixed
 
 - N/A
+
+---
+
+## Phase 4.7 - AI Integration
+
+> 2025-11-27
+
+### Added
+
+- **Multi-Provider API Key Management**
+  - Separate storage for OpenAI and Google API keys
+  - Per-provider encrypted columns: `encrypted_openai_key`, `encrypted_google_key`
+  - Users can store keys for both providers simultaneously
+  - Automatic key selection based on chosen provider
+
+- **Activity Timeline (ChatGPT-style)**
+  - Collapsible panel showing AI reasoning process
+  - ThinkingStep component for reasoning traces
+  - WebSearchStep with numbered, clickable sources
+  - ToolCallStep for function call visibility
+  - Elapsed time display ("3m 0s" format)
+
+- **Gemini Grounding & Inline Citations**
+  - Full extraction of Gemini `groundingMetadata`
+  - Wikipedia-style superscript citation markers `[1,2,3]`
+  - Inline citations mapped from `groundingSupports`
+  - Numbered sources with actual titles (not just hostnames)
+  - Hover tooltips showing source titles
+  - Click-to-scroll to sources section
+
+- **Google Gemini Models**
+  - Gemini 3 Pro Preview (`gemini-3-pro-preview`)
+  - Gemini 2.5 Flash (`gemini-2.5-flash`)
+  - Gemini 2.5 Pro (`gemini-2.5-pro`)
+
+### Changed
+
+- Temperature setting disabled for OpenAI (not supported by Responses API)
+- WebSearchStep now displays numbered sources with full titles
+- ChatMessage renders inline citations as clickable superscripts
+
+### Technical Details
+
+- New types: `InlineCitation`, `WebSearchResult`, `ReasoningTrace`, `ToolCall`, `ActivityItem`
+- API returns `citations` array mapping text segments to source indices
+- `extractGeminiGrounding` extracts both sources and citation mappings
+- React components build citation markers dynamically (no HTML injection)
 
 ---
 

@@ -1,6 +1,7 @@
 import { Settings, Bot, Palette } from 'lucide-react';
 import { PageWrapper } from '@/components/layout';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/common';
+import { AISettingsForm } from '@/components/ai';
 
 export function SettingsPage() {
   return (
@@ -14,14 +15,7 @@ export function SettingsPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-gray-600">
-              Configure your AI provider and model settings here.
-            </p>
-            <div className="mt-4 rounded-lg bg-gray-50 p-4">
-              <p className="text-sm text-gray-500">
-                AI settings will be available in Phase 4.
-              </p>
-            </div>
+            <AISettingsForm />
           </CardContent>
         </Card>
 

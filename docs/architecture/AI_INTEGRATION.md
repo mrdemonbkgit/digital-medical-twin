@@ -1,20 +1,22 @@
 # AI Integration
 
-> Last Updated: 2025-11-26
+> Last Updated: 2025-11-27
 
 ## Summary
 
-Architecture for the AI Historian feature. Covers RAG implementation, AI provider integration, prompt engineering, and API configuration.
+Architecture for the AI Historian feature. Covers RAG implementation, AI provider integration, prompt engineering, API configuration, activity timeline, and Gemini grounding with inline citations.
 
 ## Keywords
 
-`AI` `RAG` `GPT` `Gemini` `historian` `chat` `integration` `API` `prompts`
+`AI` `RAG` `GPT` `Gemini` `historian` `chat` `integration` `API` `prompts` `grounding` `citations`
 
 ## Table of Contents
 
 - [RAG Architecture](#rag-architecture)
 - [Supported Models](#supported-models)
 - [API Configuration](#api-configuration)
+- [Gemini Grounding & Citations](#gemini-grounding--citations)
+- [Activity Timeline](#activity-timeline)
 - [Prompt Engineering](#prompt-engineering)
 - [Query Processing](#query-processing)
 
@@ -65,14 +67,15 @@ Retrieval-Augmented Generation (RAG) enables the AI to answer questions using th
 | Best For | Complex reasoning, analysis |
 | API Base | https://api.openai.com/v1 |
 
-### Google Gemini 3 Pro
+### Google Gemini Models
 
-| Property | Value |
-|----------|-------|
-| Model ID | gemini-3-pro |
-| Context Window | TBD |
-| Best For | Large context, summarization |
-| API Base | https://generativelanguage.googleapis.com/v1 |
+| Model | Model ID | Best For |
+|-------|----------|----------|
+| Gemini 3 Pro (Preview) | gemini-3-pro-preview | Large context, web grounding, citations |
+| Gemini 2.5 Flash | gemini-2.5-flash | Fast responses, cost-effective |
+| Gemini 2.5 Pro | gemini-2.5-pro | Complex reasoning, analysis |
+
+API Base: `https://generativelanguage.googleapis.com/v1beta`
 
 ---
 
@@ -80,16 +83,19 @@ Retrieval-Augmented Generation (RAG) enables the AI to answer questions using th
 
 ### User Settings
 
-Users provide their own API keys (stored encrypted):
+Users provide their own API keys (stored encrypted per provider):
 
 ```typescript
 interface AISettings {
-  provider: 'openai' | 'google';
-  model: string;
-  apiKey: string;                // Encrypted at rest
-  temperature?: number;          // Default: 0.7
-  maxTokens?: number;            // Default: 2000
+  provider: 'openai' | 'google' | null;
+  model: AIModel | null;
+  temperature: number;           // Default: 0.7 (disabled for OpenAI)
+  hasOpenAIKey: boolean;         // Whether OpenAI key is stored
+  hasGoogleKey: boolean;         // Whether Google key is stored
 }
+
+// Database columns: encrypted_openai_key, encrypted_google_key
+// Keys are stored using Supabase Vault encryption
 ```
 
 ### Provider Adapter
@@ -115,6 +121,105 @@ interface AIResponse {
   content: string;
   tokensUsed: number;
   model: string;
+}
+```
+
+---
+
+## Gemini Grounding & Citations
+
+Gemini 3 Pro supports web search grounding, providing source attribution for responses.
+
+### Grounding Metadata Structure
+
+```typescript
+// Response from Gemini API
+{
+  candidates: [{
+    groundingMetadata: {
+      // Sources found during search
+      groundingChunks: [
+        { web: { uri: string, title: string } }
+      ],
+
+      // Maps response segments to sources (for inline citations)
+      groundingSupports: [
+        {
+          segment: {
+            startIndex: number,
+            endIndex: number,
+            text: string
+          },
+          groundingChunkIndices: number[],
+          confidenceScores: number[]
+        }
+      ],
+
+      webSearchQueries: string[]  // What was searched
+    }
+  }]
+}
+```
+
+### Inline Citations
+
+Citations are rendered as Wikipedia-style superscript markers:
+
+- `[1]`, `[2,3]` appear after cited text
+- Hovering shows source titles
+- Clicking scrolls to sources section
+- Numbers correspond to numbered sources in activity panel
+
+### Types
+
+```typescript
+interface InlineCitation {
+  startIndex: number;
+  endIndex: number;
+  text: string;
+  sourceIndices: number[];  // References to sources array
+  confidence: number;
+}
+
+interface WebSearchResult {
+  title: string;
+  url: string;
+  snippet: string;
+  displayUrl?: string;
+}
+```
+
+---
+
+## Activity Timeline
+
+ChatGPT-style collapsible panel showing AI reasoning process.
+
+### Activity Types
+
+| Type | Icon | Description |
+|------|------|-------------|
+| thinking | Brain | Reasoning steps from model |
+| web_search | Globe | Web searches with sources |
+| tool_call | Wrench | Function calls |
+
+### Components
+
+- `ActivityPanel` - Collapsible container with elapsed time
+- `ThinkingStep` - Expandable reasoning step
+- `WebSearchStep` - Numbered sources with favicons
+- `ToolCallStep` - Function call details
+
+### Message Metadata
+
+```typescript
+interface ChatMessage {
+  // ... base fields
+  reasoning?: ReasoningTrace;      // Thinking steps
+  toolCalls?: ToolCall[];          // Function calls
+  webSearchResults?: WebSearchResult[];  // Sources
+  citations?: InlineCitation[];    // Inline citation mappings
+  elapsedTime?: string;            // "3m 0s" format
 }
 ```
 

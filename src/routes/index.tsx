@@ -9,6 +9,7 @@ import { TimelinePage } from '@/pages/TimelinePage';
 import { EventTypeSelectorPage } from '@/pages/EventTypeSelectorPage';
 import { EventNewPage } from '@/pages/EventNewPage';
 import { EventDetailPage } from '@/pages/EventDetailPage';
+import { AIHistorianPage } from '@/pages/AIHistorianPage';
 import { NotFoundPage } from '@/pages/NotFoundPage';
 import { ROUTES } from './routes';
 
@@ -29,6 +30,7 @@ export function AppRoutes() {
           <Route path={ROUTES.EVENT_NEW} element={<EventTypeSelectorPage />} />
           <Route path={ROUTES.EVENT_NEW_TYPE} element={<EventNewPage />} />
           <Route path={ROUTES.EVENT_DETAIL} element={<EventDetailPage />} />
+          <Route path={ROUTES.AI_CHAT} element={<AIHistorianPage />} />
         </Route>
       </Route>
 

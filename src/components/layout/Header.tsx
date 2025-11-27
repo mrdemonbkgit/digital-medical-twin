@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
-import { LogOut, Settings, Activity, Calendar, LayoutDashboard } from 'lucide-react';
+import { LogOut, Settings, Activity, Calendar, LayoutDashboard, Bot } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { Button } from '@/components/common';
 import { ROUTES } from '@/routes/routes';
@@ -54,6 +54,18 @@ export function Header() {
             >
               <Calendar className="h-4 w-4" />
               <span className="hidden sm:inline">Timeline</span>
+            </Link>
+            <Link
+              to={ROUTES.AI_CHAT}
+              className={cn(
+                'flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors',
+                isActive(ROUTES.AI_CHAT)
+                  ? 'bg-blue-50 text-blue-700'
+                  : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+              )}
+            >
+              <Bot className="h-4 w-4" />
+              <span className="hidden sm:inline">AI Historian</span>
             </Link>
           </nav>
         </div>

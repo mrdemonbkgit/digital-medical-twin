@@ -1,10 +1,10 @@
 # AI Historian Feature
 
-> Last Updated: 2025-11-26
+> Last Updated: 2025-11-27
 
 ## Summary
 
-The AI Historian is a RAG-powered chat interface that answers questions about the user's health history. Users can query trends, find correlations, and generate summaries using their choice of GPT-5.1 or Gemini 3 Pro.
+The AI Historian is a RAG-powered chat interface that answers questions about the user's health history. Users can query trends, find correlations, and generate summaries using their choice of GPT-5.1 or Gemini 3 Pro. Features include activity timeline (ChatGPT-style), web search grounding with inline citations, and multi-provider API key management.
 
 ## Keywords
 
@@ -80,6 +80,8 @@ The AI Historian transforms raw health data into actionable insights. Unlike gen
 **AI Response:**
 - AI avatar/icon
 - Formatted response (supports markdown tables, lists)
+- Inline citations with superscript markers (Wikipedia-style `[1,2]`)
+- Activity timeline showing reasoning, tool calls, and web searches
 - Source indicator showing which events were used
 - Timestamp
 
@@ -180,16 +182,20 @@ Find specific information.
 | Setting | Options | Default |
 |---------|---------|---------|
 | AI Provider | OpenAI, Google | OpenAI |
-| Model | GPT-5.1, Gemini 3 Pro | GPT-5.1 |
-| API Key | User input | None (required) |
-| Temperature | 0.0 - 1.0 | 0.7 |
+| Model | GPT-5.1, Gemini 3 Pro, Gemini 2.5 Flash, Gemini 2.5 Pro | GPT-5.1 |
+| OpenAI API Key | User input | None (required for OpenAI) |
+| Google API Key | User input | None (required for Google) |
+| Temperature | 0.0 - 1.0 | 0.7 (disabled for OpenAI) |
 
-### API Key Entry
+### API Key Management
 
-- Securely stored (encrypted at rest)
+- **Multi-provider support**: Store API keys for both OpenAI and Google simultaneously
+- Per-provider key storage: `encrypted_openai_key` and `encrypted_google_key`
+- Securely stored (encrypted at rest using Supabase Vault)
 - Validated on entry
 - Clear error messages for invalid keys
 - Link to provider documentation
+- **Note**: Temperature setting is disabled for OpenAI (not supported by Responses API)
 
 ---
 

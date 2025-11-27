@@ -1,6 +1,6 @@
 # Documentation Index
 
-> Last Updated: 2025-11-26 (Phase 2 Complete)
+> Last Updated: 2025-11-27 (Phase 4.7 AI Integration)
 
 ## Summary
 
@@ -53,6 +53,7 @@ Master index for all project documentation. Search here first to find relevant d
 | State management | /docs/development/STATE_MANAGEMENT.md | Full doc |
 | API specs | /docs/development/API_CONTRACTS.md | Full doc |
 | Testing | /docs/development/TESTING_STRATEGY.md | Full doc |
+| Database migrations | /docs/DATABASE_MIGRATIONS.md | Full doc |
 | Design decisions | /docs/DECISION_LOG.md | Full doc |
 | Version history | /docs/CHANGELOG.md | Full doc |
 | Development roadmap | /docs/ROADMAP.md | Full doc |
@@ -83,13 +84,14 @@ Master index for all project documentation. Search here first to find relevant d
 ### C
 
 - **changelog**: /docs/CHANGELOG.md
+- **citations**: /docs/architecture/AI_INTEGRATION.md#gemini-grounding--citations
 - **cloud**: /docs/architecture/DATABASE_SCHEMA.md
 - **coding standards**: /docs/development/CODING_STANDARDS.md
 - **components**: /docs/development/COMPONENT_LIBRARY.md
 
 ### D
 
-- **database**: /docs/architecture/DATABASE_SCHEMA.md
+- **database**: /docs/architecture/DATABASE_SCHEMA.md, /docs/DATABASE_MIGRATIONS.md
 - **decisions**: /docs/DECISION_LOG.md
 - **deliverables**: /docs/ROADMAP.md
 - **deployment**: /docs/DECISION_LOG.md#2025-11-26-hosting-platform-selection
@@ -111,6 +113,7 @@ Master index for all project documentation. Search here first to find relevant d
 ### G
 
 - **Gemini**: /docs/architecture/AI_INTEGRATION.md
+- **grounding**: /docs/architecture/AI_INTEGRATION.md#gemini-grounding--citations
 - **GPT**: /docs/architecture/AI_INTEGRATION.md
 
 ### H
@@ -122,6 +125,7 @@ Master index for all project documentation. Search here first to find relevant d
 ### I
 
 - **interventions**: /docs/features/DATA_TRACKING.md
+- **IPv6**: /docs/DATABASE_MIGRATIONS.md
 
 ### L
 
@@ -130,8 +134,10 @@ Master index for all project documentation. Search here first to find relevant d
 
 ### M
 
+- **Management API**: /docs/DATABASE_MIGRATIONS.md
 - **medications**: /docs/features/DATA_TRACKING.md
 - **metrics**: /docs/features/DATA_TRACKING.md
+- **migrations**: /docs/DATABASE_MIGRATIONS.md, scripts/run-migrations.cjs
 - **milestones**: /docs/ROADMAP.md
 - **MVP**: /docs/ROADMAP.md#phase-1-foundation
 
@@ -182,3 +188,8 @@ Master index for all project documentation. Search here first to find relevant d
 - **vercel**: /docs/DECISION_LOG.md#2025-11-26-hosting-platform-selection
 - **version**: /docs/CHANGELOG.md
 - **vision**: /PRODUCT_DESCRIPTION.md#vision
+
+### W
+
+- **web search**: /docs/architecture/AI_INTEGRATION.md#gemini-grounding--citations
+- **WSL2**: /docs/DATABASE_MIGRATIONS.md

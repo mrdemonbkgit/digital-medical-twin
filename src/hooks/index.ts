@@ -5,3 +5,5 @@ export { useEventMutation } from './useEventMutation';
 export { useDebouncedValue } from './useDebouncedValue';
 export { useInfiniteScroll } from './useInfiniteScroll';
 export { useTimelineFilters } from './useTimelineFilters';
+export { useAISettings } from './useAISettings';
+export { useAIChat } from './useAIChat';

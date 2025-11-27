@@ -1,6 +1,6 @@
 # Data Tracking Feature
 
-> Last Updated: 2025-11-26
+> Last Updated: 2025-11-27
 
 ## Summary
 
@@ -8,7 +8,7 @@ Comprehensive data tracking for all health event types. Covers the five event ca
 
 ## Keywords
 
-`events` `tracking` `biomarkers` `bloodwork` `medications` `interventions` `metrics` `forms` `validation`
+`events` `tracking` `biomarkers` `bloodwork` `medications` `interventions` `metrics` `forms` `validation` `tags` `presets`
 
 ## Table of Contents
 
@@ -18,6 +18,8 @@ Comprehensive data tracking for all health event types. Covers the five event ca
 - [Medications](#medications)
 - [Interventions](#interventions)
 - [Metrics](#metrics)
+- [Tags System](#tags-system)
+- [Biomarker Presets](#biomarker-presets)
 - [Event Forms](#event-forms)
 - [Validation Rules](#validation-rules)
 
@@ -206,6 +208,94 @@ Import or manually log data from wearables and measurements.
 | Steps | count | All |
 | Weight | lbs/kg | Manual |
 | Blood Pressure | mmHg | Manual |
+
+---
+
+## Tags System
+
+### Purpose
+
+Allow users to organize events with custom labels for easier filtering and categorization. Tags persist across events and can be reused.
+
+### Features
+
+| Feature | Description |
+|---------|-------------|
+| Add Tags | Type tag name and press Enter or comma |
+| Autocomplete | Suggests existing tags as you type |
+| Remove Tags | Click X on tag chip to remove |
+| Filter by Tags | Filter timeline to show only events with specific tags |
+
+### Implementation
+
+```typescript
+interface TagInputProps {
+  tags: string[];
+  onChange: (tags: string[]) => void;
+  suggestions?: string[];
+  placeholder?: string;
+}
+```
+
+### URL Filter Format
+
+Tags are synced to URL for shareable filtered views:
+```
+/timeline?tags=routine,fasting
+```
+
+### Common Tag Examples
+
+- `routine` - Regular checkups
+- `fasting` - Fasting lab tests
+- `follow-up` - Follow-up appointments
+- `urgent` - Urgent care visits
+- `specialist` - Specialist consultations
+
+---
+
+## Biomarker Presets
+
+### Purpose
+
+Speed up lab result entry by auto-populating common biomarker panels with standard names, units, and reference ranges.
+
+### Available Presets
+
+| Preset | Biomarkers |
+|--------|------------|
+| Lipid Panel | Total Cholesterol, LDL, HDL, Triglycerides, VLDL |
+| Basic Metabolic Panel | Glucose, BUN, Creatinine, Sodium, Potassium, Chloride, CO2, Calcium |
+| Comprehensive Metabolic Panel | BMP + ALT, AST, ALP, Bilirubin, Albumin, Total Protein |
+| Complete Blood Count | WBC, RBC, Hemoglobin, Hematocrit, MCV, MCH, MCHC, RDW, Platelets |
+| Thyroid Panel | TSH, Free T4, Free T3 |
+| Liver Function | ALT, AST, ALP, GGT, Bilirubin (Total/Direct), Albumin |
+| Iron Panel | Iron, TIBC, Ferritin, Transferrin Saturation |
+| Inflammation Markers | CRP, ESR, Homocysteine |
+| HbA1c | HbA1c |
+| Vitamin D | 25-OH Vitamin D |
+
+### Usage
+
+1. Select preset from dropdown in Lab Result form
+2. Biomarkers auto-populate with standard units and reference ranges
+3. Enter your actual values
+4. Add or remove individual biomarkers as needed
+
+### Implementation
+
+Presets are defined in `src/lib/biomarkerPresets.ts`:
+
+```typescript
+interface BiomarkerPreset {
+  name: string;
+  unit: string;
+  referenceMin?: number;
+  referenceMax?: number;
+}
+
+const BIOMARKER_PRESETS: Record<string, BiomarkerPreset[]>;
+```
 
 ---
 

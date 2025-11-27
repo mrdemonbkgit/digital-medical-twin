@@ -1,6 +1,6 @@
 # Timeline Feature
 
-> Last Updated: 2025-11-26
+> Last Updated: 2025-11-27
 
 ## Summary
 
@@ -8,7 +8,7 @@ The Master Timeline is the core feature of Digital Medical Twin. A chronological
 
 ## Keywords
 
-`timeline` `events` `feed` `chronological` `scroll` `filter` `search` `cards`
+`timeline` `events` `feed` `chronological` `scroll` `filter` `search` `cards` `export` `tags`
 
 ## Table of Contents
 
@@ -17,6 +17,8 @@ The Master Timeline is the core feature of Digital Medical Twin. A chronological
 - [Event Cards](#event-cards)
 - [Filtering and Search](#filtering-and-search)
 - [Infinite Scroll](#infinite-scroll)
+- [Data Export](#data-export)
+- [Data Import](#data-import)
 - [Implementation Notes](#implementation-notes)
 
 ---
@@ -173,6 +175,99 @@ interface PaginationState {
 - Use Intersection Observer on sentinel element
 - Trigger load when sentinel enters viewport
 - Threshold: 200px from bottom
+
+---
+
+## Data Export
+
+### Export Options
+
+| Location | Scope | Formats |
+|----------|-------|---------|
+| Timeline Page | Filtered events | JSON, CSV |
+| Settings Page | All events | JSON, CSV |
+
+### Export Format (JSON)
+
+```json
+{
+  "exportedAt": "2025-11-27T12:00:00.000Z",
+  "version": "1.0",
+  "eventCount": 42,
+  "events": [
+    {
+      "type": "lab_result",
+      "date": "2025-11-15",
+      "title": "Annual Bloodwork",
+      "biomarkers": [...],
+      ...
+    }
+  ]
+}
+```
+
+### CSV Export
+
+CSV exports flatten event data with columns:
+- Common: id, type, date, title, notes, tags, createdAt
+- Type-specific fields as additional columns
+
+### Implementation
+
+```typescript
+// src/lib/exportData.ts
+function exportToJSON(events: HealthEvent[]): void;
+function exportToCSV(events: HealthEvent[]): void;
+
+// src/hooks/useExportEvents.ts
+function useExportEvents() {
+  return { exportAll, exportFiltered, isExporting, error };
+}
+```
+
+---
+
+## Data Import
+
+### Supported Formats
+
+- JSON files matching export format
+- Max file size: 10MB
+
+### Import Flow
+
+1. **Upload** - Drag-drop or click to select JSON file
+2. **Validate** - Check file structure, event types, required fields
+3. **Preview** - Show event count by type, warnings
+4. **Import** - Batch create events with progress indicator
+5. **Complete** - Show success/failure counts
+
+### Validation Rules
+
+- File must be valid JSON
+- Must have `events` array
+- Each event must have valid `type`, `date`, `title`
+- Type-specific required fields validated
+- Duplicate IDs are skipped (warns user)
+
+### Implementation
+
+```typescript
+// src/lib/importData.ts
+interface ImportResult {
+  success: boolean;
+  events: CreateEventInput[];
+  errors: string[];
+  warnings: string[];
+}
+
+function parseImportFile(file: File): Promise<ImportResult>;
+
+// src/hooks/useImportEvents.ts
+function useImportEvents() {
+  return { validateFile, importEvents, isValidating, progress, reset };
+}
+```
 
 ---
 

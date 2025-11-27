@@ -13,6 +13,7 @@ Version history and release notes for Digital Medical Twin. Lists all notable ch
 ## Table of Contents
 
 - [Unreleased](#unreleased)
+- [Phase 5 - Data Enhancement](#phase-5---data-enhancement)
 - [Phase 4.7 - AI Integration](#phase-47---ai-integration)
 - [Phase 2 - Core Data Entry](#phase-2---core-data-entry)
 - [Phase 1 - Foundation](#phase-1---foundation)
@@ -33,6 +34,59 @@ Version history and release notes for Digital Medical Twin. Lists all notable ch
 ### Fixed
 
 - N/A
+
+---
+
+## Phase 5 - Data Enhancement
+
+> 2025-11-27
+
+### Added
+
+- **Biomarker Presets**
+  - 10 common lab panel presets (Lipid Panel, Basic Metabolic, CMP, CBC, Thyroid, Liver, Iron, Inflammation, HbA1c, Vitamin D)
+  - Auto-populate biomarkers with standard names, units, and reference ranges
+  - Preset selector dropdown in LabResultForm
+  - Auto-fill title when preset selected on empty form
+
+- **Tags System**
+  - TagInput component with autocomplete suggestions
+  - Tag support on all 5 event forms
+  - useUserTags hook fetches user's existing tags
+  - Tag display in EventCard
+  - TagFilter component for timeline filtering
+  - URL-synced tag filters (`?tags=tag1,tag2`)
+  - Supabase `overlaps` query for tag filtering
+
+- **Data Export**
+  - Export all events as JSON from Settings page
+  - Export filtered events from Timeline page
+  - CSV export support with column headers
+  - Formatted filenames with date stamp
+  - Export metadata (version, timestamp, count)
+
+- **Data Import**
+  - JSON import with validation
+  - ImportModal with drag-and-drop file upload
+  - Import preview showing event counts by type
+  - Progress indicator during import
+  - Error handling with detailed feedback
+  - Batch import with individual event error tracking
+
+### Fixed
+
+- Biomarker preset selection now correctly adds biomarkers (fixed stale closure bug)
+- Tag filter now works correctly on timeline (added missing filter to getEvents)
+- Import modal no longer stuck on spinner when all imports fail
+- Export error messages now display on Timeline page
+
+### Technical Details
+
+- New files: `src/lib/biomarkerPresets.ts`, `src/lib/exportData.ts`, `src/lib/importData.ts`
+- New hooks: `useUserTags`, `useExportEvents`, `useImportEvents`
+- New components: `TagInput`, `TagFilter`, `ImportModal`
+- Updated all 5 event forms to include TagInput
+- URL filter state managed via `useTimelineFilters` hook
 
 ---
 

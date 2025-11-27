@@ -1,6 +1,6 @@
 # Documentation Index
 
-> Last Updated: 2025-11-27 (Phase 4.7 AI Integration)
+> Last Updated: 2025-11-27 (Phase 5 Data Enhancement)
 
 ## Summary
 
@@ -59,9 +59,9 @@ Master index for all project documentation. Search here first to find relevant d
 | Development roadmap | /docs/ROADMAP.md | Full doc |
 | Phase 1 tasks | /docs/ROADMAP.md | #phase-1-foundation (Complete) |
 | Phase 2 tasks | /docs/ROADMAP.md | #phase-2-core-data-entry (Complete) |
-| Phase 3 tasks | /docs/ROADMAP.md | #phase-3-timeline-polish |
-| Phase 4 tasks | /docs/ROADMAP.md | #phase-4-ai-integration |
-| Phase 5 tasks | /docs/ROADMAP.md | #phase-5-data-enhancement |
+| Phase 3 tasks | /docs/ROADMAP.md | #phase-3-timeline-polish (Complete) |
+| Phase 4 tasks | /docs/ROADMAP.md | #phase-4-ai-integration (Complete) |
+| Phase 5 tasks | /docs/ROADMAP.md | #phase-5-data-enhancement (Complete) |
 | Phase 6 tasks | /docs/ROADMAP.md | #phase-6-polish-and-launch |
 
 ---
@@ -105,6 +105,7 @@ Master index for all project documentation. Search here first to find relevant d
 - **events**: /docs/features/DATA_TRACKING.md, src/api/events.ts, src/types/events.ts
 - **EventCard**: src/components/event/EventCard.tsx
 - **EventForm**: src/components/event/forms/
+- **export**: /docs/features/TIMELINE.md#data-export, src/lib/exportData.ts, src/hooks/useExportEvents.ts
 
 ### F
 
@@ -124,6 +125,7 @@ Master index for all project documentation. Search here first to find relevant d
 
 ### I
 
+- **import**: /docs/features/TIMELINE.md#data-import, src/lib/importData.ts, src/hooks/useImportEvents.ts
 - **interventions**: /docs/features/DATA_TRACKING.md
 - **IPv6**: /docs/DATABASE_MIGRATIONS.md
 
@@ -151,6 +153,7 @@ Master index for all project documentation. Search here first to find relevant d
 - **password**: /docs/architecture/AUTH_SYSTEM.md
 - **phases**: /docs/ROADMAP.md
 - **planning**: /docs/ROADMAP.md
+- **presets**: /docs/features/DATA_TRACKING.md#biomarker-presets, src/lib/biomarkerPresets.ts
 - **product**: /PRODUCT_DESCRIPTION.md
 - **protocol**: /docs/AGENT_PROTOCOL.md
 - **proxy**: /docs/DECISION_LOG.md#2025-11-26-ai-api-architecture
@@ -173,6 +176,7 @@ Master index for all project documentation. Search here first to find relevant d
 
 ### T
 
+- **tags**: /docs/features/DATA_TRACKING.md#tags-system, src/components/common/TagInput.tsx, src/hooks/useUserTags.ts
 - **Tailwind**: /docs/ONBOARDING.md#tech-stack
 - **tech stack**: /docs/ONBOARDING.md#tech-stack
 - **testing**: /docs/development/TESTING_STRATEGY.md

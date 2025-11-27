@@ -1,6 +1,6 @@
 # Development Roadmap
 
-> Last Updated: 2025-11-26
+> Last Updated: 2025-11-27
 
 ## Summary
 
@@ -137,29 +137,31 @@ User can log all event types and see them in a chronological list.
 
 **Goal:** Timeline becomes the polished "Master Timeline"
 
+**Status:** Complete (2025-11-26)
+
 ### Tasks
 
-- [ ] Visual design implementation
-  - [ ] Color-coded event cards (red, blue, green, amber, purple)
-  - [ ] Event type icons
-  - [ ] Card layout and typography
-- [ ] Date grouping (group events by date)
-- [ ] Timeline visual connector (vertical line)
-- [ ] Infinite scroll with pagination
-- [ ] Filter bar component
-  - [ ] Event type filter (multi-select)
-  - [ ] Date range picker
-- [ ] Search functionality
-  - [ ] Search input with debounce
-  - [ ] Full-text search across events
-  - [ ] Search result highlighting
-- [ ] Empty states
-  - [ ] No events yet
-  - [ ] No search results
-  - [ ] No events matching filters
-- [ ] Loading states and skeletons
-- [ ] Mobile-responsive design
-- [ ] Add Event FAB (floating action button)
+- [x] Visual design implementation
+  - [x] Color-coded event cards (red, blue, green, amber, purple)
+  - [x] Event type icons
+  - [x] Card layout and typography
+- [x] Date grouping (group events by date)
+- [x] Timeline visual connector (vertical line)
+- [x] Infinite scroll with pagination
+- [x] Filter bar component
+  - [x] Event type filter (multi-select)
+  - [x] Date range picker
+- [x] Search functionality
+  - [x] Search input with debounce
+  - [x] Full-text search across events
+  - [x] Search result highlighting
+- [x] Empty states
+  - [x] No events yet
+  - [x] No search results
+  - [x] No events matching filters
+- [x] Loading states and skeletons
+- [x] Mobile-responsive design
+- [x] Add Event FAB (floating action button)
 
 ### Deliverable
 
@@ -171,13 +173,13 @@ Beautiful, functional timeline matching product vision.
 
 ### Definition of Done
 
-- [ ] Timeline matches design spec (colors, layout)
-- [ ] Infinite scroll loads more events smoothly
-- [ ] Filters work correctly (type, date)
-- [ ] Search returns relevant results
-- [ ] Empty states display appropriately
-- [ ] Works on mobile devices
-- [ ] Performance acceptable (no jank on scroll)
+- [x] Timeline matches design spec (colors, layout)
+- [x] Infinite scroll loads more events smoothly
+- [x] Filters work correctly (type, date)
+- [x] Search returns relevant results
+- [x] Empty states display appropriately
+- [x] Works on mobile devices
+- [x] Performance acceptable (no jank on scroll)
 
 ---
 
@@ -185,37 +187,42 @@ Beautiful, functional timeline matching product vision.
 
 **Goal:** AI Historian feature
 
+**Status:** Complete (2025-11-27)
+
 ### Tasks
 
-- [ ] Backend API route for AI proxy
-  - [ ] Vercel serverless function
-  - [ ] Request validation
-  - [ ] Rate limiting
-- [ ] AI provider abstraction layer
-  - [ ] Provider interface
-  - [ ] OpenAI GPT-5.1 adapter
-  - [ ] Google Gemini 3 Pro adapter
-- [ ] API key management
-  - [ ] Settings UI for API key entry
-  - [ ] Secure storage (encrypted)
-  - [ ] Key validation
-- [ ] RAG implementation
-  - [ ] Query analysis (extract intent, keywords)
-  - [ ] Event retrieval based on query
-  - [ ] Context building (format events for prompt)
-  - [ ] System prompt design
-  - [ ] Token management
-- [ ] Chat interface UI
-  - [ ] Chat page/modal
-  - [ ] Message input
-  - [ ] Message history display
-  - [ ] User and AI message styling
-  - [ ] Loading/thinking indicator
-- [ ] Source attribution
-  - [ ] Show which events were used
-  - [ ] Link to source events
-- [ ] Model selection (GPT-5.1 vs Gemini 3 Pro)
-- [ ] Error handling (API errors, rate limits)
+- [x] Backend API route for AI proxy
+  - [x] Vercel serverless function
+  - [x] Request validation
+  - [x] Rate limiting
+- [x] AI provider abstraction layer
+  - [x] Provider interface
+  - [x] OpenAI GPT-4o adapter
+  - [x] Google Gemini adapters (2.5 Flash, 2.5 Pro, 3 Pro Preview)
+- [x] API key management
+  - [x] Settings UI for API key entry
+  - [x] Secure storage (encrypted per-provider)
+  - [x] Key validation
+- [x] RAG implementation
+  - [x] Query analysis (extract intent, keywords)
+  - [x] Event retrieval based on query
+  - [x] Context building (format events for prompt)
+  - [x] System prompt design
+  - [x] Token management
+- [x] Chat interface UI
+  - [x] Chat page/modal
+  - [x] Message input
+  - [x] Message history display
+  - [x] User and AI message styling
+  - [x] Loading/thinking indicator
+  - [x] Activity timeline (ChatGPT-style reasoning display)
+- [x] Source attribution
+  - [x] Show which events were used
+  - [x] Link to source events
+  - [x] Inline citations (Wikipedia-style superscripts)
+  - [x] Web search results with numbered sources
+- [x] Model selection (OpenAI vs Gemini models)
+- [x] Error handling (API errors, rate limits)
 
 ### Deliverable
 
@@ -228,13 +235,13 @@ User can ask questions about their health history and get AI-powered answers.
 
 ### Definition of Done
 
-- [ ] User can configure AI provider and API key
-- [ ] User can ask questions in natural language
-- [ ] AI responds with relevant, accurate answers
-- [ ] Sources shown for AI responses
-- [ ] Works with both OpenAI and Gemini
-- [ ] Errors handled gracefully
-- [ ] API keys never exposed to client
+- [x] User can configure AI provider and API key
+- [x] User can ask questions in natural language
+- [x] AI responds with relevant, accurate answers
+- [x] Sources shown for AI responses
+- [x] Works with both OpenAI and Gemini
+- [x] Errors handled gracefully
+- [x] API keys never exposed to client
 
 ---
 
@@ -242,31 +249,37 @@ User can ask questions about their health history and get AI-powered answers.
 
 **Goal:** Richer data features
 
+**Status:** Complete (2025-11-27)
+
 ### Tasks
 
-- [ ] Biomarker enhancements
-  - [ ] Automatic flagging (high/low/normal)
-  - [ ] Reference range handling
-  - [ ] Common biomarker presets (lipid panel, metabolic, etc.)
-  - [ ] Unit standardization
-- [ ] Medication enhancements
-  - [ ] Active vs historical status
-  - [ ] "Currently taking" indicator
-  - [ ] End date prompts
-- [ ] Intervention tracking
-  - [ ] Ongoing indicator
-  - [ ] Duration calculation
-- [ ] Tags system
-  - [ ] Add tags to events
-  - [ ] Tag suggestions (existing tags)
-  - [ ] Filter by tags
-- [ ] Data export
-  - [ ] Export all data as JSON
-  - [ ] Export filtered data
-  - [ ] Download trigger
-- [ ] Data import (optional)
-  - [ ] JSON import
-  - [ ] Validation and error handling
+- [x] Biomarker enhancements
+  - [x] Automatic flagging (high/low/normal)
+  - [x] Reference range handling
+  - [x] Common biomarker presets (10 lab panels including Lipid, CMP, CBC, Thyroid, etc.)
+  - [x] Unit standardization
+- [x] Medication enhancements
+  - [x] Active vs historical status
+  - [x] "Currently taking" indicator
+  - [x] End date prompts
+- [x] Intervention tracking
+  - [x] Ongoing indicator
+  - [x] Duration calculation
+- [x] Tags system
+  - [x] Add tags to events (all 5 event forms)
+  - [x] Tag suggestions (existing tags autocomplete)
+  - [x] Filter by tags (URL-synced filters)
+  - [x] Tag display in EventCard
+- [x] Data export
+  - [x] Export all data as JSON (Settings page)
+  - [x] Export filtered data (Timeline page)
+  - [x] CSV export support
+  - [x] Download trigger with formatted filename
+- [x] Data import
+  - [x] JSON import with validation
+  - [x] File drag-and-drop support
+  - [x] Import preview before confirming
+  - [x] Progress indicator and error handling
 
 ### Deliverable
 
@@ -278,12 +291,12 @@ Full data model with all planned fields and features.
 
 ### Definition of Done
 
-- [ ] Biomarkers auto-flag based on reference ranges
-- [ ] Biomarker presets speed up data entry
-- [ ] Medications show active/historical status
-- [ ] Tags can be added and filtered
-- [ ] User can export all data as JSON
-- [ ] Data export is complete and re-importable
+- [x] Biomarkers auto-flag based on reference ranges
+- [x] Biomarker presets speed up data entry
+- [x] Medications show active/historical status
+- [x] Tags can be added and filtered
+- [x] User can export all data as JSON
+- [x] Data export is complete and re-importable
 
 ---
 

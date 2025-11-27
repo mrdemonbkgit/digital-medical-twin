@@ -235,8 +235,9 @@ These must **never** be exposed to the client:
 | Variable | Purpose | Security |
 |----------|---------|----------|
 | `SUPABASE_SERVICE_ROLE_KEY` | Full database access | Server-only, bypasses RLS |
-| `ENCRYPTION_KEY` | API key encryption | Server-only, 64-char hex string |
+| `ENCRYPTION_KEY` | API key encryption | Server-only, 32-byte base64 string |
 | `SUPABASE_URL` | Alternative Supabase URL | Server configuration |
+| `ALLOWED_ORIGIN` | CORS origin restriction | Defaults to production URL |
 
 ### Validation
 
@@ -288,7 +289,7 @@ if (error || !user) {
 Not currently implemented but recommended for production:
 
 - [ ] Two-factor authentication (2FA)
-- [ ] Rate limiting on authentication endpoints
+- [ ] Rate limiting on AI chat endpoint (deferred - requires distributed storage like Vercel KV)
 - [ ] Brute force protection
 - [ ] API key rotation mechanism
 - [ ] Audit logging for sensitive operations

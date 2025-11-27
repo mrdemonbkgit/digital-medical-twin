@@ -104,10 +104,26 @@ async function getUserId(supabase: ReturnType<typeof createClient>, authHeader: 
   return user.id;
 }
 
+// Get allowed origin for CORS (localhost for dev, production URL for deployed)
+function getAllowedOrigin(req: VercelRequest): string {
+  const origin = req.headers.origin;
+  const allowedOrigins = [
+    process.env.ALLOWED_ORIGIN || 'https://digital-medical-twin.vercel.app',
+    'http://localhost:5173',
+    'http://localhost:3000',
+  ];
+
+  if (origin && allowedOrigins.includes(origin)) {
+    return origin;
+  }
+  return allowedOrigins[0]; // Default to production URL
+}
+
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  // CORS headers
+  // CORS headers - restrict to allowed origins
+  const allowedOrigin = getAllowedOrigin(req);
   res.setHeader('Access-Control-Allow-Credentials', 'true');
-  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Origin', allowedOrigin);
   res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,DELETE,OPTIONS');
   res.setHeader('Access-Control-Allow-Headers', 'Authorization, Content-Type');
 

@@ -95,7 +95,8 @@ interface AISettings {
 }
 
 // Database columns: encrypted_openai_key, encrypted_google_key
-// Keys are stored using Supabase Vault encryption
+// Keys are encrypted using AES-256-GCM before storage
+// Encryption performed server-side using ENCRYPTION_KEY env var (base64)
 ```
 
 ### Provider Adapter

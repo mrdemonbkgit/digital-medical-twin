@@ -194,7 +194,7 @@ Beautiful, functional timeline matching product vision.
 - [x] Backend API route for AI proxy
   - [x] Vercel serverless function
   - [x] Request validation
-  - [x] Rate limiting
+  - [ ] Rate limiting (deferred - requires distributed storage)
 - [x] AI provider abstraction layer
   - [x] Provider interface
   - [x] OpenAI GPT-4o adapter

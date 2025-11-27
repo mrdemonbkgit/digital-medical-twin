@@ -18,7 +18,7 @@ export interface EncryptedData {
 /**
  * Encrypts a string using AES-256-GCM
  * @param plaintext - The string to encrypt
- * @param key - 32-byte encryption key (from ENCRYPTION_KEY env var)
+ * @param key - 32-byte encryption key as base64 string (from ENCRYPTION_KEY env var)
  * @returns Encrypted data with IV and auth tag
  */
 export async function encrypt(plaintext: string, key: string): Promise<string> {
@@ -31,9 +31,9 @@ export async function encrypt(plaintext: string, key: string): Promise<string> {
   const crypto = await import('crypto');
 
   // Validate key length (must be 32 bytes for AES-256)
-  const keyBuffer = Buffer.from(key, 'hex');
+  const keyBuffer = Buffer.from(key, 'base64');
   if (keyBuffer.length !== 32) {
-    throw new Error('Encryption key must be 32 bytes (64 hex characters)');
+    throw new Error('Encryption key must be 32 bytes (base64 encoded)');
   }
 
   // Generate random IV (12 bytes for GCM)
@@ -64,7 +64,7 @@ export async function encrypt(plaintext: string, key: string): Promise<string> {
 /**
  * Decrypts data encrypted with the encrypt function
  * @param encryptedJson - JSON string from encrypt()
- * @param key - Same 32-byte key used for encryption
+ * @param key - Same 32-byte base64-encoded key used for encryption
  * @returns Decrypted plaintext
  */
 export async function decrypt(encryptedJson: string, key: string): Promise<string> {
@@ -80,7 +80,7 @@ export async function decrypt(encryptedJson: string, key: string): Promise<strin
   const { iv, data, tag } = JSON.parse(encryptedJson) as EncryptedData;
 
   // Convert from base64
-  const keyBuffer = Buffer.from(key, 'hex');
+  const keyBuffer = Buffer.from(key, 'base64');
   const ivBuffer = Buffer.from(iv, 'base64');
   const encryptedBuffer = Buffer.from(data, 'base64');
   const tagBuffer = Buffer.from(tag, 'base64');
@@ -99,9 +99,9 @@ export async function decrypt(encryptedJson: string, key: string): Promise<strin
 }
 
 /**
- * Generates a random 32-byte encryption key
+ * Generates a random 32-byte encryption key as base64
  * Use this to generate the ENCRYPTION_KEY environment variable
- * Run: node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+ * Run: node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"
  */
 export async function generateKey(): Promise<string> {
   if (typeof window !== 'undefined') {
@@ -109,5 +109,5 @@ export async function generateKey(): Promise<string> {
   }
 
   const crypto = await import('crypto');
-  return crypto.randomBytes(32).toString('hex');
+  return crypto.randomBytes(32).toString('base64');
 }

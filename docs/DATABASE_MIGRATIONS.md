@@ -143,7 +143,9 @@ supabase/
 └── migrations/
     ├── 20241126000000_create_events_table.sql
     ├── 20241127000000_create_user_settings_table.sql
-    └── 20241127100000_alter_user_settings_add_columns.sql
+    ├── 20241127100000_alter_user_settings_add_columns.sql
+    ├── 20241128000000_add_per_provider_api_keys.sql
+    └── 20241128000000_create_user_settings_trigger.sql
 
 scripts/
 └── run-migrations.cjs    # Migration runner using Management API

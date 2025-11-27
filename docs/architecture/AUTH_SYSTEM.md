@@ -66,7 +66,7 @@ Authentication and authorization architecture for Digital Medical Twin. Uses Sup
 
 1. User submits email + password
 2. Supabase validates and creates user
-3. User settings record auto-created via trigger
+3. User settings record auto-created via database trigger (`on_auth_user_created`)
 4. User is logged in automatically
 
 ### Validation Rules

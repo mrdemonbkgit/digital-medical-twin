@@ -11,6 +11,7 @@
 - Never skip reading AGENT_PROTOCOL.md on first task
 - Update /docs/INDEX.md when modifying any doc
 - Check /docs/DECISION_LOG.md before architectural changes
+- Do NOT include "Generated with Claude Code" or "Co-Authored-By: Claude" in commit messages
 
 ## Commands
 

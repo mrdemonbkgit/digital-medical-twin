@@ -30,3 +30,8 @@ npm-debug.log*
 *.tsbuildinfo
 .vercel
 .env*.local
+
+# Test coverage and reports
+coverage/
+test-results/
+playwright-report/

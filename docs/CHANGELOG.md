@@ -21,19 +21,39 @@ Version history and release notes for Digital Medical Twin. Lists all notable ch
 
 ---
 
-## Unreleased
+## Phase 6 - Polish and Launch (Partial)
+
+> 2025-11-27
 
 ### Added
 
-- N/A
+- **Error Handling**
+  - ErrorBoundary component with user-friendly fallback UI
+  - Auto-reset on route navigation (keyed by location.pathname)
+  - Centralized error handler utility (`src/utils/errorHandler.ts`)
+  - Error type detection (network, auth, validation, server, unknown)
+  - User-friendly error messages
 
-### Changed
+- **Testing Infrastructure**
+  - Vitest test framework with 225 unit tests
+  - Test coverage for utilities, hooks, and components
+  - Playwright E2E testing with 18 tests
+  - Test files: validation, exportData, intentDetector, Input, Modal, TagInput, Button, errorHandler, biomarkerPresets, importData, useDebouncedValue
 
-- N/A
+- **Performance Optimization**
+  - Lazy loading for all page components via React.lazy()
+  - Suspense wrapper with FullPageSpinner fallback
+  - Code-split chunks for each route
 
-### Fixed
+- **Security**
+  - Security headers in vercel.json (X-Content-Type-Options, X-Frame-Options, X-XSS-Protection, Referrer-Policy, Permissions-Policy)
+  - Security documentation (`docs/SECURITY.md`)
 
-- N/A
+### Technical Details
+
+- New files: `src/components/common/ErrorBoundary.tsx`, `src/utils/errorHandler.ts`, `vitest.config.ts`, `playwright.config.ts`, `docs/SECURITY.md`
+- New test files: 6 unit test files, 2 E2E test files
+- E2E tests cover: auth flows, protected routes, navigation, 404 page
 
 ---
 

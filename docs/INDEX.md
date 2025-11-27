@@ -1,6 +1,6 @@
 # Documentation Index
 
-> Last Updated: 2025-11-27 (Phase 5 Data Enhancement)
+> Last Updated: 2025-11-27 (Phase 6 Polish and Launch)
 
 ## Summary
 
@@ -53,6 +53,7 @@ Master index for all project documentation. Search here first to find relevant d
 | State management | /docs/development/STATE_MANAGEMENT.md | Full doc |
 | API specs | /docs/development/API_CONTRACTS.md | Full doc |
 | Testing | /docs/development/TESTING_STRATEGY.md | Full doc |
+| Security | /docs/SECURITY.md | Full doc |
 | Database migrations | /docs/DATABASE_MIGRATIONS.md | Full doc |
 | Design decisions | /docs/DECISION_LOG.md | Full doc |
 | Version history | /docs/CHANGELOG.md | Full doc |
@@ -102,6 +103,7 @@ Master index for all project documentation. Search here first to find relevant d
 ### E
 
 - **email**: /docs/architecture/AUTH_SYSTEM.md
+- **encryption**: /docs/SECURITY.md#api-key-management
 - **events**: /docs/features/DATA_TRACKING.md, src/api/events.ts, src/types/events.ts
 - **EventCard**: src/components/event/EventCard.tsx
 - **EventForm**: src/components/event/forms/
@@ -167,8 +169,10 @@ Master index for all project documentation. Search here first to find relevant d
 ### S
 
 - **schema**: /docs/architecture/DATABASE_SCHEMA.md
+- **security**: /docs/SECURITY.md
 - **seed data**: src/utils/seedEvents.ts
 - **serverless**: /docs/DECISION_LOG.md#2025-11-26-ai-api-architecture
+- **session**: /docs/SECURITY.md#authentication-flow
 - **setup**: /docs/ONBOARDING.md#setup-instructions
 - **state**: /docs/development/STATE_MANAGEMENT.md
 - **storage**: /docs/architecture/DATABASE_SCHEMA.md

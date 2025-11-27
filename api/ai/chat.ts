@@ -224,9 +224,6 @@ async function openaiComplete(
 
   const data = await response.json();
 
-  // Debug logging to see response structure
-  console.log('OpenAI Responses API output:', JSON.stringify(data.output, null, 2));
-
   // Extract content from output items
   const content = extractOpenAIOutputText(data.output);
   const reasoning = extractOpenAIReasoning(data);

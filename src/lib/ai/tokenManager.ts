@@ -19,8 +19,6 @@ export interface TokenBudget {
 const MODEL_CONTEXT_WINDOWS: Record<AIModel, number> = {
   'gpt-5.1': 128000,
   'gemini-3-pro-preview': 1000000,
-  'gemini-2.5-flash': 1000000,
-  'gemini-2.5-pro': 1000000,
 };
 
 /**

@@ -1,6 +1,12 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
-import type { AISettings, AIProvider, AIModel } from '@/types/ai';
+import type {
+  AISettings,
+  AIProvider,
+  AIModel,
+  OpenAIReasoningEffort,
+  GeminiThinkingLevel,
+} from '@/types/ai';
 
 interface UseAISettingsReturn {
   settings: AISettings | null;
@@ -9,10 +15,9 @@ interface UseAISettingsReturn {
   updateSettings: (updates: {
     provider?: AIProvider | null;
     model?: AIModel | null;
-    temperature?: number;
-    apiKey?: string | null;
+    openaiReasoningEffort?: OpenAIReasoningEffort;
+    geminiThinkingLevel?: GeminiThinkingLevel;
   }) => Promise<void>;
-  clearApiKey: (provider: AIProvider) => Promise<void>;
   refetch: () => Promise<void>;
 }
 
@@ -28,7 +33,6 @@ async function getAuthToken(): Promise<string> {
   }
 
   if (!session?.access_token) {
-    console.error('No session or access token found. Session:', session ? 'exists but no token' : 'null');
     throw new Error('Not authenticated');
   }
 
@@ -60,10 +64,8 @@ export function useAISettings(): UseAISettingsReturn {
         setSettings({
           provider: null,
           model: null,
-          temperature: 0.7,
-          hasOpenAIKey: false,
-          hasGoogleKey: false,
-          hasApiKey: false,
+          openaiReasoningEffort: 'medium',
+          geminiThinkingLevel: 'high',
         });
         setError('API not available. Run "vercel dev" for full functionality.');
         return;
@@ -81,20 +83,16 @@ export function useAISettings(): UseAISettingsReturn {
       setSettings({
         provider: data.provider,
         model: data.model,
-        temperature: data.temperature,
-        hasOpenAIKey: data.hasOpenAIKey ?? false,
-        hasGoogleKey: data.hasGoogleKey ?? false,
-        hasApiKey: data.hasApiKey ?? false,
+        openaiReasoningEffort: data.openaiReasoningEffort || 'medium',
+        geminiThinkingLevel: data.geminiThinkingLevel || 'high',
       });
     } catch (err) {
       // Default settings on error so the form still renders
       setSettings({
         provider: null,
         model: null,
-        temperature: 0.7,
-        hasOpenAIKey: false,
-        hasGoogleKey: false,
-        hasApiKey: false,
+        openaiReasoningEffort: 'medium',
+        geminiThinkingLevel: 'high',
       });
       setError(err instanceof Error ? err.message : 'Failed to load settings');
     } finally {
@@ -106,8 +104,8 @@ export function useAISettings(): UseAISettingsReturn {
     async (updates: {
       provider?: AIProvider | null;
       model?: AIModel | null;
-      temperature?: number;
-      apiKey?: string | null;
+      openaiReasoningEffort?: OpenAIReasoningEffort;
+      geminiThinkingLevel?: GeminiThinkingLevel;
     }) => {
       setError(null);
 
@@ -135,63 +133,20 @@ export function useAISettings(): UseAISettingsReturn {
         }
 
         const data = await response.json();
-        setSettings({
-          provider: data.provider ?? settings?.provider ?? null,
-          model: data.model ?? settings?.model ?? null,
-          temperature: data.temperature ?? settings?.temperature ?? 0.7,
-          hasOpenAIKey: data.hasOpenAIKey ?? settings?.hasOpenAIKey ?? false,
-          hasGoogleKey: data.hasGoogleKey ?? settings?.hasGoogleKey ?? false,
-          hasApiKey: data.hasApiKey ?? settings?.hasApiKey ?? false,
-        });
+        setSettings((prev) => ({
+          provider: data.provider ?? prev?.provider ?? null,
+          model: data.model ?? prev?.model ?? null,
+          openaiReasoningEffort: data.openaiReasoningEffort ?? prev?.openaiReasoningEffort ?? 'medium',
+          geminiThinkingLevel: data.geminiThinkingLevel ?? prev?.geminiThinkingLevel ?? 'high',
+        }));
       } catch (err) {
         const message = err instanceof Error ? err.message : 'Failed to update settings';
         setError(message);
         throw err;
       }
     },
-    [settings]
+    []
   );
-
-  const clearApiKey = useCallback(async (provider: AIProvider) => {
-    setError(null);
-
-    try {
-      const token = await getAuthToken();
-
-      const response = await fetch(`/api/settings/ai?provider=${provider}`, {
-        method: 'DELETE',
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-
-      // Check if we got HTML instead of JSON (API not available)
-      const contentType = response.headers.get('content-type');
-      if (!contentType?.includes('application/json')) {
-        throw new Error('API not available. Run "vercel dev" for full functionality.');
-      }
-
-      if (!response.ok) {
-        throw new Error('Failed to clear API key');
-      }
-
-      const data = await response.json();
-      setSettings((prev) =>
-        prev
-          ? {
-              ...prev,
-              hasOpenAIKey: data.hasOpenAIKey ?? false,
-              hasGoogleKey: data.hasGoogleKey ?? false,
-              hasApiKey: data.hasApiKey ?? false,
-            }
-          : null
-      );
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to clear API key';
-      setError(message);
-      throw err;
-    }
-  }, []);
 
   useEffect(() => {
     fetchSettings();
@@ -202,7 +157,6 @@ export function useAISettings(): UseAISettingsReturn {
     isLoading,
     error,
     updateSettings,
-    clearApiKey,
     refetch: fetchSettings,
   };
 }

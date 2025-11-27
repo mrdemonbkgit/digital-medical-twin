@@ -53,30 +53,13 @@ interface HealthEvent {
   [key: string]: unknown;
 }
 
-// Encryption utilities
-const ENCRYPTION_KEY = process.env.ENCRYPTION_KEY || '';
+// Server-side API keys (no longer using user-provided keys)
+const OPENAI_API_KEY = process.env.OPENAI_API_KEY || '';
+const GOOGLE_API_KEY = process.env.GOOGLE_API_KEY || '';
 
-async function decrypt(encryptedData: string, key: string): Promise<string> {
-  const combined = Buffer.from(encryptedData, 'base64');
-  const iv = combined.subarray(0, 12);
-  const ciphertext = combined.subarray(12);
-
-  const cryptoKey = await crypto.subtle.importKey(
-    'raw',
-    Buffer.from(key, 'base64'),
-    { name: 'AES-GCM' },
-    false,
-    ['decrypt']
-  );
-
-  const decrypted = await crypto.subtle.decrypt(
-    { name: 'AES-GCM', iv: new Uint8Array(iv) },
-    cryptoKey,
-    new Uint8Array(ciphertext)
-  );
-
-  return new TextDecoder().decode(decrypted);
-}
+// Reasoning parameter types
+type OpenAIReasoningEffort = 'none' | 'minimal' | 'low' | 'medium' | 'high';
+type GeminiThinkingLevel = 'low' | 'high';
 
 // Supabase client
 function createSupabaseClient(authHeader: string | undefined) {
@@ -176,12 +159,11 @@ function formatEventsForContext(events: HealthEvent[]): string {
 }
 
 // OpenAI Responses API completion (supports reasoning, tools, web search)
-// Note: temperature is not supported in Responses API
 async function openaiComplete(
   apiKey: string,
   model: string,
   messages: ProviderMessage[],
-  _temperature: number // Prefixed with _ since not used in Responses API
+  reasoningEffort: OpenAIReasoningEffort = 'medium'
 ): Promise<ExtendedAIResponse> {
   // Extract system messages for instructions
   const systemMessages = messages.filter((m) => m.role === 'system');
@@ -193,20 +175,18 @@ async function openaiComplete(
     .map((m) => ({ role: m.role, content: m.content }));
 
   // Use Responses API for extended capabilities
-  // Note: temperature is not supported in Responses API
-  // reasoning.summary: "auto" enables reasoning summaries (works with o3, o4-mini, etc.)
+  // reasoning_effort controls thinking depth for GPT-5.1
   const requestBody: Record<string, unknown> = {
     model,
     input,
     instructions,
     max_output_tokens: 2000,
     tools: [{ type: 'web_search_preview' }],
+    reasoning: {
+      effort: reasoningEffort,
+      summary: 'auto',
+    },
   };
-
-  // Only add reasoning summary for models that support it (o-series models)
-  if (model.startsWith('o')) {
-    requestBody.reasoning = { summary: 'auto' };
-  }
 
   const response = await fetch('https://api.openai.com/v1/responses', {
     method: 'POST',
@@ -380,7 +360,7 @@ async function geminiComplete(
   apiKey: string,
   model: string,
   messages: ProviderMessage[],
-  temperature: number
+  thinkingLevel: GeminiThinkingLevel = 'high'
 ): Promise<ExtendedAIResponse> {
   // Separate system instruction from messages
   let systemInstruction = '';
@@ -406,9 +386,8 @@ async function geminiComplete(
         systemInstruction: systemInstruction ? { parts: [{ text: systemInstruction }] } : undefined,
         contents,
         generationConfig: {
-          temperature,
           maxOutputTokens: 2000,
-          thinkingConfig: { thinkingBudget: 1024 },
+          thinkingConfig: { thinkingLevel },
         },
         tools: [{ googleSearch: {} }],
       }),
@@ -621,7 +600,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     // Get user's AI settings
     const { data: settings, error: settingsError } = await supabase
       .from('user_settings')
-      .select('ai_provider, ai_model, temperature, encrypted_openai_key, encrypted_google_key, encrypted_api_key')
+      .select('ai_provider, ai_model, openai_reasoning_effort, gemini_thinking_level')
       .eq('user_id', userId)
       .single();
 
@@ -635,25 +614,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       });
     }
 
-    // Get provider-specific encrypted key (fallback to legacy encrypted_api_key for backward compatibility)
+    // Use server-side API keys
     const provider = settings.ai_provider as 'openai' | 'google';
-    const encryptedKey =
-      provider === 'openai'
-        ? settings.encrypted_openai_key || settings.encrypted_api_key
-        : settings.encrypted_google_key || settings.encrypted_api_key;
+    const apiKey = provider === 'openai' ? OPENAI_API_KEY : GOOGLE_API_KEY;
 
-    if (!encryptedKey) {
-      return res.status(400).json({
-        error: `API key not configured for ${provider === 'openai' ? 'OpenAI' : 'Google'}. Please add your API key in Settings.`,
+    if (!apiKey) {
+      return res.status(500).json({
+        error: `Server API key not configured for ${provider === 'openai' ? 'OpenAI' : 'Google'}.`,
       });
     }
-
-    // Decrypt API key
-    if (!ENCRYPTION_KEY) {
-      return res.status(500).json({ error: 'Encryption not configured' });
-    }
-
-    const apiKey = await decrypt(encryptedKey, ENCRYPTION_KEY);
 
     // Fetch user's health events
     const { data: events, error: eventsError } = await supabase
@@ -684,15 +653,16 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     // Call AI provider and track elapsed time
     const model = settings.ai_model || (provider === 'openai' ? 'gpt-5.1' : 'gemini-3-pro-preview');
-    const temperature = settings.temperature ?? 0.7;
 
     const startTime = Date.now();
     let result: ExtendedAIResponse;
 
     if (provider === 'openai') {
-      result = await openaiComplete(apiKey, model, messages, temperature);
+      const reasoningEffort = (settings.openai_reasoning_effort || 'medium') as OpenAIReasoningEffort;
+      result = await openaiComplete(apiKey, model, messages, reasoningEffort);
     } else {
-      result = await geminiComplete(apiKey, model, messages, temperature);
+      const thinkingLevel = (settings.gemini_thinking_level || 'high') as GeminiThinkingLevel;
+      result = await geminiComplete(apiKey, model, messages, thinkingLevel);
     }
 
     const elapsedMs = Date.now() - startTime;

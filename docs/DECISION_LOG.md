@@ -1,6 +1,6 @@
 # Decision Log
 
-> Last Updated: 2025-11-26
+> Last Updated: 2025-11-27
 
 ## Summary
 
@@ -13,6 +13,7 @@ Record of architectural and design decisions for this project. Search by date or
 ## Table of Contents
 
 - [2025](#2025)
+  - [2025-11-27: Server-side AI API keys](#2025-11-27-server-side-ai-api-keys)
   - [2025-11-26: Cloud storage over local-first](#2025-11-26-cloud-storage-over-local-first)
   - [2025-11-26: AI model selection](#2025-11-26-ai-model-selection)
   - [2025-11-26: Documentation structure for AI agents](#2025-11-26-documentation-structure-for-ai-agents)
@@ -24,6 +25,36 @@ Record of architectural and design decisions for this project. Search by date or
 ---
 
 ## 2025
+
+### 2025-11-27: Server-side AI API keys
+
+**Context:** Previously, users had to provide their own API keys for OpenAI and Google. This created UX friction and security complexity (encrypting/storing keys).
+
+**Options Considered:**
+1. User-provided keys (existing) — Users bring their own keys, stored encrypted
+2. Server-side keys — App provides API keys, centralized billing
+3. Hybrid — Default server keys with option for user keys
+
+**Decision:** Server-side API keys only
+
+**Rationale:**
+- **Simpler UX**: Users just select a provider, no key management
+- **Better security**: No user keys to encrypt/store, fewer attack vectors
+- **Centralized billing**: Easier to track usage and costs
+- **Faster onboarding**: Users can try AI features immediately
+
+**Consequences:**
+- Removed user API key input from settings UI
+- Removed encryption logic for API keys
+- API keys stored as Vercel environment variables
+- Added provider-specific reasoning parameters:
+  - OpenAI: `reasoning_effort` (none, minimal, low, medium, high)
+  - Gemini: `thinking_level` (low, high)
+- Legacy database columns (`encrypted_*`) left in place but unused
+
+**Keywords:** `AI` `API keys` `security` `UX` `server-side`
+
+---
 
 ### 2025-11-26: Cloud storage over local-first
 

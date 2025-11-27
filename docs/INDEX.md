@@ -164,6 +164,7 @@ Master index for all project documentation. Search here first to find relevant d
 
 - **RAG**: /docs/features/AI_HISTORIAN.md
 - **React**: /docs/ONBOARDING.md#tech-stack, /docs/development/COMPONENT_LIBRARY.md
+- **reasoning_effort**: /docs/architecture/AI_INTEGRATION.md#openai-gpt-51
 - **roadmap**: /docs/ROADMAP.md
 
 ### S
@@ -171,6 +172,7 @@ Master index for all project documentation. Search here first to find relevant d
 - **schema**: /docs/architecture/DATABASE_SCHEMA.md
 - **security**: /docs/SECURITY.md
 - **seed data**: src/utils/seedEvents.ts
+- **server-side API keys**: /docs/architecture/AI_INTEGRATION.md#server-side-api-keys
 - **serverless**: /docs/DECISION_LOG.md#2025-11-26-ai-api-architecture
 - **session**: /docs/SECURITY.md#authentication-flow
 - **setup**: /docs/ONBOARDING.md#setup-instructions
@@ -184,6 +186,7 @@ Master index for all project documentation. Search here first to find relevant d
 - **Tailwind**: /docs/ONBOARDING.md#tech-stack
 - **tech stack**: /docs/ONBOARDING.md#tech-stack
 - **testing**: /docs/development/TESTING_STRATEGY.md
+- **thinking_level**: /docs/architecture/AI_INTEGRATION.md#google-gemini-3-pro
 - **timeline**: /docs/features/TIMELINE.md, src/pages/TimelinePage.tsx
 - **TypeScript**: /docs/ONBOARDING.md#tech-stack
 

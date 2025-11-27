@@ -8,7 +8,7 @@ Architecture for the AI Historian feature. Covers RAG implementation, AI provide
 
 ## Keywords
 
-`AI` `RAG` `GPT` `Gemini` `historian` `chat` `integration` `API` `prompts` `grounding` `citations`
+`AI` `RAG` `GPT` `Gemini` `historian` `chat` `integration` `API` `prompts` `grounding` `citations` `reasoning_effort` `thinking_level` `server-side API keys`
 
 ## Table of Contents
 
@@ -62,41 +62,67 @@ Retrieval-Augmented Generation (RAG) enables the AI to answer questions using th
 
 | Property | Value |
 |----------|-------|
-| Model ID | gpt-5.1 |
-| Context Window | TBD |
+| Model ID | `gpt-5.1` |
+| Context Window | 128,000 tokens |
 | Best For | Complex reasoning, analysis |
 | API Base | https://api.openai.com/v1 |
 
-### Google Gemini Models
+**Reasoning Effort Parameter:** Controls how much thinking GPT-5.1 does before responding.
 
-| Model | Model ID | Best For |
-|-------|----------|----------|
-| Gemini 3 Pro (Preview) | gemini-3-pro-preview | Large context, web grounding, citations |
-| Gemini 2.5 Flash | gemini-2.5-flash | Fast responses, cost-effective |
-| Gemini 2.5 Pro | gemini-2.5-pro | Complex reasoning, analysis |
+| Value | Description |
+|-------|-------------|
+| `none` | No reasoning tokens (fastest) |
+| `minimal` | Very few reasoning tokens |
+| `low` | Light reasoning for simpler tasks |
+| `medium` | Balanced reasoning (default) |
+| `high` | Deep reasoning, best intelligence |
 
-API Base: `https://generativelanguage.googleapis.com/v1beta`
+### Google Gemini 3 Pro
+
+| Property | Value |
+|----------|-------|
+| Model ID | `gemini-3-pro-preview` |
+| Context Window | 1,000,000 tokens |
+| Best For | Large context, web grounding, citations |
+| API Base | https://generativelanguage.googleapis.com/v1beta |
+
+**Thinking Level Parameter:** Controls the depth of Gemini's thinking process.
+
+| Value | Description |
+|-------|-------------|
+| `low` | Light thinking |
+| `high` | Deep thinking (default) |
+
+> Note: Thinking cannot be disabled for Gemini 3 Pro (unlike Gemini 2.5).
 
 ---
 
 ## API Configuration
 
+### Server-Side API Keys
+
+The application uses server-side API keys configured as environment variables. Users do not need to provide their own keys.
+
+**Environment Variables:**
+
+| Variable | Description |
+|----------|-------------|
+| `OPENAI_API_KEY` | OpenAI API key for GPT-5.1 |
+| `GOOGLE_API_KEY` | Google AI API key for Gemini |
+
 ### User Settings
 
-Users provide their own API keys (stored encrypted per provider):
+Users select their preferred provider and configure reasoning parameters:
 
 ```typescript
 interface AISettings {
   provider: 'openai' | 'google' | null;
   model: AIModel | null;
-  temperature: number;           // Default: 0.7 (disabled for OpenAI)
-  hasOpenAIKey: boolean;         // Whether OpenAI key is stored
-  hasGoogleKey: boolean;         // Whether Google key is stored
+  openaiReasoningEffort: 'none' | 'minimal' | 'low' | 'medium' | 'high';
+  geminiThinkingLevel: 'low' | 'high';
 }
 
-// Database columns: encrypted_openai_key, encrypted_google_key
-// Keys are encrypted using AES-256-GCM before storage
-// Encryption performed server-side using ENCRYPTION_KEY env var (base64)
+// Database columns: ai_provider, ai_model, openai_reasoning_effort, gemini_thinking_level
 ```
 
 ### Provider Adapter

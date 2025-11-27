@@ -16,10 +16,8 @@ export function AIHistorianPage() {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  const isConfigured = settings?.provider && (
-    (settings.provider === 'openai' && settings.hasOpenAIKey) ||
-    (settings.provider === 'google' && settings.hasGoogleKey)
-  );
+  // AI is configured if a provider is selected (API keys are now server-side)
+  const isConfigured = !!settings?.provider;
 
   // Loading state
   if (settingsLoading) {

@@ -8,7 +8,7 @@ The AI Historian is a RAG-powered chat interface that answers questions about th
 
 ## Keywords
 
-`AI` `historian` `chat` `RAG` `queries` `analysis` `GPT` `Gemini` `questions`
+`AI` `historian` `chat` `RAG` `queries` `analysis` `GPT` `Gemini` `questions` `reasoning_effort` `thinking_level`
 
 ## Table of Contents
 
@@ -181,21 +181,18 @@ Find specific information.
 
 | Setting | Options | Default |
 |---------|---------|---------|
-| AI Provider | OpenAI, Google | OpenAI |
-| Model | GPT-5.1, Gemini 3 Pro, Gemini 2.5 Flash, Gemini 2.5 Pro | GPT-5.1 |
-| OpenAI API Key | User input | None (required for OpenAI) |
-| Google API Key | User input | None (required for Google) |
-| Temperature | 0.0 - 1.0 | 0.7 (disabled for OpenAI) |
+| AI Provider | OpenAI, Google | None |
+| Model | GPT-5.1 (OpenAI), Gemini 3 Pro (Google) | Auto-selected by provider |
+| Reasoning Effort (OpenAI) | None, Minimal, Low, Medium, High | Medium |
+| Thinking Level (Google) | Low, High | High |
 
-### API Key Management
+### How It Works
 
-- **Multi-provider support**: Store API keys for both OpenAI and Google simultaneously
-- Per-provider key storage: `encrypted_openai_key` and `encrypted_google_key`
-- Securely stored (encrypted at rest using Supabase Vault)
-- Validated on entry
-- Clear error messages for invalid keys
-- Link to provider documentation
-- **Note**: Temperature setting is disabled for OpenAI (not supported by Responses API)
+- **Server-side API keys**: The application uses centrally-managed API keys. Users do not need to provide their own keys.
+- **Provider selection**: Choose between OpenAI GPT-5.1 or Google Gemini 3 Pro
+- **Reasoning configuration**: Adjust how deeply the AI thinks before responding
+  - **OpenAI Reasoning Effort**: Controls thinking tokens (higher = more thorough but slower)
+  - **Gemini Thinking Level**: Controls thinking depth (high recommended for complex queries)
 
 ---
 

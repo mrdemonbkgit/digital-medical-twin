@@ -296,6 +296,11 @@ export async function getEvents(
     );
   }
 
+  if (filters?.tags && filters.tags.length > 0) {
+    // Filter events that contain any of the specified tags
+    query = query.overlaps('tags', filters.tags);
+  }
+
   // Apply pagination
   query = query.range(offset, offset + limit - 1);
 
@@ -402,4 +407,71 @@ export async function deleteEvent(id: string): Promise<void> {
   if (error) {
     throw new Error(`Failed to delete event: ${error.message}`);
   }
+}
+
+// Get all unique tags used by the current user
+export async function getUserTags(): Promise<string[]> {
+  const { data, error } = await supabase
+    .from('events')
+    .select('tags')
+    .not('tags', 'is', null);
+
+  if (error) {
+    throw new Error(`Failed to fetch tags: ${error.message}`);
+  }
+
+  // Flatten all tags and get unique values
+  const allTags = (data as { tags: string[] | null }[])
+    .flatMap((row) => row.tags || [])
+    .filter((tag): tag is string => Boolean(tag));
+
+  const uniqueTags = [...new Set(allTags)].sort();
+  return uniqueTags;
+}
+
+// Get all events without pagination (for export)
+export async function getAllEvents(filters?: EventFilters): Promise<HealthEvent[]> {
+  let query = supabase
+    .from('events')
+    .select('*')
+    .order('date', { ascending: false })
+    .order('created_at', { ascending: false });
+
+  // Apply filters
+  if (filters?.eventTypes && filters.eventTypes.length > 0) {
+    query = query.in('type', filters.eventTypes);
+  }
+
+  if (filters?.startDate) {
+    query = query.gte('date', filters.startDate);
+  }
+
+  if (filters?.endDate) {
+    query = query.lte('date', filters.endDate);
+  }
+
+  if (filters?.search) {
+    query = query.or(
+      `title.ilike.%${filters.search}%,` +
+      `notes.ilike.%${filters.search}%,` +
+      `doctor_name.ilike.%${filters.search}%,` +
+      `medication_name.ilike.%${filters.search}%,` +
+      `intervention_name.ilike.%${filters.search}%,` +
+      `metric_name.ilike.%${filters.search}%,` +
+      `lab_name.ilike.%${filters.search}%`
+    );
+  }
+
+  if (filters?.tags && filters.tags.length > 0) {
+    // Filter events that contain any of the specified tags
+    query = query.overlaps('tags', filters.tags);
+  }
+
+  const { data, error } = await query;
+
+  if (error) {
+    throw new Error(`Failed to fetch events: ${error.message}`);
+  }
+
+  return (data as EventRow[]).map(rowToEvent);
 }

@@ -1,6 +1,6 @@
 import { useState, useMemo, useCallback, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Plus, Calendar, Search, Database, Trash2 } from 'lucide-react';
+import { Plus, Calendar, Search, Database, Trash2, Download } from 'lucide-react';
 import { PageWrapper } from '@/components/layout';
 import { Button } from '@/components/common';
 import { EventCard, EventCardSkeletonList } from '@/components/event';
@@ -17,6 +17,8 @@ import {
   useDebouncedValue,
   useInfiniteScroll,
   useTimelineFilters,
+  useUserTags,
+  useExportEvents,
 } from '@/hooks';
 import { seedMockEvents, clearAllEvents } from '@/utils/seedEvents';
 import type { HealthEvent } from '@/types';
@@ -34,7 +36,12 @@ export function TimelinePage() {
     setDateRange,
     clearFilters,
     clearEventTypes,
+    toggleTag,
+    clearTags,
   } = useTimelineFilters();
+
+  // Fetch available tags for filtering
+  const { tags: availableTags, isLoading: isLoadingTags } = useUserTags();
 
   // Local search input state (for instant UI feedback)
   const [searchInput, setSearchInput] = useState(filters.search || '');
@@ -74,6 +81,16 @@ export function TimelinePage() {
   });
 
   const { remove, isDeleting } = useEventMutation();
+
+  // Export functionality
+  const { exportFiltered, isExporting, error: exportError } = useExportEvents();
+
+  const handleExport = async (format: 'json' | 'csv') => {
+    await exportFiltered(
+      { ...filters, search: debouncedSearch || undefined },
+      { format }
+    );
+  };
 
   // Infinite scroll
   const sentinelRef = useInfiniteScroll(loadMore, {
@@ -243,14 +260,49 @@ export function TimelinePage() {
           startDate={filters.startDate}
           endDate={filters.endDate}
           onDateChange={setDateRange}
+          availableTags={availableTags}
+          selectedTags={filters.tags || []}
+          onToggleTag={toggleTag}
+          onClearTags={clearTags}
+          isLoadingTags={isLoadingTags}
           activeFilterCount={activeFilterCount}
         />
       </div>
 
-      {/* Results count */}
+      {/* Results count and export */}
       {!isLoading && events.length > 0 && (
-        <div className="mb-4 text-sm text-gray-500">
-          Showing {events.length} of {total} events
+        <div className="mb-4">
+          <div className="flex items-center justify-between">
+            <span className="text-sm text-gray-500">
+              Showing {events.length} of {total} events
+            </span>
+            <div className="flex items-center gap-2">
+              <span className="text-xs text-gray-400">Export:</span>
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => handleExport('json')}
+                disabled={isExporting}
+                className="text-xs"
+              >
+                <Download className="w-3 h-3 mr-1" />
+                JSON
+              </Button>
+              <Button
+                size="sm"
+                variant="ghost"
+                onClick={() => handleExport('csv')}
+                disabled={isExporting}
+                className="text-xs"
+              >
+                <Download className="w-3 h-3 mr-1" />
+                CSV
+              </Button>
+            </div>
+          </div>
+          {exportError && (
+            <p className="mt-2 text-sm text-red-600 text-right">{exportError}</p>
+          )}
         </div>
       )}
 

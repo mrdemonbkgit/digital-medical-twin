@@ -1,7 +1,9 @@
 import type { LabResult, Biomarker } from '@/types';
-import { Input, TextArea } from '@/components/common';
+import { Input, TextArea, Select, TagInput } from '@/components/common';
 import { DatePicker } from '@/components/forms';
 import { BiomarkerInput } from '../BiomarkerInput';
+import { PRESET_OPTIONS, presetToBiomarkers } from '@/lib/biomarkerPresets';
+import { useUserTags } from '@/hooks/useUserTags';
 
 type LabResultFormData = Omit<LabResult, 'id' | 'userId' | 'createdAt' | 'updatedAt'>;
 
@@ -12,6 +14,8 @@ interface LabResultFormProps {
 }
 
 export function LabResultForm({ data, onChange, errors }: LabResultFormProps) {
+  const { tags: suggestedTags } = useUserTags();
+
   const handleChange = <K extends keyof LabResultFormData>(
     field: K,
     value: LabResultFormData[K]
@@ -21,6 +25,31 @@ export function LabResultForm({ data, onChange, errors }: LabResultFormProps) {
 
   const handleBiomarkersChange = (biomarkers: Biomarker[]) => {
     handleChange('biomarkers', biomarkers);
+  };
+
+  const handlePresetSelect = (presetKey: string) => {
+    if (!presetKey) return;
+
+    const presetBiomarkers = presetToBiomarkers(presetKey);
+    // Append preset biomarkers to existing ones (avoid duplicates by name)
+    const existingNames = new Set(data.biomarkers.map((b) => b.name.toLowerCase()));
+    const newBiomarkers = presetBiomarkers.filter(
+      (b) => !existingNames.has(b.name.toLowerCase())
+    );
+
+    // Build updates object - must batch all changes in single onChange call
+    // to avoid stale closure issues
+    const updates: Partial<LabResultFormData> = {
+      biomarkers: [...data.biomarkers, ...newBiomarkers],
+    };
+
+    // Auto-fill title if empty
+    const preset = PRESET_OPTIONS.find((p) => p.value === presetKey);
+    if (preset && !data.title) {
+      updates.title = preset.label;
+    }
+
+    onChange({ ...data, ...updates });
   };
 
   return (
@@ -58,6 +87,19 @@ export function LabResultForm({ data, onChange, errors }: LabResultFormProps) {
       </div>
 
       <div className="border-t border-gray-200 pt-4">
+        <div className="mb-4">
+          <Select
+            label="Quick Add: Lab Panel Preset"
+            placeholder="Select a preset to add biomarkers..."
+            options={PRESET_OPTIONS}
+            value=""
+            onChange={(e) => handlePresetSelect(e.target.value)}
+          />
+          <p className="mt-1 text-xs text-gray-500">
+            Select a preset to add common biomarkers with reference ranges. You can still edit values after.
+          </p>
+        </div>
+
         <BiomarkerInput
           biomarkers={data.biomarkers}
           onChange={handleBiomarkersChange}
@@ -72,6 +114,14 @@ export function LabResultForm({ data, onChange, errors }: LabResultFormProps) {
         onChange={(e) => handleChange('notes', e.target.value)}
         rows={3}
       />
+
+      <TagInput
+        label="Tags (optional)"
+        tags={data.tags || []}
+        onChange={(tags) => handleChange('tags', tags.length > 0 ? tags : undefined)}
+        suggestions={suggestedTags}
+        placeholder="Add tags like 'routine', 'fasting', 'follow-up'..."
+      />
     </div>
   );
 }
@@ -85,5 +135,6 @@ export function createEmptyLabResult(): LabResultFormData {
     orderingDoctor: undefined,
     biomarkers: [],
     notes: '',
+    tags: undefined,
   };
 }

@@ -7,3 +7,6 @@ export { useInfiniteScroll } from './useInfiniteScroll';
 export { useTimelineFilters } from './useTimelineFilters';
 export { useAISettings } from './useAISettings';
 export { useAIChat } from './useAIChat';
+export { useUserTags } from './useUserTags';
+export { useExportEvents } from './useExportEvents';
+export { useImportEvents } from './useImportEvents';

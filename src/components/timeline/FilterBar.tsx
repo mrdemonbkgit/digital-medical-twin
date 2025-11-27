@@ -3,6 +3,7 @@ import { Filter, ChevronDown, ChevronUp } from 'lucide-react';
 import { SearchInput } from './SearchInput';
 import { EventTypeFilterChips } from './EventTypeFilterChips';
 import { DateRangeFilter } from './DateRangeFilter';
+import { TagFilter } from './TagFilter';
 import type { EventType } from '@/types';
 import { cn } from '@/utils';
 
@@ -15,6 +16,11 @@ interface FilterBarProps {
   startDate?: string;
   endDate?: string;
   onDateChange: (startDate?: string, endDate?: string) => void;
+  availableTags: string[];
+  selectedTags: string[];
+  onToggleTag: (tag: string) => void;
+  onClearTags: () => void;
+  isLoadingTags?: boolean;
   activeFilterCount: number;
   className?: string;
 }
@@ -32,6 +38,11 @@ export function FilterBar({
   startDate,
   endDate,
   onDateChange,
+  availableTags,
+  selectedTags,
+  onToggleTag,
+  onClearTags,
+  isLoadingTags,
   activeFilterCount,
   className,
 }: FilterBarProps) {
@@ -89,6 +100,20 @@ export function FilterBar({
             startDate={startDate}
             endDate={endDate}
             onChange={onDateChange}
+          />
+        </div>
+
+        {/* Tag filter */}
+        <div>
+          <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-500">
+            Tags
+          </h3>
+          <TagFilter
+            availableTags={availableTags}
+            selectedTags={selectedTags}
+            onToggleTag={onToggleTag}
+            onClearTags={onClearTags}
+            isLoading={isLoadingTags}
           />
         </div>
       </div>

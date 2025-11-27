@@ -117,6 +117,7 @@ export interface EventFilters {
   startDate?: string;
   endDate?: string;
   search?: string;
+  tags?: string[];
 }
 
 // Pagination types

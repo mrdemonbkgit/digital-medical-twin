@@ -1,6 +1,7 @@
 import type { Metric, MetricSource } from '@/types';
-import { Input, Select, TextArea, type SelectOption } from '@/components/common';
+import { Input, Select, TextArea, TagInput, type SelectOption } from '@/components/common';
 import { DatePicker } from '@/components/forms';
+import { useUserTags } from '@/hooks/useUserTags';
 
 type MetricFormData = Omit<Metric, 'id' | 'userId' | 'createdAt' | 'updatedAt'>;
 
@@ -19,6 +20,8 @@ const sourceOptions: SelectOption[] = [
 ];
 
 export function MetricForm({ data, onChange, errors }: MetricFormProps) {
+  const { tags: suggestedTags } = useUserTags();
+
   const handleChange = <K extends keyof MetricFormData>(
     field: K,
     value: MetricFormData[K]
@@ -92,6 +95,14 @@ export function MetricForm({ data, onChange, errors }: MetricFormProps) {
         onChange={(e) => handleChange('notes', e.target.value)}
         rows={3}
       />
+
+      <TagInput
+        label="Tags (optional)"
+        tags={data.tags || []}
+        onChange={(tags) => handleChange('tags', tags.length > 0 ? tags : undefined)}
+        suggestions={suggestedTags}
+        placeholder="Add tags like 'morning', 'post-workout', 'fasted'..."
+      />
     </div>
   );
 }
@@ -106,5 +117,6 @@ export function createEmptyMetric(): MetricFormData {
     value: 0,
     unit: '',
     notes: '',
+    tags: undefined,
   };
 }

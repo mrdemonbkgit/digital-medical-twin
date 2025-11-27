@@ -1,6 +1,7 @@
 import type { Medication } from '@/types';
-import { Input, Select, TextArea, type SelectOption } from '@/components/common';
+import { Input, Select, TextArea, TagInput, type SelectOption } from '@/components/common';
 import { DatePicker } from '@/components/forms';
+import { useUserTags } from '@/hooks/useUserTags';
 
 type MedicationFormData = Omit<Medication, 'id' | 'userId' | 'createdAt' | 'updatedAt'>;
 
@@ -23,6 +24,8 @@ const frequencyOptions: SelectOption[] = [
 ];
 
 export function MedicationForm({ data, onChange, errors }: MedicationFormProps) {
+  const { tags: suggestedTags } = useUserTags();
+
   const handleChange = <K extends keyof MedicationFormData>(
     field: K,
     value: MedicationFormData[K]
@@ -148,6 +151,14 @@ export function MedicationForm({ data, onChange, errors }: MedicationFormProps) 
         onChange={(e) => handleChange('notes', e.target.value)}
         rows={3}
       />
+
+      <TagInput
+        label="Tags (optional)"
+        tags={data.tags || []}
+        onChange={(tags) => handleChange('tags', tags.length > 0 ? tags : undefined)}
+        suggestions={suggestedTags}
+        placeholder="Add tags like 'prescription', 'supplement', 'prn'..."
+      />
     </div>
   );
 }
@@ -168,5 +179,6 @@ export function createEmptyMedication(): MedicationFormData {
     isActive: true,
     sideEffects: undefined,
     notes: '',
+    tags: undefined,
   };
 }

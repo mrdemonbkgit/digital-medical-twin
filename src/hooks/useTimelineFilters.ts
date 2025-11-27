@@ -26,11 +26,14 @@ export function useTimelineFilters() {
       EVENT_TYPES.includes(t as EventType)
     ) as EventType[];
 
+    const tagParams = searchParams.getAll('tag');
+
     return {
       eventTypes: validTypes.length > 0 ? validTypes : undefined,
       startDate: searchParams.get('from') || undefined,
       endDate: searchParams.get('to') || undefined,
       search: searchParams.get('q') || undefined,
+      tags: tagParams.length > 0 ? tagParams : undefined,
     };
   }, [searchParams]);
 
@@ -40,7 +43,8 @@ export function useTimelineFilters() {
       filters.eventTypes?.length ||
       filters.startDate ||
       filters.endDate ||
-      filters.search
+      filters.search ||
+      filters.tags?.length
     );
   }, [filters]);
 
@@ -50,6 +54,7 @@ export function useTimelineFilters() {
     if (filters.eventTypes?.length) count += filters.eventTypes.length;
     if (filters.startDate || filters.endDate) count += 1;
     if (filters.search) count += 1;
+    if (filters.tags?.length) count += filters.tags.length;
     return count;
   }, [filters]);
 
@@ -137,6 +142,44 @@ export function useTimelineFilters() {
     );
   }, [setSearchParams]);
 
+  // Toggle tag filter
+  const toggleTag = useCallback(
+    (tag: string) => {
+      setSearchParams(
+        (prev) => {
+          const tags = prev.getAll('tag');
+          const index = tags.indexOf(tag);
+
+          // Clear all tag params first
+          prev.delete('tag');
+
+          if (index === -1) {
+            // Add the tag
+            [...tags, tag].forEach((t) => prev.append('tag', t));
+          } else {
+            // Remove the tag
+            tags.filter((t) => t !== tag).forEach((t) => prev.append('tag', t));
+          }
+
+          return prev;
+        },
+        { replace: true }
+      );
+    },
+    [setSearchParams]
+  );
+
+  // Clear just tag filters
+  const clearTags = useCallback(() => {
+    setSearchParams(
+      (prev) => {
+        prev.delete('tag');
+        return prev;
+      },
+      { replace: true }
+    );
+  }, [setSearchParams]);
+
   return {
     filters,
     hasActiveFilters,
@@ -146,5 +189,7 @@ export function useTimelineFilters() {
     setDateRange,
     clearFilters,
     clearEventTypes,
+    toggleTag,
+    clearTags,
   };
 }

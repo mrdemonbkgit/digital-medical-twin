@@ -1,6 +1,7 @@
 import type { DoctorVisit } from '@/types';
-import { Input, TextArea } from '@/components/common';
+import { Input, TextArea, TagInput } from '@/components/common';
 import { DatePicker } from '@/components/forms';
+import { useUserTags } from '@/hooks/useUserTags';
 
 type DoctorVisitFormData = Omit<DoctorVisit, 'id' | 'userId' | 'createdAt' | 'updatedAt'>;
 
@@ -11,6 +12,8 @@ interface DoctorVisitFormProps {
 }
 
 export function DoctorVisitForm({ data, onChange, errors }: DoctorVisitFormProps) {
+  const { tags: suggestedTags } = useUserTags();
+
   const handleChange = <K extends keyof DoctorVisitFormData>(
     field: K,
     value: DoctorVisitFormData[K]
@@ -91,6 +94,14 @@ export function DoctorVisitForm({ data, onChange, errors }: DoctorVisitFormProps
         onChange={(e) => handleChange('notes', e.target.value)}
         rows={4}
       />
+
+      <TagInput
+        label="Tags (optional)"
+        tags={data.tags || []}
+        onChange={(tags) => handleChange('tags', tags.length > 0 ? tags : undefined)}
+        suggestions={suggestedTags}
+        placeholder="Add tags like 'annual', 'specialist', 'urgent'..."
+      />
     </div>
   );
 }
@@ -106,5 +117,6 @@ export function createEmptyDoctorVisit(): DoctorVisitFormData {
     diagnosis: undefined,
     followUp: undefined,
     notes: '',
+    tags: undefined,
   };
 }

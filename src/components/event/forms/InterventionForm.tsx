@@ -1,6 +1,7 @@
 import type { Intervention, InterventionCategory } from '@/types';
-import { Input, Select, TextArea, type SelectOption } from '@/components/common';
+import { Input, Select, TextArea, TagInput, type SelectOption } from '@/components/common';
 import { DatePicker } from '@/components/forms';
+import { useUserTags } from '@/hooks/useUserTags';
 
 type InterventionFormData = Omit<Intervention, 'id' | 'userId' | 'createdAt' | 'updatedAt'>;
 
@@ -20,6 +21,8 @@ const categoryOptions: SelectOption[] = [
 ];
 
 export function InterventionForm({ data, onChange, errors }: InterventionFormProps) {
+  const { tags: suggestedTags } = useUserTags();
+
   const handleChange = <K extends keyof InterventionFormData>(
     field: K,
     value: InterventionFormData[K]
@@ -118,6 +121,14 @@ export function InterventionForm({ data, onChange, errors }: InterventionFormPro
         onChange={(e) => handleChange('notes', e.target.value)}
         rows={3}
       />
+
+      <TagInput
+        label="Tags (optional)"
+        tags={data.tags || []}
+        onChange={(tags) => handleChange('tags', tags.length > 0 ? tags : undefined)}
+        suggestions={suggestedTags}
+        placeholder="Add tags like 'experiment', 'n=1', 'lifestyle'..."
+      />
     </div>
   );
 }
@@ -135,5 +146,6 @@ export function createEmptyIntervention(): InterventionFormData {
     protocol: undefined,
     isOngoing: true,
     notes: '',
+    tags: undefined,
   };
 }

@@ -181,7 +181,7 @@ async function openaiComplete(
     model,
     input,
     instructions,
-    max_output_tokens: 2000,
+    max_output_tokens: 16000,
     tools: [{ type: 'web_search_preview' }],
     reasoning: {
       effort: reasoningEffort,
@@ -387,7 +387,7 @@ async function geminiComplete(
         systemInstruction: systemInstruction ? { parts: [{ text: systemInstruction }] } : undefined,
         contents,
         generationConfig: {
-          maxOutputTokens: 2000,
+          maxOutputTokens: 16000,
           thinkingConfig: { thinkingLevel },
         },
         tools: [{ googleSearch: {} }],

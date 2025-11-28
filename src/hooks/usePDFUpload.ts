@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
 import { logger } from '@/lib/logger';
 import type { LabResultAttachment } from '@/types/events';
@@ -28,7 +28,6 @@ const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 const ALLOWED_MIME_TYPES = ['application/pdf'];
 
 export function usePDFUpload(): UsePDFUploadReturn {
-  const log = useMemo(() => logger.child('Upload'), []);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [extractionStage, setExtractionStage] = useState<ExtractionStage>('idle');
@@ -48,6 +47,8 @@ export function usePDFUpload(): UsePDFUploadReturn {
   }, []);
 
   const uploadPDF = useCallback(async (file: File): Promise<LabResultAttachment> => {
+    // Create child logger inside callback to capture current correlation IDs
+    const log = logger.child('Upload');
     setError(null);
     setUploadProgress(0);
     setExtractionStage('uploading');

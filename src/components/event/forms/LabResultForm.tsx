@@ -36,7 +36,6 @@ interface ExtractionResponse {
 export function LabResultForm({ data, onChange, errors }: LabResultFormProps) {
   const { tags: suggestedTags } = useUserTags();
   const { startOperation, endOperation } = useCorrelation();
-  const log = logger.child('Extraction');
   const {
     uploadPDF,
     deletePDF,
@@ -110,6 +109,8 @@ export function LabResultForm({ data, onChange, errors }: LabResultFormProps) {
     if (!attachment) return;
 
     startOperation('pdf-extract');
+    // Create child logger inside callback to capture current correlation IDs
+    const log = logger.child('Extraction');
     log.info('Starting extraction process', { storagePath: attachment.storagePath });
     setExtractionStage('fetching_pdf');
     setExtractionError(null);

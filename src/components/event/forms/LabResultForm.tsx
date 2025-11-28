@@ -8,6 +8,7 @@ import { PRESET_OPTIONS, presetToBiomarkers } from '@/lib/biomarkerPresets';
 import { useUserTags, usePDFUpload } from '@/hooks';
 import { supabase } from '@/lib/supabase';
 import { logger } from '@/lib/logger';
+import { getCorrelationHeaders } from '@/lib/api';
 import { useCorrelation } from '@/context/CorrelationContext';
 
 type LabResultFormData = Omit<LabResult, 'id' | 'userId' | 'createdAt' | 'updatedAt'>;
@@ -35,7 +36,7 @@ interface ExtractionResponse {
 
 export function LabResultForm({ data, onChange, errors }: LabResultFormProps) {
   const { tags: suggestedTags } = useUserTags();
-  const { startOperation, endOperation } = useCorrelation();
+  const { sessionId, currentOperationId, startOperation, endOperation } = useCorrelation();
   const {
     uploadPDF,
     deletePDF,
@@ -130,6 +131,7 @@ export function LabResultForm({ data, onChange, errors }: LabResultFormProps) {
           Authorization: `Bearer ${session.access_token}`,
           'Content-Type': 'application/json',
           Accept: 'text/event-stream',
+          ...getCorrelationHeaders(sessionId, currentOperationId),
         },
         body: JSON.stringify({ storagePath: attachment.storagePath }),
       });

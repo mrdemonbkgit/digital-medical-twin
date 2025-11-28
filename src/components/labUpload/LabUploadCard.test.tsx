@@ -36,6 +36,22 @@ const mockUploadComplete: LabUpload = {
   eventId: null,
 };
 
+// Helper to create a processing upload with a recent startedAt (to avoid "stuck" state)
+const createProcessingUpload = (overrides: Partial<LabUpload> = {}): LabUpload => ({
+  ...mockUploadComplete,
+  id: 'upload-2',
+  filename: 'lab-results-processing.pdf',
+  status: 'processing',
+  processingStage: 'extracting_gemini',
+  extractedData: null,
+  verificationPassed: null,
+  corrections: null,
+  completedAt: null,
+  startedAt: new Date(Date.now() - 30000).toISOString(), // 30 seconds ago
+  ...overrides,
+});
+
+// Static reference for backward compatibility - but prefer createProcessingUpload() in tests
 const mockUploadProcessing: LabUpload = {
   ...mockUploadComplete,
   id: 'upload-2',
@@ -46,6 +62,7 @@ const mockUploadProcessing: LabUpload = {
   verificationPassed: null,
   corrections: null,
   completedAt: null,
+  // Note: startedAt inherited from mockUploadComplete may be old
 };
 
 const mockUploadFailed: LabUpload = {
@@ -190,7 +207,7 @@ describe('LabUploadCard', () => {
     it('renders processing badge', () => {
       renderWithRouter(
         <LabUploadCard
-          upload={mockUploadProcessing}
+          upload={createProcessingUpload()}
           onDelete={mockOnDelete}
           onRetry={mockOnRetry}
           onPreview={mockOnPreview}
@@ -203,7 +220,7 @@ describe('LabUploadCard', () => {
     it('shows processing stage message', () => {
       renderWithRouter(
         <LabUploadCard
-          upload={mockUploadProcessing}
+          upload={createProcessingUpload()}
           onDelete={mockOnDelete}
           onRetry={mockOnRetry}
           onPreview={mockOnPreview}
@@ -216,7 +233,7 @@ describe('LabUploadCard', () => {
     it('disables delete button when processing', () => {
       renderWithRouter(
         <LabUploadCard
-          upload={mockUploadProcessing}
+          upload={createProcessingUpload()}
           onDelete={mockOnDelete}
           onRetry={mockOnRetry}
           onPreview={mockOnPreview}
@@ -228,14 +245,9 @@ describe('LabUploadCard', () => {
     });
 
     it('shows verifying GPT stage message', () => {
-      const verifyingUpload = {
-        ...mockUploadProcessing,
-        processingStage: 'verifying_gpt' as const,
-      };
-
       renderWithRouter(
         <LabUploadCard
-          upload={verifyingUpload}
+          upload={createProcessingUpload({ processingStage: 'verifying_gpt' })}
           onDelete={mockOnDelete}
           onRetry={mockOnRetry}
           onPreview={mockOnPreview}

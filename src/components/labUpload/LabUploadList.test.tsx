@@ -1,8 +1,24 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
-import { LabUploadList } from './LabUploadList';
 import type { LabUpload } from '@/types';
+
+// Mock supabase BEFORE importing any components that use it
+vi.mock('@/lib/supabase', () => ({
+  supabase: {
+    auth: {
+      getSession: vi.fn().mockResolvedValue({ data: { session: { access_token: 'test' } }, error: null }),
+    },
+  },
+}));
+
+// Mock CorrelationContext
+vi.mock('@/context/CorrelationContext', () => ({
+  useCorrelation: () => ({
+    sessionId: 'test-session',
+    currentOperationId: 'test-operation',
+  }),
+}));
 
 // Mock hooks
 vi.mock('@/hooks/useLabUploads', () => ({
@@ -18,6 +34,12 @@ vi.mock('@/api/labUploads', () => ({
   getLabUploadPdfUrl: vi.fn().mockResolvedValue('https://example.com/pdf'),
 }));
 
+// Mock lib/api
+vi.mock('@/lib/api', () => ({
+  getCorrelationHeaders: vi.fn().mockReturnValue({}),
+}));
+
+import { LabUploadList } from './LabUploadList';
 import { useLabUploads } from '@/hooks/useLabUploads';
 import { useLabUploadMutation } from '@/hooks/useLabUploadMutation';
 

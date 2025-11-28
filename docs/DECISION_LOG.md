@@ -13,6 +13,7 @@ Record of architectural and design decisions for this project. Search by date or
 ## Table of Contents
 
 - [2025](#2025)
+  - [2025-11-27: Two-stage PDF extraction pipeline](#2025-11-27-two-stage-pdf-extraction-pipeline)
   - [2025-11-27: Server-side AI API keys](#2025-11-27-server-side-ai-api-keys)
   - [2025-11-26: Cloud storage over local-first](#2025-11-26-cloud-storage-over-local-first)
   - [2025-11-26: AI model selection](#2025-11-26-ai-model-selection)
@@ -25,6 +26,40 @@ Record of architectural and design decisions for this project. Search by date or
 ---
 
 ## 2025
+
+### 2025-11-27: Two-stage PDF extraction pipeline
+
+**Context:** Users wanted to upload lab result PDFs and have biomarkers automatically extracted instead of manual entry.
+
+**Options Considered:**
+1. Single-model extraction — One AI model extracts data from PDF
+2. OCR + parsing — Traditional OCR followed by rule-based parsing
+3. Two-stage pipeline — First model extracts, second model verifies
+
+**Decision:** Two-stage AI pipeline (Gemini extraction + GPT verification)
+
+**Rationale:**
+- **Higher accuracy**: Verification pass catches extraction errors
+- **Cross-validation**: Different models may catch different mistakes
+- **Transparency**: Users see corrections made during verification
+- **Confidence scores**: Can flag low-confidence extractions for user review
+
+**Architecture:**
+1. User uploads PDF to Supabase Storage (`lab-pdfs` bucket)
+2. Stage 1: Gemini 3 Pro (thinking: high) extracts all data as structured JSON
+3. Stage 2: GPT-5.1 (reasoning: high) verifies against original PDF, makes corrections
+4. Form auto-populated with verified data
+
+**Consequences:**
+- Higher API costs (two models per extraction)
+- Longer extraction time (~10-15s)
+- Better accuracy than single-model approach
+- Clear correction tracking for user transparency
+- Requires both OpenAI and Google API keys
+
+**Keywords:** `PDF` `extraction` `AI` `Gemini` `GPT` `verification` `lab results`
+
+---
 
 ### 2025-11-27: Server-side AI API keys
 

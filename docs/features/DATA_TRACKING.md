@@ -41,7 +41,7 @@ Comprehensive data tracking for all health event types. Covers the five event ca
 
 ### Purpose
 
-Track bloodwork and lab tests with individual biomarker values. Automatically flag values outside reference ranges.
+Track bloodwork and lab tests with individual biomarker values. Automatically flag values outside reference ranges. Supports PDF upload with AI-powered data extraction.
 
 ### Fields
 
@@ -49,20 +49,67 @@ Track bloodwork and lab tests with individual biomarker values. Automatically fl
 |-------|----------|-------------|
 | date | Yes | Date of blood draw |
 | title | Yes | Test name (e.g., "Annual Bloodwork") |
+| clientName | No | Patient name (from PDF extraction) |
+| clientGender | No | Patient gender (male/female/other) |
+| clientBirthday | No | Patient date of birth |
 | labName | No | Lab facility name |
 | orderingDoctor | No | Doctor who ordered test |
 | biomarkers | Yes (1+) | Array of biomarker readings |
+| attachments | No | PDF attachments (max 1) |
 | notes | No | Additional notes |
+
+### PDF Upload & AI Extraction
+
+Upload lab result PDFs to automatically extract data using a two-stage AI pipeline:
+
+1. **Stage 1 - Extraction:** Gemini 3 Pro (thinking: high) analyzes the PDF and extracts all biomarkers, patient info, and lab metadata
+2. **Stage 2 - Verification:** GPT-5.1 (reasoning: high) verifies the extraction, corrects any errors, and flags issues
+
+| Feature | Description |
+|---------|-------------|
+| Drag & Drop | Drag PDF files or click to upload |
+| Max Size | 10MB per file |
+| Storage | Supabase Storage with RLS |
+| Progress | Shows extraction and verification stages |
+| Corrections | Lists any corrections made during verification |
+
+### Extraction Fields
+
+The AI extracts the following fields from lab PDFs:
+
+| Field | Auto-Extracted |
+|-------|----------------|
+| Patient Name | Yes |
+| Patient Gender | Yes |
+| Patient Birthday | Yes |
+| Lab Name | Yes |
+| Ordering Doctor | Yes |
+| Test Date | Yes |
+| All Biomarkers | Yes (name, value, unit, reference range, flag) |
 
 ### Biomarker Fields
 
 | Field | Required | Description |
 |-------|----------|-------------|
-| name | Yes | Biomarker name (e.g., "LDL Cholesterol") |
+| name | Yes | Biomarker name in English (e.g., "LDL Cholesterol") |
 | value | Yes | Numeric result |
-| unit | Yes | Unit of measurement |
+| unit | Yes | Primary unit of measurement |
+| secondaryValue | No | Alternative value in different unit (e.g., mmol/L equivalent) |
+| secondaryUnit | No | Alternative unit of measurement |
 | referenceMin | No | Lower bound of normal range |
 | referenceMax | No | Upper bound of normal range |
+
+### Biomarker Name Translation
+
+All biomarker names are automatically translated to standard English medical terminology during PDF extraction. This ensures consistency regardless of the source language.
+
+| Source Language | English Standard |
+|-----------------|------------------|
+| Cholesterol toàn phần | Total Cholesterol |
+| Đường huyết | Glucose |
+| Hồng cầu | RBC |
+| Bạch cầu | WBC |
+| Triglycerid | Triglycerides |
 
 ### Common Biomarkers
 

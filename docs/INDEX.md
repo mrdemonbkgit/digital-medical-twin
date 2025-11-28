@@ -133,7 +133,8 @@ Master index for all project documentation. Search here first to find relevant d
 
 ### L
 
-- **lab results**: /docs/features/DATA_TRACKING.md
+- **lab results**: /docs/features/DATA_TRACKING.md#lab-results
+- **lab PDF**: /docs/features/DATA_TRACKING.md#pdf-upload--ai-extraction, /docs/architecture/AI_INTEGRATION.md#lab-result-pdf-extraction
 - **login**: /docs/architecture/AUTH_SYSTEM.md
 
 ### M
@@ -153,6 +154,8 @@ Master index for all project documentation. Search here first to find relevant d
 ### P
 
 - **password**: /docs/architecture/AUTH_SYSTEM.md
+- **PDF upload**: /docs/features/DATA_TRACKING.md#pdf-upload--ai-extraction, /docs/architecture/AI_INTEGRATION.md#lab-result-pdf-extraction
+- **PDF extraction**: /docs/architecture/AI_INTEGRATION.md#lab-result-pdf-extraction
 - **phases**: /docs/ROADMAP.md
 - **planning**: /docs/ROADMAP.md
 - **presets**: /docs/features/DATA_TRACKING.md#biomarker-presets, src/lib/biomarkerPresets.ts

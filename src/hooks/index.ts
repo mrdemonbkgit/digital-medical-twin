@@ -10,3 +10,4 @@ export { useAIChat } from './useAIChat';
 export { useUserTags } from './useUserTags';
 export { useExportEvents } from './useExportEvents';
 export { useImportEvents } from './useImportEvents';
+export { usePDFUpload } from './usePDFUpload';

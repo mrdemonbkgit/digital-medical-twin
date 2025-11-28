@@ -15,6 +15,7 @@ Architecture for the AI Historian feature. Covers RAG implementation, AI provide
 - [RAG Architecture](#rag-architecture)
 - [Supported Models](#supported-models)
 - [API Configuration](#api-configuration)
+- [Lab Result PDF Extraction](#lab-result-pdf-extraction)
 - [Gemini Grounding & Citations](#gemini-grounding--citations)
 - [Activity Timeline](#activity-timeline)
 - [Prompt Engineering](#prompt-engineering)
@@ -150,6 +151,109 @@ interface AIResponse {
   model: string;
 }
 ```
+
+---
+
+## Lab Result PDF Extraction
+
+Two-stage AI pipeline for extracting data from lab result PDFs.
+
+### Architecture
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    PDF Extraction Pipeline                   │
+├─────────────────────────────────────────────────────────────┤
+│  1. PDF Upload → Supabase Storage (lab-pdfs bucket)         │
+│       ↓                                                      │
+│  2. User clicks "Extract Data with AI"                       │
+│       ↓                                                      │
+│  3. Stage 1: Gemini 2.0 Flash                                │
+│     - Receives PDF as base64                                 │
+│     - Extracts all biomarkers, patient info, metadata        │
+│     - Returns structured JSON                                │
+│       ↓                                                      │
+│  4. Stage 2: GPT-4o Verification                             │
+│     - Receives PDF + Stage 1 output                          │
+│     - Verifies extraction accuracy                           │
+│     - Makes corrections if needed                            │
+│     - Returns verified JSON + corrections list               │
+│       ↓                                                      │
+│  5. Form auto-populated with extracted data                  │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### Stage 1: Gemini Extraction
+
+| Property | Value |
+|----------|-------|
+| Model | `gemini-3-pro-preview` |
+| Temperature | 0.1 |
+| Max Output Tokens | 64000 |
+| Thinking Level | `high` |
+| Input | PDF as inline base64 |
+
+**Extracted Fields:**
+- Patient name, gender, birthday
+- Lab name, ordering doctor, test date
+- All biomarkers with values, units, reference ranges, flags
+
+### Stage 2: GPT Verification
+
+| Property | Value |
+|----------|-------|
+| Model | `gpt-5.1` |
+| Reasoning Effort | `high` |
+| Max Output Tokens | 128000 |
+| Input | PDF image + Stage 1 JSON |
+
+**Verification Tasks:**
+- Verify patient information matches PDF
+- Check each biomarker value, unit, and range
+- Correct any extraction errors
+- Determine if values are high/low/normal
+- Return list of corrections made
+
+### API Endpoint
+
+```
+POST /api/ai/extract-lab-results
+Authorization: Bearer <supabase_token>
+Content-Type: application/json
+
+{
+  "storagePath": "user-id/filename.pdf"
+}
+```
+
+### Response Format
+
+```typescript
+interface ExtractionResult {
+  success: boolean;
+  clientName?: string;
+  clientGender?: 'male' | 'female' | 'other';
+  clientBirthday?: string;
+  labName?: string;
+  orderingDoctor?: string;
+  testDate?: string;
+  biomarkers: Biomarker[];
+  extractionConfidence: number;  // 0.7-0.95
+  verificationPassed: boolean;
+  corrections?: string[];  // List of corrections made
+  error?: string;
+}
+```
+
+### Storage
+
+PDFs are stored in Supabase Storage with RLS policies:
+
+| Policy | Rule |
+|--------|------|
+| Upload | User can only upload to their own folder |
+| Read | User can only read their own files |
+| Delete | User can only delete their own files |
 
 ---
 

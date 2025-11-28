@@ -7,3 +7,4 @@ export { Modal, type ModalProps } from './Modal';
 export { Card, CardHeader, CardTitle, CardContent, type CardProps } from './Card';
 export { LoadingSpinner, FullPageSpinner, type LoadingSpinnerProps } from './LoadingSpinner';
 export { ErrorBoundary, withErrorBoundary, type ErrorBoundaryProps } from './ErrorBoundary';
+export { PDFUpload, ExtractionStatus } from './PDFUpload';

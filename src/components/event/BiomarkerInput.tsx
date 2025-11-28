@@ -153,6 +153,36 @@ export function BiomarkerInput({
                 </div>
               </div>
 
+              {/* Secondary value/unit (if available from PDF extraction) */}
+              {(biomarker.secondaryValue !== undefined || biomarker.secondaryUnit) && (
+                <div className="grid gap-3 sm:grid-cols-2">
+                  <div className="grid grid-cols-2 gap-2">
+                    <Input
+                      label="Secondary Value"
+                      type="number"
+                      step="any"
+                      value={biomarker.secondaryValue ?? ''}
+                      onChange={(e) =>
+                        handleChange(
+                          index,
+                          'secondaryValue',
+                          e.target.value ? parseFloat(e.target.value) : undefined as unknown as number
+                        )
+                      }
+                    />
+                    <Input
+                      label="Secondary Unit"
+                      placeholder="e.g., mmol/L"
+                      value={biomarker.secondaryUnit ?? ''}
+                      onChange={(e) => handleChange(index, 'secondaryUnit', e.target.value)}
+                    />
+                  </div>
+                  <p className="text-xs text-gray-500 self-end pb-2">
+                    Alternative unit from lab report
+                  </p>
+                </div>
+              )}
+
               <div className="grid gap-3 sm:grid-cols-2">
                 <Input
                   label="Reference Min (optional)"

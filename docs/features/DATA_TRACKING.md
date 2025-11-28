@@ -70,6 +70,7 @@ Upload lab result PDFs to automatically extract data using a two-stage AI pipeli
 | Drag & Drop | Drag PDF files or click to upload |
 | Max Size | 10MB per file |
 | Storage | Supabase Storage with RLS |
+| Ownership Validation | API validates user owns the file before extraction |
 | Real-time Progress | SSE streaming shows precise extraction stages |
 | Corrections | Lists any corrections made during verification |
 

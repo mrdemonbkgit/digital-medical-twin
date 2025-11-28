@@ -437,7 +437,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
   try {
     const supabase = createSupabaseClient(authHeader);
-    await getUserId(supabase, authHeader);
+    const userId = await getUserId(supabase, authHeader);
 
     const { storagePath } = req.body;
 
@@ -447,6 +447,20 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         return res.end();
       }
       return res.status(400).json({ error: 'storagePath is required' });
+    }
+
+    // SECURITY: Validate storagePath belongs to authenticated user
+    // Storage path format: {userId}/{fileId}.pdf
+    if (!storagePath.startsWith(`${userId}/`)) {
+      console.error('[Extraction] SECURITY: Unauthorized access attempt', {
+        userId,
+        requestedPath: storagePath,
+      });
+      if (acceptsSSE) {
+        sendSSE(res, { type: 'error', error: 'Unauthorized access to file' });
+        return res.end();
+      }
+      return res.status(403).json({ error: 'Unauthorized access to file' });
     }
 
     // Stage 0: Fetch PDF

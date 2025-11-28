@@ -10,8 +10,6 @@ import { supabase } from '@/lib/supabase';
 import { logger } from '@/lib/logger';
 import { useCorrelation } from '@/context/CorrelationContext';
 
-const log = logger.child('Extraction');
-
 type LabResultFormData = Omit<LabResult, 'id' | 'userId' | 'createdAt' | 'updatedAt'>;
 
 interface LabResultFormProps {
@@ -38,6 +36,7 @@ interface ExtractionResponse {
 export function LabResultForm({ data, onChange, errors }: LabResultFormProps) {
   const { tags: suggestedTags } = useUserTags();
   const { startOperation, endOperation } = useCorrelation();
+  const log = logger.child('Extraction');
   const {
     uploadPDF,
     deletePDF,

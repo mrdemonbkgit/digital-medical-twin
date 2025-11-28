@@ -1,9 +1,7 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { supabase } from '@/lib/supabase';
 import { logger } from '@/lib/logger';
 import type { LabResultAttachment } from '@/types/events';
-
-const log = logger.child('Upload');
 
 export type ExtractionStage =
   | 'idle'
@@ -30,6 +28,7 @@ const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
 const ALLOWED_MIME_TYPES = ['application/pdf'];
 
 export function usePDFUpload(): UsePDFUploadReturn {
+  const log = useMemo(() => logger.child('Upload'), []);
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [extractionStage, setExtractionStage] = useState<ExtractionStage>('idle');

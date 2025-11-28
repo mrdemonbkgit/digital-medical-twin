@@ -25,7 +25,7 @@ export class Logger {
     this.config.sessionId = id;
   }
 
-  setOperationId(id: string): void {
+  setOperationId(id: string | undefined): void {
     this.config.operationId = id;
   }
 

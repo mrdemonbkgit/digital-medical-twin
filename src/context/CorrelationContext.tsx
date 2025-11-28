@@ -28,11 +28,9 @@ export function CorrelationProvider({ children }: { children: ReactNode }) {
     logger.setSessionId(sessionId);
   }, [sessionId]);
 
-  // Update operation ID on logger when it changes
+  // Update operation ID on logger when it changes (including clearing it)
   useEffect(() => {
-    if (operationId) {
-      logger.setOperationId(operationId);
-    }
+    logger.setOperationId(operationId ?? undefined);
   }, [operationId]);
 
   const startOperation = useCallback((name: string) => {

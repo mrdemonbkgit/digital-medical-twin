@@ -2,6 +2,7 @@ import { useCallback, useRef, useState } from 'react';
 import { Upload, FileText, X, Loader2, AlertCircle, CheckCircle } from 'lucide-react';
 import { Button } from './Button';
 import type { LabResultAttachment } from '@/types/events';
+import type { ExtractionStage } from '@/hooks/usePDFUpload';
 
 interface PDFUploadProps {
   attachment: LabResultAttachment | null;
@@ -198,33 +199,63 @@ export function PDFUpload({
 
 // Status badge for extraction results
 interface ExtractionStatusProps {
-  isExtracting: boolean;
-  extractionStage?: 'extracting' | 'verifying';
+  extractionStage: ExtractionStage;
   verificationPassed?: boolean;
   corrections?: string[];
+  biomarkerCount?: number;
 }
 
+const stageMessages: Record<ExtractionStage, { text: string; showSpinner: boolean }> = {
+  idle: { text: '', showSpinner: false },
+  uploading: { text: 'Uploading PDF...', showSpinner: true },
+  fetching_pdf: { text: 'Fetching PDF from storage...', showSpinner: true },
+  extracting_gemini: { text: 'Stage 1: Extracting with Gemini 3 Pro...', showSpinner: true },
+  verifying_gpt: { text: 'Stage 2: Verifying with GPT-5.1...', showSpinner: true },
+  complete: { text: 'Extraction complete!', showSpinner: false },
+  error: { text: 'Extraction failed', showSpinner: false },
+};
+
 export function ExtractionStatus({
-  isExtracting,
   extractionStage,
   verificationPassed,
   corrections,
+  biomarkerCount,
 }: ExtractionStatusProps) {
-  if (isExtracting) {
+  // Show progress during active extraction stages
+  if (extractionStage === 'uploading' || extractionStage === 'fetching_pdf' || extractionStage === 'extracting_gemini' || extractionStage === 'verifying_gpt') {
+    const { text, showSpinner } = stageMessages[extractionStage];
     return (
       <div className="flex items-center gap-2 text-sm text-blue-600 bg-blue-50 rounded-lg px-3 py-2">
-        <Loader2 className="h-4 w-4 animate-spin" />
-        {extractionStage === 'extracting' ? 'Extracting data with AI...' : 'Verifying extraction...'}
+        {showSpinner && <Loader2 className="h-4 w-4 animate-spin" />}
+        {text}
       </div>
     );
   }
 
-  if (verificationPassed !== undefined) {
+  // Show error state
+  if (extractionStage === 'error') {
+    return (
+      <div className="flex items-center gap-2 text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">
+        <AlertCircle className="h-4 w-4" />
+        Extraction failed
+      </div>
+    );
+  }
+
+  // Show completion status
+  if (extractionStage === 'complete' || verificationPassed !== undefined) {
     if (verificationPassed && (!corrections || corrections.length === 0)) {
       return (
-        <div className="flex items-center gap-2 text-sm text-green-600 bg-green-50 rounded-lg px-3 py-2">
-          <CheckCircle className="h-4 w-4" />
-          Extraction verified successfully
+        <div className="space-y-1">
+          <div className="flex items-center gap-2 text-sm text-green-600 bg-green-50 rounded-lg px-3 py-2">
+            <CheckCircle className="h-4 w-4" />
+            Extraction verified successfully
+          </div>
+          {biomarkerCount !== undefined && biomarkerCount > 0 && (
+            <p className="text-xs text-gray-500 pl-1">
+              Extracted {biomarkerCount} biomarker{biomarkerCount > 1 ? 's' : ''}
+            </p>
+          )}
         </div>
       );
     }
@@ -236,6 +267,11 @@ export function ExtractionStatus({
             <AlertCircle className="h-4 w-4" />
             Extraction corrected ({corrections.length} fix{corrections.length > 1 ? 'es' : ''})
           </div>
+          {biomarkerCount !== undefined && biomarkerCount > 0 && (
+            <p className="text-xs text-gray-500 pl-1">
+              Extracted {biomarkerCount} biomarker{biomarkerCount > 1 ? 's' : ''}
+            </p>
+          )}
           <ul className="text-xs text-gray-600 list-disc list-inside pl-2">
             {corrections.map((correction, i) => (
               <li key={i}>{correction}</li>

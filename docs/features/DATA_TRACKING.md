@@ -70,8 +70,21 @@ Upload lab result PDFs to automatically extract data using a two-stage AI pipeli
 | Drag & Drop | Drag PDF files or click to upload |
 | Max Size | 10MB per file |
 | Storage | Supabase Storage with RLS |
-| Progress | Shows extraction and verification stages |
+| Real-time Progress | SSE streaming shows precise extraction stages |
 | Corrections | Lists any corrections made during verification |
+
+### Real-time Progress (SSE)
+
+The extraction API uses Server-Sent Events (SSE) for real-time progress updates:
+
+| Stage | Message |
+|-------|---------|
+| `fetching_pdf` | Fetching PDF from storage... |
+| `extracting_gemini` | Stage 1: Extracting with Gemini 3 Pro... |
+| `verifying_gpt` | Stage 2: Verifying with GPT-5.1... |
+| `complete` | Extraction complete! |
+
+The frontend receives precise stage updates as they happen on the server, eliminating any guesswork about progress.
 
 ### Extraction Fields
 

@@ -33,14 +33,23 @@ interface ExtractionResponse {
 
 export function LabResultForm({ data, onChange, errors }: LabResultFormProps) {
   const { tags: suggestedTags } = useUserTags();
-  const { uploadPDF, deletePDF, isUploading, uploadProgress, error: uploadError, clearError } = usePDFUpload();
+  const {
+    uploadPDF,
+    deletePDF,
+    isUploading,
+    uploadProgress,
+    extractionStage,
+    setExtractionStage,
+    error: uploadError,
+    clearError,
+  } = usePDFUpload();
 
   const [attachment, setAttachment] = useState<LabResultAttachment | null>(data.attachments?.[0] || null);
-  const [isExtracting, setIsExtracting] = useState(false);
-  const [extractionStage, setExtractionStage] = useState<'extracting' | 'verifying'>('extracting');
   const [extractionError, setExtractionError] = useState<string | null>(null);
   const [verificationPassed, setVerificationPassed] = useState<boolean | undefined>();
   const [corrections, setCorrections] = useState<string[]>([]);
+
+  const isExtracting = extractionStage === 'extracting_gemini' || extractionStage === 'verifying_gpt';
 
   const handleChange = <K extends keyof LabResultFormData>(
     field: K,
@@ -80,8 +89,10 @@ export function LabResultForm({ data, onChange, errors }: LabResultFormProps) {
     const uploaded = await uploadPDF(file);
     setAttachment(uploaded);
     handleChange('attachments', [uploaded]);
+    // Reset extraction stage after upload completes (before AI extraction)
+    setExtractionStage('idle');
     return uploaded;
-  }, [uploadPDF, clearError]);
+  }, [uploadPDF, clearError, setExtractionStage]);
 
   const handleDelete = useCallback(async (storagePath: string) => {
     await deletePDF(storagePath);
@@ -94,8 +105,8 @@ export function LabResultForm({ data, onChange, errors }: LabResultFormProps) {
   const handleExtract = useCallback(async () => {
     if (!attachment) return;
 
-    setIsExtracting(true);
-    setExtractionStage('extracting');
+    console.log('[Extraction] Starting extraction process with SSE...');
+    setExtractionStage('fetching_pdf');
     setExtractionError(null);
     setVerificationPassed(undefined);
     setCorrections([]);
@@ -106,58 +117,160 @@ export function LabResultForm({ data, onChange, errors }: LabResultFormProps) {
         throw new Error('Not authenticated');
       }
 
-      // Show "Verifying..." after a delay
-      const verifyingTimeout = setTimeout(() => {
-        setExtractionStage('verifying');
-      }, 5000);
-
+      console.log('[Extraction] Calling extraction API with SSE...');
       const response = await fetch('/api/ai/extract-lab-results', {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${session.access_token}`,
           'Content-Type': 'application/json',
+          Accept: 'text/event-stream',
         },
         body: JSON.stringify({ storagePath: attachment.storagePath }),
       });
 
-      clearTimeout(verifyingTimeout);
+      const contentType = response.headers.get('content-type') || '';
+      console.log('[Extraction] Response content-type:', contentType);
+      console.log('[Extraction] Response status:', response.status);
+
+      // Check if we got SSE response
+      const isSSE = contentType.includes('text/event-stream');
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Extraction failed');
+        // Try to parse error as JSON, fallback to text
+        let errorMessage = 'Extraction failed';
+        const responseText = await response.text();
+        console.error('[Extraction] API error response:', responseText.substring(0, 500));
+
+        try {
+          const errorData = JSON.parse(responseText);
+          errorMessage = errorData.error || errorMessage;
+        } catch {
+          errorMessage = responseText || `HTTP ${response.status}`;
+        }
+        throw new Error(errorMessage);
       }
 
-      const result: ExtractionResponse = await response.json();
+      // If not SSE, handle as regular JSON response (fallback)
+      if (!isSSE) {
+        console.log('[Extraction] Falling back to JSON response mode');
+        const result: ExtractionResponse = await response.json();
 
-      if (!result.success) {
-        throw new Error(result.error || 'Extraction failed');
+        if (!result.success) {
+          throw new Error(result.error || 'Extraction failed');
+        }
+
+        // Update form with extracted data
+        const updates: Partial<LabResultFormData> = {};
+        if (result.clientName) updates.clientName = result.clientName;
+        if (result.clientGender) updates.clientGender = result.clientGender;
+        if (result.clientBirthday) updates.clientBirthday = result.clientBirthday;
+        if (result.labName) updates.labName = result.labName;
+        if (result.orderingDoctor) updates.orderingDoctor = result.orderingDoctor;
+        if (result.testDate) updates.date = result.testDate;
+        if (result.biomarkers && result.biomarkers.length > 0) {
+          updates.biomarkers = result.biomarkers;
+        }
+        if (!data.title && result.labName) {
+          updates.title = `Lab Results - ${result.labName}`;
+        }
+
+        onChange({ ...data, ...updates });
+        setVerificationPassed(result.verificationPassed);
+        setCorrections(result.corrections || []);
+        setExtractionStage('complete');
+        console.log('[Extraction] Extraction complete (JSON mode)!');
+        return;
       }
 
-      // Update form with extracted data
-      const updates: Partial<LabResultFormData> = {};
-
-      if (result.clientName) updates.clientName = result.clientName;
-      if (result.clientGender) updates.clientGender = result.clientGender;
-      if (result.clientBirthday) updates.clientBirthday = result.clientBirthday;
-      if (result.labName) updates.labName = result.labName;
-      if (result.orderingDoctor) updates.orderingDoctor = result.orderingDoctor;
-      if (result.testDate) updates.date = result.testDate;
-      if (result.biomarkers && result.biomarkers.length > 0) {
-        updates.biomarkers = result.biomarkers;
-      }
-      if (!data.title && result.labName) {
-        updates.title = `Lab Results - ${result.labName}`;
+      // Read SSE stream
+      const reader = response.body?.getReader();
+      if (!reader) {
+        throw new Error('Failed to get response reader');
       }
 
-      onChange({ ...data, ...updates });
-      setVerificationPassed(result.verificationPassed);
-      setCorrections(result.corrections || []);
+      const decoder = new TextDecoder();
+      let buffer = '';
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+
+        buffer += decoder.decode(value, { stream: true });
+
+        // Process complete SSE messages
+        const lines = buffer.split('\n');
+        buffer = lines.pop() || ''; // Keep incomplete line in buffer
+
+        for (const line of lines) {
+          if (line.startsWith('data: ')) {
+            const jsonStr = line.slice(6);
+            try {
+              const event = JSON.parse(jsonStr);
+              console.log('[Extraction] SSE event:', event);
+
+              if (event.type === 'stage') {
+                // Update extraction stage based on server event
+                if (event.stage === 'fetching_pdf') {
+                  setExtractionStage('fetching_pdf');
+                } else if (event.stage === 'extracting_gemini') {
+                  setExtractionStage('extracting_gemini');
+                } else if (event.stage === 'verifying_gpt') {
+                  setExtractionStage('verifying_gpt');
+                }
+              } else if (event.type === 'complete') {
+                const result: ExtractionResponse = event.data;
+                console.log('[Extraction] API response received:', {
+                  success: result.success,
+                  biomarkerCount: result.biomarkers?.length,
+                  verificationPassed: result.verificationPassed,
+                  correctionsCount: result.corrections?.length || 0,
+                });
+
+                if (!result.success) {
+                  throw new Error(result.error || 'Extraction failed');
+                }
+
+                // Update form with extracted data
+                const updates: Partial<LabResultFormData> = {};
+
+                if (result.clientName) updates.clientName = result.clientName;
+                if (result.clientGender) updates.clientGender = result.clientGender;
+                if (result.clientBirthday) updates.clientBirthday = result.clientBirthday;
+                if (result.labName) updates.labName = result.labName;
+                if (result.orderingDoctor) updates.orderingDoctor = result.orderingDoctor;
+                if (result.testDate) updates.date = result.testDate;
+                if (result.biomarkers && result.biomarkers.length > 0) {
+                  updates.biomarkers = result.biomarkers;
+                }
+                if (!data.title && result.labName) {
+                  updates.title = `Lab Results - ${result.labName}`;
+                }
+
+                onChange({ ...data, ...updates });
+                setVerificationPassed(result.verificationPassed);
+                setCorrections(result.corrections || []);
+                setExtractionStage('complete');
+                console.log('[Extraction] Extraction complete!');
+              } else if (event.type === 'error') {
+                throw new Error(event.error || 'Extraction failed');
+              }
+            } catch (parseErr) {
+              // Only throw if it's not a JSON parse error
+              if (parseErr instanceof SyntaxError) {
+                console.warn('[Extraction] Failed to parse SSE data:', jsonStr);
+              } else {
+                throw parseErr;
+              }
+            }
+          }
+        }
+      }
     } catch (err) {
+      console.error('[Extraction] Error:', err);
       setExtractionError(err instanceof Error ? err.message : 'Extraction failed');
-    } finally {
-      setIsExtracting(false);
+      setExtractionStage('error');
     }
-  }, [attachment, data, onChange]);
+  }, [attachment, data, onChange, setExtractionStage]);
 
   const genderOptions = [
     { value: 'male', label: 'Male' },
@@ -196,10 +309,10 @@ export function LabResultForm({ data, onChange, errors }: LabResultFormProps) {
         )}
 
         <ExtractionStatus
-          isExtracting={isExtracting}
           extractionStage={extractionStage}
           verificationPassed={verificationPassed}
           corrections={corrections}
+          biomarkerCount={data.biomarkers.length}
         />
 
         {extractionError && (

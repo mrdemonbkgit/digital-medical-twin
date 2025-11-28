@@ -204,41 +204,61 @@ async function verifyWithGPT(
     2
   );
 
-  const prompt = `You are verifying a lab result extraction. Compare the extracted JSON data against the original PDF.
+  const prompt = `You are verifying a lab result extraction. I'm providing you with:
 
-EXTRACTED DATA:
+1. **The original lab result PDF** (attached as a file)
+2. **The extracted data from another AI model** (shown below as JSON)
+
+## Extracted Data to Verify:
+\`\`\`json
 ${extractedJson}
+\`\`\`
 
-Review the extraction for accuracy:
-1. Verify patient name, gender, and birthday match the PDF exactly
-2. Verify lab name and ordering doctor match
-3. Check test date is correct
-4. For EACH biomarker, verify:
-   - Name is in standard English medical terminology (translate if needed, e.g., "Cholesterol toàn phần" → "Total Cholesterol")
-   - Value is exactly correct (check decimal points)
-   - Unit is correct (keep original from PDF)
-   - Secondary value/unit captured if PDF shows alternative units
-   - Reference range is correct
-   - Flag (high/low/normal) is correct based on value vs range
+## Your Task:
+Carefully compare the extracted JSON above against the original PDF and verify accuracy.
 
-Return ONLY valid JSON (no markdown) in this format:
+## Verification Checklist:
+1. Patient name, gender, and birthday - must match PDF exactly
+2. Lab name and ordering doctor - must match PDF
+3. Test date - must be correct
+4. For EACH biomarker in the JSON, verify against the PDF:
+   - Name: Must be in standard English medical terminology (translate if needed, e.g., "Cholesterol toàn phần" → "Total Cholesterol", "Đường huyết" → "Glucose")
+   - Value: Must be exactly correct (check decimal points carefully)
+   - Unit: Must match the primary unit shown in PDF
+   - Secondary value/unit: If PDF shows values in multiple units (e.g., both mg/dL and mmol/L), these should be captured
+   - Reference range: Min and max values must match PDF
+   - Flag: Must be correct (high/low/normal) based on value vs reference range
+
+## Response Format:
+Return ONLY valid JSON (no markdown code blocks) with the corrected/verified data:
 {
-  "clientName": "corrected or same",
+  "clientName": "verified or corrected value",
   "clientGender": "male" or "female" or "other",
   "clientBirthday": "YYYY-MM-DD",
-  "labName": "corrected or same",
-  "orderingDoctor": "corrected or same",
+  "labName": "verified or corrected value",
+  "orderingDoctor": "verified or corrected value",
   "testDate": "YYYY-MM-DD",
-  "biomarkers": [...corrected array with English names, original units, and secondary values if present...],
-  "corrections": ["Description of correction 1", "Description of correction 2"],
-  "verificationPassed": true or false
+  "biomarkers": [
+    {
+      "name": "English name",
+      "value": 123.4,
+      "unit": "original unit from PDF",
+      "secondaryValue": 6.8,
+      "secondaryUnit": "alternative unit if shown",
+      "referenceMin": 0,
+      "referenceMax": 100,
+      "flag": "high" or "low" or "normal"
+    }
+  ],
+  "corrections": ["List each correction made, e.g., 'Fixed Glucose value from 95 to 96'"],
+  "verificationPassed": true
 }
 
-If biomarker names are not in English, translate them to standard medical terminology.
-Keep original units from PDF. Include secondary value/unit if PDF shows alternative units.
-If extraction is accurate, set corrections to empty array and verificationPassed to true.
-If you made corrections, list them and set verificationPassed to true (since now corrected).
-Only set verificationPassed to false if the PDF is unreadable or data cannot be verified.`;
+## Important:
+- If extraction is accurate, set corrections to empty array []
+- If you made corrections, list each one clearly in the corrections array
+- Set verificationPassed to true if data is now accurate (even if corrections were needed)
+- Only set verificationPassed to false if the PDF is unreadable or data cannot be verified`;
 
   try {
     const response = await fetch('https://api.openai.com/v1/responses', {
@@ -253,11 +273,12 @@ Only set verificationPassed to false if the PDF is unreadable or data cannot be 
           {
             role: 'user',
             content: [
-              { type: 'input_text', text: prompt },
               {
-                type: 'input_image',
-                image_url: `data:application/pdf;base64,${pdfBase64}`,
+                type: 'input_file',
+                filename: 'lab-result.pdf',
+                file_data: `data:application/pdf;base64,${pdfBase64}`,
               },
+              { type: 'input_text', text: prompt },
             ],
           },
         ],
@@ -271,12 +292,21 @@ Only set verificationPassed to false if the PDF is unreadable or data cannot be 
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('OpenAI API error:', errorText);
+      console.error('OpenAI API error:', response.status, errorText);
       // Return unverified if GPT fails
       return extractedData;
     }
 
-    const data = await response.json();
+    const responseText = await response.text();
+    console.log('GPT raw response length:', responseText.length);
+
+    let data;
+    try {
+      data = JSON.parse(responseText);
+    } catch (parseErr) {
+      console.error('Failed to parse GPT response as JSON:', responseText.substring(0, 500));
+      return extractedData;
+    }
 
     // Extract content from Responses API format
     const content = data.output
@@ -286,6 +316,13 @@ Only set verificationPassed to false if the PDF is unreadable or data cannot be 
       ?.map((part: { text?: string }) => part.text)
       ?.join('') || '';
 
+    if (!content) {
+      console.error('No content extracted from GPT response:', JSON.stringify(data, null, 2).substring(0, 1000));
+      return extractedData;
+    }
+
+    console.log('GPT extracted content length:', content.length);
+
     // Parse JSON from response
     let jsonStr = content.trim();
     if (jsonStr.startsWith('```json')) {
@@ -294,7 +331,13 @@ Only set verificationPassed to false if the PDF is unreadable or data cannot be 
       jsonStr = jsonStr.replace(/^```\n?/, '').replace(/\n?```$/, '');
     }
 
-    const verified = JSON.parse(jsonStr);
+    let verified;
+    try {
+      verified = JSON.parse(jsonStr);
+    } catch (parseErr) {
+      console.error('Failed to parse GPT content as JSON:', jsonStr.substring(0, 500));
+      return extractedData;
+    }
 
     return {
       success: true,
@@ -332,26 +375,65 @@ async function fetchPDFAsBase64(
   return base64;
 }
 
+// SSE event types
+type SSEEventType = 'stage' | 'complete' | 'error';
+
+interface SSEEvent {
+  type: SSEEventType;
+  stage?: 'fetching_pdf' | 'extracting_gemini' | 'verifying_gpt';
+  data?: ExtractionResult;
+  error?: string;
+  biomarkerCount?: number;
+}
+
+function sendSSE(res: VercelResponse, event: SSEEvent) {
+  res.write(`data: ${JSON.stringify(event)}\n\n`);
+}
+
 export default async function handler(req: VercelRequest, res: VercelResponse) {
+  console.log('[Extraction] Request received');
+  console.log('[Extraction] Method:', req.method);
+  console.log('[Extraction] Accept header:', req.headers.accept);
+
   // CORS headers
   const allowedOrigin = getAllowedOrigin(req);
   res.setHeader('Access-Control-Allow-Credentials', 'true');
   res.setHeader('Access-Control-Allow-Origin', allowedOrigin);
   res.setHeader('Access-Control-Allow-Methods', 'POST,OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Authorization, Content-Type');
+  res.setHeader('Access-Control-Allow-Headers', 'Authorization, Content-Type, Accept');
 
   if (req.method === 'OPTIONS') {
+    console.log('[Extraction] Handling OPTIONS preflight');
     return res.status(200).end();
   }
 
   if (req.method !== 'POST') {
+    console.log('[Extraction] Method not allowed:', req.method);
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
   const authHeader = req.headers.authorization;
   if (!authHeader) {
+    console.log('[Extraction] No authorization header');
     return res.status(401).json({ error: 'Authorization required' });
   }
+
+  // Check if client wants SSE (streaming)
+  const acceptsSSE = req.headers.accept?.includes('text/event-stream');
+  console.log('[Extraction] SSE requested:', acceptsSSE);
+
+  if (acceptsSSE) {
+    // Set SSE headers
+    res.setHeader('Content-Type', 'text/event-stream');
+    res.setHeader('Cache-Control', 'no-cache');
+    res.setHeader('Connection', 'keep-alive');
+    res.status(200);
+  }
+
+  const startTime = Date.now();
+  console.log('[Extraction] ========================================');
+  console.log('[Extraction] Starting lab result extraction');
+  console.log('[Extraction] SSE mode:', acceptsSSE);
 
   try {
     const supabase = createSupabaseClient(authHeader);
@@ -360,31 +442,103 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const { storagePath } = req.body;
 
     if (!storagePath) {
+      if (acceptsSSE) {
+        sendSSE(res, { type: 'error', error: 'storagePath is required' });
+        return res.end();
+      }
       return res.status(400).json({ error: 'storagePath is required' });
     }
 
     // Stage 0: Fetch PDF
-    console.log('Fetching PDF from storage...');
+    console.log('[Extraction] Storage path:', storagePath);
+    console.log('[Extraction] Fetching PDF from Supabase Storage...');
+    if (acceptsSSE) {
+      sendSSE(res, { type: 'stage', stage: 'fetching_pdf' });
+    }
+    const fetchStart = Date.now();
     const pdfBase64 = await fetchPDFAsBase64(supabase, storagePath);
+    const pdfSizeKB = (pdfBase64.length * 0.75 / 1024).toFixed(1);
+    console.log(`[Extraction] PDF fetched: ${pdfSizeKB} KB (${Date.now() - fetchStart}ms)`);
 
     // Stage 1: Extract with Gemini
-    console.log('Stage 1: Extracting with Gemini...');
+    console.log('[Extraction] ----------------------------------------');
+    console.log('[Extraction] Stage 1: Sending to Gemini 3 Pro (thinking: high)...');
+    if (acceptsSSE) {
+      sendSSE(res, { type: 'stage', stage: 'extracting_gemini' });
+    }
+    const stage1Start = Date.now();
     const extractedData = await extractWithGemini(pdfBase64);
+    const stage1Duration = Date.now() - stage1Start;
+    console.log(`[Extraction] Stage 1 complete: ${stage1Duration}ms`);
 
     if (!extractedData.success) {
+      console.log('[Extraction] Stage 1 FAILED - extraction unsuccessful');
+      if (acceptsSSE) {
+        sendSSE(res, { type: 'error', error: 'Extraction failed' });
+        return res.end();
+      }
       return res.status(500).json({
         success: false,
         error: 'Extraction failed',
       });
     }
 
-    // Stage 2: Verify with GPT
-    console.log('Stage 2: Verifying with GPT...');
-    const verifiedData = await verifyWithGPT(pdfBase64, extractedData);
+    console.log(`[Extraction] Stage 1 results:`);
+    console.log(`[Extraction]   - Client: ${extractedData.clientName || 'N/A'}`);
+    console.log(`[Extraction]   - Lab: ${extractedData.labName || 'N/A'}`);
+    console.log(`[Extraction]   - Test date: ${extractedData.testDate || 'N/A'}`);
+    console.log(`[Extraction]   - Biomarkers extracted: ${extractedData.biomarkers.length}`);
 
+    // Stage 2: Verify with GPT
+    console.log('[Extraction] ----------------------------------------');
+    console.log('[Extraction] Stage 2: Sending to GPT-5.1 for verification (reasoning: high)...');
+    if (acceptsSSE) {
+      sendSSE(res, { type: 'stage', stage: 'verifying_gpt', biomarkerCount: extractedData.biomarkers.length });
+    }
+    const stage2Start = Date.now();
+    const verifiedData = await verifyWithGPT(pdfBase64, extractedData);
+    const stage2Duration = Date.now() - stage2Start;
+    console.log(`[Extraction] Stage 2 complete: ${stage2Duration}ms`);
+
+    const correctionsCount = verifiedData.corrections?.length || 0;
+    console.log(`[Extraction] Stage 2 results:`);
+    console.log(`[Extraction]   - Verification passed: ${verifiedData.verificationPassed}`);
+    console.log(`[Extraction]   - Corrections made: ${correctionsCount}`);
+    if (correctionsCount > 0) {
+      verifiedData.corrections?.forEach((c, i) => {
+        console.log(`[Extraction]     ${i + 1}. ${c}`);
+      });
+    }
+    console.log(`[Extraction]   - Final biomarker count: ${verifiedData.biomarkers.length}`);
+    console.log(`[Extraction]   - Confidence: ${(verifiedData.extractionConfidence * 100).toFixed(0)}%`);
+
+    // Summary
+    const totalTime = Date.now() - startTime;
+    console.log('[Extraction] ========================================');
+    console.log(`[Extraction] COMPLETE - Total time: ${totalTime}ms`);
+    console.log(`[Extraction]   - PDF fetch: ${Date.now() - fetchStart - stage1Duration - stage2Duration}ms`);
+    console.log(`[Extraction]   - Stage 1 (Gemini): ${stage1Duration}ms`);
+    console.log(`[Extraction]   - Stage 2 (GPT): ${stage2Duration}ms`);
+    console.log('[Extraction] ========================================');
+
+    if (acceptsSSE) {
+      sendSSE(res, { type: 'complete', data: verifiedData });
+      return res.end();
+    }
     return res.status(200).json(verifiedData);
   } catch (error) {
-    console.error('Lab result extraction error:', error);
+    const totalTime = Date.now() - startTime;
+    console.error('[Extraction] ========================================');
+    console.error(`[Extraction] FAILED after ${totalTime}ms`);
+    console.error('[Extraction] Error:', error);
+    console.error('[Extraction] ========================================');
+
+    const errorMessage = error instanceof Error ? error.message : 'Extraction failed';
+
+    if (acceptsSSE) {
+      sendSSE(res, { type: 'error', error: errorMessage });
+      return res.end();
+    }
 
     if (error instanceof Error && error.message === 'Unauthorized') {
       return res.status(401).json({ error: 'Unauthorized' });
@@ -392,7 +546,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     return res.status(500).json({
       success: false,
-      error: error instanceof Error ? error.message : 'Extraction failed',
+      error: errorMessage,
     });
   }
 }

@@ -2,13 +2,25 @@ import { useState, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
 import type { LabResultAttachment } from '@/types/events';
 
+export type ExtractionStage =
+  | 'idle'
+  | 'uploading'
+  | 'fetching_pdf'
+  | 'extracting_gemini'
+  | 'verifying_gpt'
+  | 'complete'
+  | 'error';
+
 interface UsePDFUploadReturn {
   uploadPDF: (file: File) => Promise<LabResultAttachment>;
   deletePDF: (storagePath: string) => Promise<void>;
   isUploading: boolean;
   uploadProgress: number;
+  extractionStage: ExtractionStage;
   error: string | null;
   clearError: () => void;
+  resetExtractionStage: () => void;
+  setExtractionStage: (stage: ExtractionStage) => void;
 }
 
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
@@ -17,20 +29,33 @@ const ALLOWED_MIME_TYPES = ['application/pdf'];
 export function usePDFUpload(): UsePDFUploadReturn {
   const [isUploading, setIsUploading] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
+  const [extractionStage, setExtractionStage] = useState<ExtractionStage>('idle');
   const [error, setError] = useState<string | null>(null);
 
   const clearError = useCallback(() => {
     setError(null);
   }, []);
 
+  const resetExtractionStage = useCallback(() => {
+    setExtractionStage('idle');
+  }, []);
+
+  // Expose setExtractionStage for use by form components
+  const updateExtractionStage = useCallback((stage: ExtractionStage) => {
+    setExtractionStage(stage);
+  }, []);
+
   const uploadPDF = useCallback(async (file: File): Promise<LabResultAttachment> => {
     setError(null);
     setUploadProgress(0);
+    setExtractionStage('uploading');
+    console.log('[Upload] Starting PDF upload:', file.name);
 
     // Validate file type
     if (!ALLOWED_MIME_TYPES.includes(file.type)) {
       const err = 'Only PDF files are allowed';
       setError(err);
+      setExtractionStage('error');
       throw new Error(err);
     }
 
@@ -38,6 +63,7 @@ export function usePDFUpload(): UsePDFUploadReturn {
     if (file.size > MAX_FILE_SIZE) {
       const err = 'File size must be less than 10MB';
       setError(err);
+      setExtractionStage('error');
       throw new Error(err);
     }
 
@@ -50,6 +76,7 @@ export function usePDFUpload(): UsePDFUploadReturn {
     if (authError || !user) {
       const err = 'You must be logged in to upload files';
       setError(err);
+      setExtractionStage('error');
       throw new Error(err);
     }
 
@@ -77,6 +104,7 @@ export function usePDFUpload(): UsePDFUploadReturn {
       }
 
       setUploadProgress(70);
+      console.log('[Upload] PDF uploaded to storage, generating signed URL...');
 
       // Get signed URL for viewing (valid for 1 hour)
       const { data: urlData, error: urlError } = await supabase.storage
@@ -88,6 +116,7 @@ export function usePDFUpload(): UsePDFUploadReturn {
       }
 
       setUploadProgress(100);
+      console.log('[Upload] Upload complete, signed URL generated');
 
       const attachment: LabResultAttachment = {
         id: fileId,
@@ -101,6 +130,8 @@ export function usePDFUpload(): UsePDFUploadReturn {
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to upload file';
       setError(message);
+      setExtractionStage('error');
+      console.error('[Upload] Upload failed:', message);
       throw err;
     } finally {
       setIsUploading(false);
@@ -130,7 +161,11 @@ export function usePDFUpload(): UsePDFUploadReturn {
     deletePDF,
     isUploading,
     uploadProgress,
+    extractionStage,
     error,
     clearError,
+    resetExtractionStage,
+    // Expose stage updater for form components to call during extraction
+    setExtractionStage: updateExtractionStage,
   };
 }

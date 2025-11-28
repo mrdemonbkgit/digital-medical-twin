@@ -17,6 +17,16 @@ export default defineConfig({
       '/api': {
         target: 'http://localhost:3001',
         changeOrigin: true,
+        // Required for SSE to work properly
+        configure: (proxy) => {
+          proxy.on('proxyRes', (proxyRes) => {
+            // Don't buffer SSE responses
+            if (proxyRes.headers['content-type']?.includes('text/event-stream')) {
+              proxyRes.headers['cache-control'] = 'no-cache';
+              proxyRes.headers['connection'] = 'keep-alive';
+            }
+          });
+        },
       },
     },
   },

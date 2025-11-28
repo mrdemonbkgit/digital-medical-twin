@@ -49,6 +49,7 @@ Master index for all project documentation. Search here first to find relevant d
 | Event types | /docs/features/DATA_TRACKING.md | Full doc |
 | AI Historian | /docs/features/AI_HISTORIAN.md | Full doc |
 | Coding conventions | /docs/development/CODING_STANDARDS.md | Full doc |
+| Logging system | /docs/development/LOGGING.md | Full doc |
 | Component patterns | /docs/development/COMPONENT_LIBRARY.md | Full doc |
 | State management | /docs/development/STATE_MANAGEMENT.md | Full doc |
 | API specs | /docs/development/API_CONTRACTS.md | Full doc |
@@ -89,6 +90,7 @@ Master index for all project documentation. Search here first to find relevant d
 - **cloud**: /docs/architecture/DATABASE_SCHEMA.md
 - **coding standards**: /docs/development/CODING_STANDARDS.md
 - **components**: /docs/development/COMPONENT_LIBRARY.md
+- **correlation**: /docs/development/LOGGING.md#correlation-ids
 
 ### D
 
@@ -135,6 +137,8 @@ Master index for all project documentation. Search here first to find relevant d
 
 - **lab results**: /docs/features/DATA_TRACKING.md#lab-results
 - **lab PDF**: /docs/features/DATA_TRACKING.md#pdf-upload--ai-extraction, /docs/architecture/AI_INTEGRATION.md#lab-result-pdf-extraction
+- **logger**: /docs/development/LOGGING.md
+- **logging**: /docs/development/LOGGING.md
 - **login**: /docs/architecture/AUTH_SYSTEM.md
 
 ### M
@@ -174,6 +178,7 @@ Master index for all project documentation. Search here first to find relevant d
 
 - **schema**: /docs/architecture/DATABASE_SCHEMA.md
 - **security**: /docs/SECURITY.md
+- **sentry**: /docs/development/LOGGING.md
 - **seed data**: src/utils/seedEvents.ts
 - **server-side API keys**: /docs/architecture/AI_INTEGRATION.md#server-side-api-keys
 - **serverless**: /docs/DECISION_LOG.md#2025-11-26-ai-api-architecture

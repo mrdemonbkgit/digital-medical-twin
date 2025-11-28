@@ -1,6 +1,9 @@
 import { useState, useCallback } from 'react';
 import { supabase } from '@/lib/supabase';
+import { logger } from '@/lib/logger';
 import type { LabResultAttachment } from '@/types/events';
+
+const log = logger.child('Upload');
 
 export type ExtractionStage =
   | 'idle'
@@ -49,7 +52,7 @@ export function usePDFUpload(): UsePDFUploadReturn {
     setError(null);
     setUploadProgress(0);
     setExtractionStage('uploading');
-    console.log('[Upload] Starting PDF upload:', file.name);
+    log.info('Starting PDF upload', { fileName: file.name, fileSize: file.size });
 
     // Validate file type
     if (!ALLOWED_MIME_TYPES.includes(file.type)) {
@@ -104,7 +107,7 @@ export function usePDFUpload(): UsePDFUploadReturn {
       }
 
       setUploadProgress(70);
-      console.log('[Upload] PDF uploaded to storage, generating signed URL...');
+      log.debug('PDF uploaded to storage, generating signed URL', { storagePath });
 
       // Get signed URL for viewing (valid for 1 hour)
       const { data: urlData, error: urlError } = await supabase.storage
@@ -116,7 +119,7 @@ export function usePDFUpload(): UsePDFUploadReturn {
       }
 
       setUploadProgress(100);
-      console.log('[Upload] Upload complete, signed URL generated');
+      log.info('Upload complete', { storagePath, fileName: file.name });
 
       const attachment: LabResultAttachment = {
         id: fileId,
@@ -131,7 +134,7 @@ export function usePDFUpload(): UsePDFUploadReturn {
       const message = err instanceof Error ? err.message : 'Failed to upload file';
       setError(message);
       setExtractionStage('error');
-      console.error('[Upload] Upload failed:', message);
+      log.error('Upload failed', err, { fileName: file.name });
       throw err;
     } finally {
       setIsUploading(false);

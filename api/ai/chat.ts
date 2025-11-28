@@ -1,5 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { createClient } from '@supabase/supabase-js';
+import { withLogger, LoggedRequest } from '../lib/logger/withLogger.js';
 
 // Types
 interface ProviderMessage {
@@ -562,7 +563,9 @@ function getAllowedOrigin(req: VercelRequest): string {
   return allowedOrigins[0]; // Default to production URL
 }
 
-export default async function handler(req: VercelRequest, res: VercelResponse) {
+async function handler(req: LoggedRequest, res: VercelResponse) {
+  const log = req.log.child('Chat');
+
   // CORS headers - restrict to allowed origins
   const allowedOrigin = getAllowedOrigin(req);
   res.setHeader('Access-Control-Allow-Credentials', 'true');
@@ -698,12 +701,9 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       elapsedTime,
     });
   } catch (error) {
-    console.error('AI Chat API error:', error);
+    log.error('Chat request failed', error);
 
     if (error instanceof Error) {
-      console.error('Error message:', error.message);
-      console.error('Error stack:', error.stack);
-
       if (error.message === 'Unauthorized') {
         return res.status(401).json({ error: 'Unauthorized' });
       }
@@ -718,3 +718,5 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(500).json({ error: 'Internal server error' });
   }
 }
+
+export default withLogger(handler);

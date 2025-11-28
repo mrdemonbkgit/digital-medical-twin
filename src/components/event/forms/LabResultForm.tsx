@@ -7,6 +7,10 @@ import { BiomarkerInput } from '../BiomarkerInput';
 import { PRESET_OPTIONS, presetToBiomarkers } from '@/lib/biomarkerPresets';
 import { useUserTags, usePDFUpload } from '@/hooks';
 import { supabase } from '@/lib/supabase';
+import { logger } from '@/lib/logger';
+import { useCorrelation } from '@/context/CorrelationContext';
+
+const log = logger.child('Extraction');
 
 type LabResultFormData = Omit<LabResult, 'id' | 'userId' | 'createdAt' | 'updatedAt'>;
 
@@ -33,6 +37,7 @@ interface ExtractionResponse {
 
 export function LabResultForm({ data, onChange, errors }: LabResultFormProps) {
   const { tags: suggestedTags } = useUserTags();
+  const { startOperation, endOperation } = useCorrelation();
   const {
     uploadPDF,
     deletePDF,
@@ -105,7 +110,8 @@ export function LabResultForm({ data, onChange, errors }: LabResultFormProps) {
   const handleExtract = useCallback(async () => {
     if (!attachment) return;
 
-    console.log('[Extraction] Starting extraction process with SSE...');
+    startOperation('pdf-extract');
+    log.info('Starting extraction process', { storagePath: attachment.storagePath });
     setExtractionStage('fetching_pdf');
     setExtractionError(null);
     setVerificationPassed(undefined);
@@ -117,7 +123,7 @@ export function LabResultForm({ data, onChange, errors }: LabResultFormProps) {
         throw new Error('Not authenticated');
       }
 
-      console.log('[Extraction] Calling extraction API with SSE...');
+      log.debug('Calling extraction API with SSE');
       const response = await fetch('/api/ai/extract-lab-results', {
         method: 'POST',
         headers: {
@@ -129,8 +135,7 @@ export function LabResultForm({ data, onChange, errors }: LabResultFormProps) {
       });
 
       const contentType = response.headers.get('content-type') || '';
-      console.log('[Extraction] Response content-type:', contentType);
-      console.log('[Extraction] Response status:', response.status);
+      log.debug('API response received', { contentType, status: response.status });
 
       // Check if we got SSE response
       const isSSE = contentType.includes('text/event-stream');
@@ -139,7 +144,7 @@ export function LabResultForm({ data, onChange, errors }: LabResultFormProps) {
         // Try to parse error as JSON, fallback to text
         let errorMessage = 'Extraction failed';
         const responseText = await response.text();
-        console.error('[Extraction] API error response:', responseText.substring(0, 500));
+        log.error('API error response', undefined, { responseText: responseText.substring(0, 500) });
 
         try {
           const errorData = JSON.parse(responseText);
@@ -152,7 +157,7 @@ export function LabResultForm({ data, onChange, errors }: LabResultFormProps) {
 
       // If not SSE, handle as regular JSON response (fallback)
       if (!isSSE) {
-        console.log('[Extraction] Falling back to JSON response mode');
+        log.debug('Falling back to JSON response mode');
         const result: ExtractionResponse = await response.json();
 
         if (!result.success) {
@@ -178,7 +183,11 @@ export function LabResultForm({ data, onChange, errors }: LabResultFormProps) {
         setVerificationPassed(result.verificationPassed);
         setCorrections(result.corrections || []);
         setExtractionStage('complete');
-        console.log('[Extraction] Extraction complete (JSON mode)!');
+        log.info('Extraction complete (JSON mode)', {
+          biomarkerCount: result.biomarkers?.length,
+          verificationPassed: result.verificationPassed,
+        });
+        endOperation();
         return;
       }
 
@@ -206,7 +215,7 @@ export function LabResultForm({ data, onChange, errors }: LabResultFormProps) {
             const jsonStr = line.slice(6);
             try {
               const event = JSON.parse(jsonStr);
-              console.log('[Extraction] SSE event:', event);
+              log.debug('SSE event received', { type: event.type, stage: event.stage });
 
               if (event.type === 'stage') {
                 // Update extraction stage based on server event
@@ -219,7 +228,7 @@ export function LabResultForm({ data, onChange, errors }: LabResultFormProps) {
                 }
               } else if (event.type === 'complete') {
                 const result: ExtractionResponse = event.data;
-                console.log('[Extraction] API response received:', {
+                log.info('Extraction API response received', {
                   success: result.success,
                   biomarkerCount: result.biomarkers?.length,
                   verificationPassed: result.verificationPassed,
@@ -250,14 +259,18 @@ export function LabResultForm({ data, onChange, errors }: LabResultFormProps) {
                 setVerificationPassed(result.verificationPassed);
                 setCorrections(result.corrections || []);
                 setExtractionStage('complete');
-                console.log('[Extraction] Extraction complete!');
+                log.info('Extraction complete', {
+                  biomarkerCount: result.biomarkers?.length,
+                  verificationPassed: result.verificationPassed,
+                });
+                endOperation();
               } else if (event.type === 'error') {
                 throw new Error(event.error || 'Extraction failed');
               }
             } catch (parseErr) {
               // Only throw if it's not a JSON parse error
               if (parseErr instanceof SyntaxError) {
-                console.warn('[Extraction] Failed to parse SSE data:', jsonStr);
+                log.warn('Failed to parse SSE data', { jsonStr });
               } else {
                 throw parseErr;
               }
@@ -266,11 +279,12 @@ export function LabResultForm({ data, onChange, errors }: LabResultFormProps) {
         }
       }
     } catch (err) {
-      console.error('[Extraction] Error:', err);
+      log.error('Extraction failed', err);
       setExtractionError(err instanceof Error ? err.message : 'Extraction failed');
       setExtractionStage('error');
+      endOperation();
     }
-  }, [attachment, data, onChange, setExtractionStage]);
+  }, [attachment, data, onChange, setExtractionStage, startOperation, endOperation]);
 
   const genderOptions = [
     { value: 'male', label: 'Male' },

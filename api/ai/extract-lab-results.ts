@@ -1,5 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { createClient } from '@supabase/supabase-js';
+import { withLogger, LoggedRequest } from '../lib/logger/withLogger.js';
 
 // Types
 interface Biomarker {
@@ -144,8 +145,8 @@ Important:
 
   if (!response.ok) {
     const errorText = await response.text();
-    console.error('Gemini API error:', errorText);
-    throw new Error(`Gemini API error: ${response.status}`);
+    // Error will be logged by caller
+    throw new Error(`Gemini API error: ${response.status} - ${errorText.substring(0, 200)}`);
   }
 
   const data = await response.json();
@@ -173,9 +174,8 @@ Important:
       extractionConfidence: 0.8,
       verificationPassed: false,
     };
-  } catch (parseError) {
-    console.error('Failed to parse Gemini response:', content);
-    throw new Error('Failed to parse extraction result');
+  } catch {
+    throw new Error('Failed to parse extraction result from Gemini');
   }
 }
 
@@ -186,7 +186,7 @@ async function verifyWithGPT(
 ): Promise<ExtractionResult> {
   if (!OPENAI_API_KEY) {
     // If OpenAI not configured, return unverified result
-    console.warn('OpenAI API key not configured, skipping verification');
+    // Note: This is logged at the API handler level
     return extractedData;
   }
 
@@ -291,20 +291,17 @@ Return ONLY valid JSON (no markdown code blocks) with the corrected/verified dat
     });
 
     if (!response.ok) {
-      const errorText = await response.text();
-      console.error('OpenAI API error:', response.status, errorText);
-      // Return unverified if GPT fails
+      // Return unverified if GPT fails (error logged at handler level)
       return extractedData;
     }
 
     const responseText = await response.text();
-    console.log('GPT raw response length:', responseText.length);
 
     let data;
     try {
       data = JSON.parse(responseText);
-    } catch (parseErr) {
-      console.error('Failed to parse GPT response as JSON:', responseText.substring(0, 500));
+    } catch {
+      // Return unverified if response is not valid JSON
       return extractedData;
     }
 
@@ -317,11 +314,9 @@ Return ONLY valid JSON (no markdown code blocks) with the corrected/verified dat
       ?.join('') || '';
 
     if (!content) {
-      console.error('No content extracted from GPT response:', JSON.stringify(data, null, 2).substring(0, 1000));
+      // Return unverified if no content extracted
       return extractedData;
     }
-
-    console.log('GPT extracted content length:', content.length);
 
     // Parse JSON from response
     let jsonStr = content.trim();
@@ -334,8 +329,8 @@ Return ONLY valid JSON (no markdown code blocks) with the corrected/verified dat
     let verified;
     try {
       verified = JSON.parse(jsonStr);
-    } catch (parseErr) {
-      console.error('Failed to parse GPT content as JSON:', jsonStr.substring(0, 500));
+    } catch {
+      // Return unverified if GPT content is not valid JSON
       return extractedData;
     }
 
@@ -352,8 +347,7 @@ Return ONLY valid JSON (no markdown code blocks) with the corrected/verified dat
       verificationPassed: verified.verificationPassed ?? true,
       corrections: verified.corrections || [],
     };
-  } catch (error) {
-    console.error('GPT verification error:', error);
+  } catch {
     // Return unverified extraction if GPT fails
     return extractedData;
   }
@@ -390,10 +384,9 @@ function sendSSE(res: VercelResponse, event: SSEEvent) {
   res.write(`data: ${JSON.stringify(event)}\n\n`);
 }
 
-export default async function handler(req: VercelRequest, res: VercelResponse) {
-  console.log('[Extraction] Request received');
-  console.log('[Extraction] Method:', req.method);
-  console.log('[Extraction] Accept header:', req.headers.accept);
+async function handler(req: LoggedRequest, res: VercelResponse) {
+  const log = req.log.child('Extraction');
+  log.info('Request received', { method: req.method, acceptSSE: req.headers.accept?.includes('text/event-stream') });
 
   // CORS headers
   const allowedOrigin = getAllowedOrigin(req);
@@ -403,24 +396,23 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   res.setHeader('Access-Control-Allow-Headers', 'Authorization, Content-Type, Accept');
 
   if (req.method === 'OPTIONS') {
-    console.log('[Extraction] Handling OPTIONS preflight');
+    log.debug('Handling OPTIONS preflight');
     return res.status(200).end();
   }
 
   if (req.method !== 'POST') {
-    console.log('[Extraction] Method not allowed:', req.method);
+    log.warn('Method not allowed', { method: req.method });
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
   const authHeader = req.headers.authorization;
   if (!authHeader) {
-    console.log('[Extraction] No authorization header');
+    log.warn('No authorization header');
     return res.status(401).json({ error: 'Authorization required' });
   }
 
   // Check if client wants SSE (streaming)
   const acceptsSSE = req.headers.accept?.includes('text/event-stream');
-  console.log('[Extraction] SSE requested:', acceptsSSE);
 
   if (acceptsSSE) {
     // Set SSE headers
@@ -431,9 +423,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   const startTime = Date.now();
-  console.log('[Extraction] ========================================');
-  console.log('[Extraction] Starting lab result extraction');
-  console.log('[Extraction] SSE mode:', acceptsSSE);
+  log.info('Starting lab result extraction', { sseMode: acceptsSSE });
 
   try {
     const supabase = createSupabaseClient(authHeader);
@@ -452,7 +442,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     // SECURITY: Validate storagePath belongs to authenticated user
     // Storage path format: {userId}/{fileId}.pdf
     if (!storagePath.startsWith(`${userId}/`)) {
-      console.error('[Extraction] SECURITY: Unauthorized access attempt', {
+      log.error('SECURITY: Unauthorized access attempt', undefined, {
         userId,
         requestedPath: storagePath,
       });
@@ -464,29 +454,26 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     // Stage 0: Fetch PDF
-    console.log('[Extraction] Storage path:', storagePath);
-    console.log('[Extraction] Fetching PDF from Supabase Storage...');
+    log.info('Fetching PDF from storage', { storagePath });
     if (acceptsSSE) {
       sendSSE(res, { type: 'stage', stage: 'fetching_pdf' });
     }
     const fetchStart = Date.now();
     const pdfBase64 = await fetchPDFAsBase64(supabase, storagePath);
     const pdfSizeKB = (pdfBase64.length * 0.75 / 1024).toFixed(1);
-    console.log(`[Extraction] PDF fetched: ${pdfSizeKB} KB (${Date.now() - fetchStart}ms)`);
+    log.debug('PDF fetched', { pdfSizeKB, durationMs: Date.now() - fetchStart });
 
     // Stage 1: Extract with Gemini
-    console.log('[Extraction] ----------------------------------------');
-    console.log('[Extraction] Stage 1: Sending to Gemini 3 Pro (thinking: high)...');
+    log.info('Stage 1: Extracting with Gemini');
     if (acceptsSSE) {
       sendSSE(res, { type: 'stage', stage: 'extracting_gemini' });
     }
     const stage1Start = Date.now();
     const extractedData = await extractWithGemini(pdfBase64);
     const stage1Duration = Date.now() - stage1Start;
-    console.log(`[Extraction] Stage 1 complete: ${stage1Duration}ms`);
 
     if (!extractedData.success) {
-      console.log('[Extraction] Stage 1 FAILED - extraction unsuccessful');
+      log.error('Stage 1 FAILED - extraction unsuccessful');
       if (acceptsSSE) {
         sendSSE(res, { type: 'error', error: 'Extraction failed' });
         return res.end();
@@ -497,43 +484,43 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       });
     }
 
-    console.log(`[Extraction] Stage 1 results:`);
-    console.log(`[Extraction]   - Client: ${extractedData.clientName || 'N/A'}`);
-    console.log(`[Extraction]   - Lab: ${extractedData.labName || 'N/A'}`);
-    console.log(`[Extraction]   - Test date: ${extractedData.testDate || 'N/A'}`);
-    console.log(`[Extraction]   - Biomarkers extracted: ${extractedData.biomarkers.length}`);
+    log.info('Stage 1 complete', {
+      durationMs: stage1Duration,
+      clientName: extractedData.clientName || 'N/A',
+      labName: extractedData.labName || 'N/A',
+      testDate: extractedData.testDate || 'N/A',
+      biomarkerCount: extractedData.biomarkers.length,
+    });
 
     // Stage 2: Verify with GPT
-    console.log('[Extraction] ----------------------------------------');
-    console.log('[Extraction] Stage 2: Sending to GPT-5.1 for verification (reasoning: high)...');
+    log.info('Stage 2: Verifying with GPT');
     if (acceptsSSE) {
       sendSSE(res, { type: 'stage', stage: 'verifying_gpt', biomarkerCount: extractedData.biomarkers.length });
     }
     const stage2Start = Date.now();
     const verifiedData = await verifyWithGPT(pdfBase64, extractedData);
     const stage2Duration = Date.now() - stage2Start;
-    console.log(`[Extraction] Stage 2 complete: ${stage2Duration}ms`);
 
     const correctionsCount = verifiedData.corrections?.length || 0;
-    console.log(`[Extraction] Stage 2 results:`);
-    console.log(`[Extraction]   - Verification passed: ${verifiedData.verificationPassed}`);
-    console.log(`[Extraction]   - Corrections made: ${correctionsCount}`);
-    if (correctionsCount > 0) {
-      verifiedData.corrections?.forEach((c, i) => {
-        console.log(`[Extraction]     ${i + 1}. ${c}`);
-      });
-    }
-    console.log(`[Extraction]   - Final biomarker count: ${verifiedData.biomarkers.length}`);
-    console.log(`[Extraction]   - Confidence: ${(verifiedData.extractionConfidence * 100).toFixed(0)}%`);
+    log.info('Stage 2 complete', {
+      durationMs: stage2Duration,
+      verificationPassed: verifiedData.verificationPassed,
+      correctionsCount,
+      corrections: verifiedData.corrections,
+      finalBiomarkerCount: verifiedData.biomarkers.length,
+      confidence: `${(verifiedData.extractionConfidence * 100).toFixed(0)}%`,
+    });
 
     // Summary
     const totalTime = Date.now() - startTime;
-    console.log('[Extraction] ========================================');
-    console.log(`[Extraction] COMPLETE - Total time: ${totalTime}ms`);
-    console.log(`[Extraction]   - PDF fetch: ${Date.now() - fetchStart - stage1Duration - stage2Duration}ms`);
-    console.log(`[Extraction]   - Stage 1 (Gemini): ${stage1Duration}ms`);
-    console.log(`[Extraction]   - Stage 2 (GPT): ${stage2Duration}ms`);
-    console.log('[Extraction] ========================================');
+    log.info('Extraction COMPLETE', {
+      totalTimeMs: totalTime,
+      pdfFetchMs: Date.now() - fetchStart - stage1Duration - stage2Duration,
+      stage1Ms: stage1Duration,
+      stage2Ms: stage2Duration,
+      biomarkerCount: verifiedData.biomarkers.length,
+      verificationPassed: verifiedData.verificationPassed,
+    });
 
     if (acceptsSSE) {
       sendSSE(res, { type: 'complete', data: verifiedData });
@@ -542,10 +529,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(200).json(verifiedData);
   } catch (error) {
     const totalTime = Date.now() - startTime;
-    console.error('[Extraction] ========================================');
-    console.error(`[Extraction] FAILED after ${totalTime}ms`);
-    console.error('[Extraction] Error:', error);
-    console.error('[Extraction] ========================================');
+    log.error('Extraction FAILED', error, { totalTimeMs: totalTime });
 
     const errorMessage = error instanceof Error ? error.message : 'Extraction failed';
 
@@ -564,3 +548,5 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     });
   }
 }
+
+export default withLogger(handler);

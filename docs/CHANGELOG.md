@@ -1,6 +1,6 @@
 # Changelog
 
-> Last Updated: 2025-11-27
+> Last Updated: 2025-11-28
 
 ## Summary
 
@@ -23,9 +23,20 @@ Version history and release notes for Digital Medical Twin. Lists all notable ch
 
 ## Phase 6 - Polish and Launch (Partial)
 
-> 2025-11-27
+> 2025-11-28
 
 ### Added
+
+- **Logging System**
+  - Structured logger with DEBUG, INFO, WARN, ERROR levels
+  - Console transport with colorized output (dev) and JSON (prod)
+  - Sentry integration for production error tracking
+  - Correlation IDs (session + operation) for request tracing
+  - `withLogger` HOF for API handlers
+  - `CorrelationContext` for frontend request tagging
+  - `useApiClient` hook with automatic correlation headers
+  - Frontend: `src/lib/logger/`, Backend: `api/lib/logger/`
+  - Documentation: `docs/development/LOGGING.md`
 
 - **Error Handling**
   - ErrorBoundary component with user-friendly fallback UI

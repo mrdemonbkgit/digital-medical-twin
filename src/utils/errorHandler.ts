@@ -1,6 +1,7 @@
 /**
  * Centralized error handling utilities
  */
+import { logger } from '@/lib/logger';
 
 // Common error types
 export type ErrorType =
@@ -202,15 +203,15 @@ export function toAppError(error: unknown, context?: string): AppError {
 
 /**
  * Handle an error and return a user-friendly message
- * Optionally logs the error in development
+ * Logs the error using structured logging
  */
 export function handleError(error: unknown, context?: string): string {
   const appError = toAppError(error, context);
+  const log = context ? logger.child(context) : logger;
 
-  // Log in development
-  if (import.meta.env.DEV) {
-    console.error(`[${context || 'Error'}]`, error);
-  }
+  log.error(appError.message, error, {
+    errorType: appError.type,
+  });
 
   return appError.message;
 }

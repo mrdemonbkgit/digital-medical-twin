@@ -15,6 +15,10 @@ const EventTypeSelectorPage = lazy(() => import('@/pages/EventTypeSelectorPage')
 const EventNewPage = lazy(() => import('@/pages/EventNewPage').then((m) => ({ default: m.EventNewPage })));
 const EventDetailPage = lazy(() => import('@/pages/EventDetailPage').then((m) => ({ default: m.EventDetailPage })));
 const AIHistorianPage = lazy(() => import('@/pages/AIHistorianPage').then((m) => ({ default: m.AIHistorianPage })));
+const LabUploadsPage = lazy(() => import('@/pages/LabUploadsPage').then((m) => ({ default: m.LabUploadsPage })));
+const ProfilePage = lazy(() => import('@/pages/ProfilePage').then((m) => ({ default: m.ProfilePage })));
+const ProfileSetupPage = lazy(() => import('@/pages/ProfileSetupPage').then((m) => ({ default: m.ProfileSetupPage })));
+const BiomarkersPage = lazy(() => import('@/pages/BiomarkersPage').then((m) => ({ default: m.BiomarkersPage })));
 const NotFoundPage = lazy(() => import('@/pages/NotFoundPage').then((m) => ({ default: m.NotFoundPage })));
 
 export function AppRoutes() {
@@ -36,6 +40,10 @@ export function AppRoutes() {
             <Route path={ROUTES.EVENT_NEW_TYPE} element={<EventNewPage />} />
             <Route path={ROUTES.EVENT_DETAIL} element={<EventDetailPage />} />
             <Route path={ROUTES.AI_CHAT} element={<AIHistorianPage />} />
+            <Route path={ROUTES.LAB_UPLOADS} element={<LabUploadsPage />} />
+            <Route path={ROUTES.PROFILE} element={<ProfilePage />} />
+            <Route path={ROUTES.PROFILE_SETUP} element={<ProfileSetupPage />} />
+            <Route path={ROUTES.BIOMARKERS} element={<BiomarkersPage />} />
           </Route>
         </Route>
 

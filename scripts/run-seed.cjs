@@ -1,10 +1,13 @@
 #!/usr/bin/env node
 /**
- * Run Supabase migrations using the Management API
+ * Run Supabase seed data using the Management API
  * This bypasses IPv6 issues in WSL2 by using Supabase's REST Management API
  *
  * Usage:
- *   node scripts/run-migrations.cjs
+ *   node scripts/run-seed.cjs [seed-file]
+ *
+ * Example:
+ *   node scripts/run-seed.cjs supabase/seed_biomarkers.sql
  */
 
 const fs = require('fs');
@@ -202,60 +205,64 @@ function runSQL(query) {
   });
 }
 
-async function runMigrations() {
-  console.log(`Running migrations for project: ${PROJECT_REF}`);
+async function runSeed(seedFile) {
+  console.log(`Running seed for project: ${PROJECT_REF}`);
+  console.log(`Seed file: ${seedFile}`);
   console.log('Using Supabase Management API (IPv4 compatible)\n');
 
-  // Get all migration files
-  const migrationsDir = path.join(__dirname, '..', 'supabase', 'migrations');
+  const fullPath = path.join(__dirname, '..', seedFile);
 
-  if (!fs.existsSync(migrationsDir)) {
-    console.error(`ERROR: Migrations directory not found: ${migrationsDir}`);
+  if (!fs.existsSync(fullPath)) {
+    console.error(`ERROR: Seed file not found: ${fullPath}`);
     process.exit(1);
   }
 
-  const files = fs.readdirSync(migrationsDir)
-    .filter(f => f.endsWith('.sql'))
-    .sort();
+  const sql = fs.readFileSync(fullPath, 'utf8');
+  const statements = parseSQLStatements(sql);
 
-  console.log(`Found ${files.length} migration files\n`);
+  console.log(`Found ${statements.length} SQL statements\n`);
 
-  for (const file of files) {
-    console.log(`Running migration: ${file}`);
-    const sql = fs.readFileSync(path.join(migrationsDir, file), 'utf8');
+  let success = 0;
+  let skipped = 0;
+  let failed = 0;
 
-    // Parse SQL into statements, handling $$ blocks correctly
-    const statements = parseSQLStatements(sql);
+  for (let i = 0; i < statements.length; i++) {
+    const stmt = statements[i];
+    if (!stmt || stmt.trim().startsWith('--')) continue;
 
-    // Execute each statement
-    for (let i = 0; i < statements.length; i++) {
-      const stmt = statements[i];
-      if (!stmt || stmt.trim().startsWith('--')) continue;
-
-      try {
-        await runSQL(stmt);
-      } catch (err) {
-        // Check for "already exists" errors - these are OK
-        if (err.message.includes('already exists') ||
-            err.message.includes('42P07') ||
-            err.message.includes('42710') ||
-            err.message.includes('duplicate key')) {
-          console.log(`  ⚠ Skipped (already exists)`);
-        } else {
-          console.error(`  ✗ Failed statement ${i + 1}: ${err.message}`);
-          console.error(`  Statement preview: ${stmt.substring(0, 100)}...`);
-          throw err;
-        }
-      }
+    // Show progress for long seed files
+    if (statements.length > 10) {
+      process.stdout.write(`\rExecuting statement ${i + 1}/${statements.length}...`);
     }
 
-    console.log(`  ✓ ${file} completed`);
+    try {
+      await runSQL(stmt);
+      success++;
+    } catch (err) {
+      // Check for "already exists" errors - these are OK
+      if (err.message.includes('already exists') ||
+          err.message.includes('42P07') ||
+          err.message.includes('42710') ||
+          err.message.includes('duplicate key')) {
+        skipped++;
+      } else {
+        failed++;
+        console.error(`\n✗ Statement ${i + 1} failed: ${err.message}`);
+        console.error(`  Statement preview: ${stmt.substring(0, 100)}...`);
+        throw err;
+      }
+    }
   }
 
-  console.log('\n✓ All migrations completed successfully!');
+  console.log(`\n\n✓ Seed completed!`);
+  console.log(`  Executed: ${success}`);
+  if (skipped > 0) console.log(`  Skipped (already exists): ${skipped}`);
 }
 
-runMigrations().catch(err => {
-  console.error('\nMigration failed:', err.message);
+// Get seed file from command line args or use default
+const seedFile = process.argv[2] || 'supabase/seed_biomarkers.sql';
+
+runSeed(seedFile).catch(err => {
+  console.error('\nSeed failed:', err.message);
   process.exit(1);
 });

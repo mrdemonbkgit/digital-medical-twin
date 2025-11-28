@@ -2,3 +2,6 @@ export * from './auth';
 export * from './events';
 export * from './api';
 export * from './ai';
+export * from './labUploads';
+export * from './userProfile';
+export * from './biomarker';

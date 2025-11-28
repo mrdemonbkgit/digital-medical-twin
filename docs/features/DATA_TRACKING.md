@@ -1,6 +1,6 @@
 # Data Tracking Feature
 
-> Last Updated: 2025-11-27
+> Last Updated: 2025-11-28
 
 ## Summary
 
@@ -60,32 +60,19 @@ Track bloodwork and lab tests with individual biomarker values. Automatically fl
 
 ### PDF Upload & AI Extraction
 
-Upload lab result PDFs to automatically extract data using a two-stage AI pipeline:
+Lab result PDFs can be uploaded via the dedicated **Lab Uploads** page (`/lab-uploads`) for asynchronous AI-powered extraction. This is the recommended approach for handling potentially long-running extractions.
 
-1. **Stage 1 - Extraction:** Gemini 3 Pro (thinking: high) analyzes the PDF and extracts all biomarkers, patient info, and lab metadata
-2. **Stage 2 - Verification:** GPT-5.1 (reasoning: high) verifies the extraction, corrects any errors, and flags issues
+**See:** /docs/features/LAB_UPLOADS.md for full details.
 
-| Feature | Description |
-|---------|-------------|
-| Drag & Drop | Drag PDF files or click to upload |
-| Max Size | 10MB per file |
-| Storage | Supabase Storage with RLS |
-| Ownership Validation | API validates user owns the file before extraction |
-| Real-time Progress | SSE streaming shows precise extraction stages |
-| Corrections | Lists any corrections made during verification |
+**Quick Summary:**
+1. Upload PDF at `/lab-uploads` (drag & drop)
+2. Optional: Skip GPT verification for faster results
+3. Extraction runs in background
+4. Click "Create Event" when complete to open pre-filled form
 
-### Real-time Progress (SSE)
-
-The extraction API uses Server-Sent Events (SSE) for real-time progress updates:
-
-| Stage | Message |
-|-------|---------|
-| `fetching_pdf` | Fetching PDF from storage... |
-| `extracting_gemini` | Stage 1: Extracting with Gemini 3 Pro... |
-| `verifying_gpt` | Stage 2: Verifying with GPT-5.1... |
-| `complete` | Extraction complete! |
-
-The frontend receives precise stage updates as they happen on the server, eliminating any guesswork about progress.
+The two-stage AI pipeline:
+1. **Stage 1 - Extraction:** Gemini 3 Pro (thinking: high) analyzes the PDF
+2. **Stage 2 - Verification:** GPT-5.1 (reasoning: high) verifies and corrects (optional)
 
 ### Extraction Fields
 

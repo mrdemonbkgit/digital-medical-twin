@@ -11,3 +11,6 @@ export { useUserTags } from './useUserTags';
 export { useExportEvents } from './useExportEvents';
 export { useImportEvents } from './useImportEvents';
 export { usePDFUpload } from './usePDFUpload';
+export { useUserProfile } from './useUserProfile';
+export { useRequireProfile, useProfileStatus } from './useRequireProfile';
+export { useBiomarkers } from './useBiomarkers';

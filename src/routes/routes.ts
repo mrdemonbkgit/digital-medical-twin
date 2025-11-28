@@ -4,6 +4,9 @@ export const ROUTES = {
   REGISTER: '/register',
   DASHBOARD: '/dashboard',
   SETTINGS: '/settings',
+  // Profile routes
+  PROFILE: '/profile',
+  PROFILE_SETUP: '/profile/setup',
   // Phase 2 routes
   TIMELINE: '/timeline',
   EVENT_NEW: '/event/new',
@@ -11,4 +14,6 @@ export const ROUTES = {
   EVENT_DETAIL: '/event/:id',
   // Phase 4+ routes
   AI_CHAT: '/ai',
+  LAB_UPLOADS: '/lab-uploads',
+  BIOMARKERS: '/biomarkers',
 } as const;

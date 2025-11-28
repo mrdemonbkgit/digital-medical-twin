@@ -1,6 +1,6 @@
 # Documentation Index
 
-> Last Updated: 2025-11-27 (Phase 6 Polish and Launch)
+> Last Updated: 2025-11-28 (Added User Profile, Biomarker Standards, Post-processing pipeline)
 
 ## Summary
 
@@ -48,6 +48,10 @@ Master index for all project documentation. Search here first to find relevant d
 | Timeline feature | /docs/features/TIMELINE.md | Full doc |
 | Event types | /docs/features/DATA_TRACKING.md | Full doc |
 | AI Historian | /docs/features/AI_HISTORIAN.md | Full doc |
+| Insights Dashboard | /docs/features/INSIGHTS_DASHBOARD.md | Full doc |
+| Lab Uploads | /docs/features/LAB_UPLOADS.md | Full doc |
+| User Profile | /docs/features/USER_PROFILE.md | Full doc |
+| Feature ideas (GPT-5.1) | /docs/ideas/gpt-5.1-feature-ideas.md | #high-impact-ideas |
 | Coding conventions | /docs/development/CODING_STANDARDS.md | Full doc |
 | Logging system | /docs/development/LOGGING.md | Full doc |
 | Component patterns | /docs/development/COMPONENT_LIBRARY.md | Full doc |
@@ -59,6 +63,7 @@ Master index for all project documentation. Search here first to find relevant d
 | Design decisions | /docs/DECISION_LOG.md | Full doc |
 | Version history | /docs/CHANGELOG.md | Full doc |
 | Development roadmap | /docs/ROADMAP.md | Full doc |
+| Feature suggestions | /docs/ideas/FEATURE_SUGGESTIONS_OPUS_4_5.md | Full doc |
 | Phase 1 tasks | /docs/ROADMAP.md | #phase-1-foundation (Complete) |
 | Phase 2 tasks | /docs/ROADMAP.md | #phase-2-core-data-entry (Complete) |
 | Phase 3 tasks | /docs/ROADMAP.md | #phase-3-timeline-polish (Complete) |
@@ -74,18 +79,22 @@ Master index for all project documentation. Search here first to find relevant d
 
 - **agent**: /docs/AGENT_PROTOCOL.md
 - **AI**: /docs/architecture/AI_INTEGRATION.md, /docs/features/AI_HISTORIAN.md
+- **allergies**: /docs/ideas/gpt-5.1-feature-ideas.md#allergies-immunizations-procedures
 - **API**: /docs/development/API_CONTRACTS.md
 - **architecture**: /docs/architecture/SYSTEM_OVERVIEW.md
 - **authentication**: /docs/architecture/AUTH_SYSTEM.md
 
 ### B
 
-- **biomarkers**: /docs/features/DATA_TRACKING.md
+- **biomarkers**: /docs/features/DATA_TRACKING.md, /docs/features/INSIGHTS_DASHBOARD.md, /docs/features/LAB_UPLOADS.md
+- **biomarker standards**: /docs/features/LAB_UPLOADS.md#biomarker-standards-database
+- **BiomarkersPage**: src/pages/BiomarkersPage.tsx
 - **bloodwork**: /docs/features/DATA_TRACKING.md
 
 ### C
 
 - **changelog**: /docs/CHANGELOG.md
+- **charts**: /docs/features/INSIGHTS_DASHBOARD.md
 - **citations**: /docs/architecture/AI_INTEGRATION.md#gemini-grounding--citations
 - **cloud**: /docs/architecture/DATABASE_SCHEMA.md
 - **coding standards**: /docs/development/CODING_STANDARDS.md
@@ -94,11 +103,13 @@ Master index for all project documentation. Search here first to find relevant d
 
 ### D
 
+- **dashboard**: /docs/features/INSIGHTS_DASHBOARD.md
 - **database**: /docs/architecture/DATABASE_SCHEMA.md, /docs/DATABASE_MIGRATIONS.md
 - **decisions**: /docs/DECISION_LOG.md
 - **deliverables**: /docs/ROADMAP.md
 - **deployment**: /docs/DECISION_LOG.md#2025-11-26-hosting-platform-selection
 - **directory**: /docs/ONBOARDING.md#directory-structure
+- **doctor packet**: /docs/ideas/gpt-5.1-feature-ideas.md#care-team-share-packs
 - **doctor visits**: /docs/features/DATA_TRACKING.md
 - **documentation**: /docs/AGENT_PROTOCOL.md#updating-documentation
 
@@ -110,10 +121,15 @@ Master index for all project documentation. Search here first to find relevant d
 - **EventCard**: src/components/event/EventCard.tsx
 - **EventForm**: src/components/event/forms/
 - **export**: /docs/features/TIMELINE.md#data-export, src/lib/exportData.ts, src/hooks/useExportEvents.ts
+- **experiments**: /docs/ideas/gpt-5.1-feature-ideas.md#experiment-and-outcome-tracking
 
 ### F
 
+- **family health history**: /docs/ideas/FEATURE_SUGGESTIONS_OPUS_4_5.md#3-family-health-history-module
 - **features**: /docs/features/
+- **feature ideas**: /docs/ideas/gpt-5.1-feature-ideas.md
+- **feature suggestions**: /docs/ideas/FEATURE_SUGGESTIONS_OPUS_4_5.md
+- **FHIR**: /docs/ideas/FEATURE_SUGGESTIONS_OPUS_4_5.md#4-fhir-health-records-import, /docs/ideas/gpt-5.1-feature-ideas.md#fhir-and-portal-imports
 
 ### G
 
@@ -129,6 +145,9 @@ Master index for all project documentation. Search here first to find relevant d
 
 ### I
 
+- **ideas**: /docs/ideas/gpt-5.1-feature-ideas.md
+- **immunizations**: /docs/ideas/gpt-5.1-feature-ideas.md#allergies-immunizations-procedures
+- **insights**: /docs/features/INSIGHTS_DASHBOARD.md
 - **import**: /docs/features/TIMELINE.md#data-import, src/lib/importData.ts, src/hooks/useImportEvents.ts
 - **interventions**: /docs/features/DATA_TRACKING.md
 - **IPv6**: /docs/DATABASE_MIGRATIONS.md
@@ -137,6 +156,7 @@ Master index for all project documentation. Search here first to find relevant d
 
 - **lab results**: /docs/features/DATA_TRACKING.md#lab-results
 - **lab PDF**: /docs/features/DATA_TRACKING.md#pdf-upload--ai-extraction, /docs/architecture/AI_INTEGRATION.md#lab-result-pdf-extraction
+- **lab uploads**: /docs/features/LAB_UPLOADS.md
 - **logger**: /docs/development/LOGGING.md
 - **logging**: /docs/development/LOGGING.md
 - **login**: /docs/architecture/AUTH_SYSTEM.md
@@ -152,6 +172,7 @@ Master index for all project documentation. Search here first to find relevant d
 
 ### O
 
+- **observations**: /docs/ideas/gpt-5.1-feature-ideas.md#observations-of-daily-living
 - **offline**: /docs/DECISION_LOG.md#2025-11-26-offline-support-deferral
 - **onboarding**: /docs/ONBOARDING.md
 
@@ -160,6 +181,10 @@ Master index for all project documentation. Search here first to find relevant d
 - **password**: /docs/architecture/AUTH_SYSTEM.md
 - **PDF upload**: /docs/features/DATA_TRACKING.md#pdf-upload--ai-extraction, /docs/architecture/AI_INTEGRATION.md#lab-result-pdf-extraction
 - **PDF extraction**: /docs/architecture/AI_INTEGRATION.md#lab-result-pdf-extraction
+- **post-processing**: /docs/features/LAB_UPLOADS.md#biomarker-standardization
+- **profile**: /docs/features/USER_PROFILE.md
+- **ProfileSetupPage**: src/pages/ProfileSetupPage.tsx
+- **ProfilePage**: src/pages/ProfilePage.tsx
 - **phases**: /docs/ROADMAP.md
 - **planning**: /docs/ROADMAP.md
 - **presets**: /docs/features/DATA_TRACKING.md#biomarker-presets, src/lib/biomarkerPresets.ts
@@ -172,12 +197,14 @@ Master index for all project documentation. Search here first to find relevant d
 - **RAG**: /docs/features/AI_HISTORIAN.md
 - **React**: /docs/ONBOARDING.md#tech-stack, /docs/development/COMPONENT_LIBRARY.md
 - **reasoning_effort**: /docs/architecture/AI_INTEGRATION.md#openai-gpt-51
+- **recharts**: /docs/features/INSIGHTS_DASHBOARD.md#6-technical-architecture
 - **roadmap**: /docs/ROADMAP.md
 
 ### S
 
 - **schema**: /docs/architecture/DATABASE_SCHEMA.md
 - **security**: /docs/SECURITY.md
+- **symptoms**: /docs/ideas/FEATURE_SUGGESTIONS_OPUS_4_5.md#7-symptom-tracking-event-type
 - **sentry**: /docs/development/LOGGING.md
 - **seed data**: src/utils/seedEvents.ts
 - **server-side API keys**: /docs/architecture/AI_INTEGRATION.md#server-side-api-keys
@@ -196,10 +223,16 @@ Master index for all project documentation. Search here first to find relevant d
 - **testing**: /docs/development/TESTING_STRATEGY.md
 - **thinking_level**: /docs/architecture/AI_INTEGRATION.md#google-gemini-3-pro
 - **timeline**: /docs/features/TIMELINE.md, src/pages/TimelinePage.tsx
+- **trends**: /docs/features/INSIGHTS_DASHBOARD.md
 - **TypeScript**: /docs/ONBOARDING.md#tech-stack
 
 ### U
 
+- **unit conversion**: /docs/features/LAB_UPLOADS.md#biomarker-standardization
+- **user profile**: /docs/features/USER_PROFILE.md
+- **useUserProfile**: src/hooks/useUserProfile.ts
+- **useRequireProfile**: src/hooks/useRequireProfile.ts
+- **useBiomarkers**: src/hooks/useBiomarkers.ts
 - **users**: /PRODUCT_DESCRIPTION.md#target-users
 
 ### V
@@ -207,8 +240,10 @@ Master index for all project documentation. Search here first to find relevant d
 - **vercel**: /docs/DECISION_LOG.md#2025-11-26-hosting-platform-selection
 - **version**: /docs/CHANGELOG.md
 - **vision**: /PRODUCT_DESCRIPTION.md#vision
+- **visualization**: /docs/features/INSIGHTS_DASHBOARD.md
 
 ### W
 
+- **wearables**: /docs/ideas/FEATURE_SUGGESTIONS_OPUS_4_5.md#1-wearable-device-integration
 - **web search**: /docs/architecture/AI_INTEGRATION.md#gemini-grounding--citations
 - **WSL2**: /docs/DATABASE_MIGRATIONS.md

@@ -1,5 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { createClient } from '@supabase/supabase-js';
+import { Agent } from 'undici';
 import { withLogger, LoggedRequest } from '../lib/logger/withLogger.js';
 
 // Types
@@ -32,6 +33,15 @@ interface ExtractionResult {
 // Server-side API keys
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY || '';
 const GOOGLE_API_KEY = process.env.GOOGLE_API_KEY || '';
+
+// Timeout for AI requests (10 minutes)
+const AI_REQUEST_TIMEOUT_MS = 600000;
+
+// Custom fetch agent with extended body timeout for long-running AI requests
+const longTimeoutAgent = new Agent({
+  bodyTimeout: AI_REQUEST_TIMEOUT_MS,
+  headersTimeout: AI_REQUEST_TIMEOUT_MS,
+});
 
 // Supabase client
 function createSupabaseClient(authHeader: string | undefined) {
@@ -115,33 +125,54 @@ Important:
 - If a field is not found, omit it from the response
 - Return ONLY the JSON object, nothing else`;
 
-  const response = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-pro-preview:generateContent?key=${GOOGLE_API_KEY}`,
-    {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: [
-          {
-            parts: [
-              { text: prompt },
-              {
-                inline_data: {
-                  mime_type: 'application/pdf',
-                  data: pdfBase64,
+  // Set up timeout with AbortController
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), AI_REQUEST_TIMEOUT_MS);
+
+  let response: Response;
+  try {
+    response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-3-pro-preview:generateContent?key=${GOOGLE_API_KEY}`,
+      {
+        method: 'POST',
+        signal: controller.signal,
+        headers: { 'Content-Type': 'application/json' },
+        // @ts-expect-error - dispatcher is valid for undici but not in standard fetch types
+        dispatcher: longTimeoutAgent,
+        body: JSON.stringify({
+          contents: [
+            {
+              parts: [
+                { text: prompt },
+                {
+                  inline_data: {
+                    mime_type: 'application/pdf',
+                    data: pdfBase64,
+                  },
                 },
-              },
-            ],
+              ],
+            },
+          ],
+          generationConfig: {
+            temperature: 0.1,
+            maxOutputTokens: 64000,
+            thinkingConfig: { thinkingLevel: 'high' },
           },
-        ],
-        generationConfig: {
-          temperature: 0.1,
-          maxOutputTokens: 64000,
-          thinkingConfig: { thinkingLevel: 'high' },
-        },
-      }),
+        }),
+      }
+    );
+  } catch (error) {
+    clearTimeout(timeoutId);
+    if (error instanceof Error) {
+      // Handle AbortError (manual timeout) or BodyTimeoutError (undici body timeout)
+      if (error.name === 'AbortError' || (error as { code?: string }).code === 'UND_ERR_BODY_TIMEOUT') {
+        throw new Error('Gemini extraction timed out after 10 minutes');
+      }
     }
-  );
+    throw error;
+  } finally {
+    clearTimeout(timeoutId);
+  }
 
   if (!response.ok) {
     const errorText = await response.text();
@@ -260,39 +291,67 @@ Return ONLY valid JSON (no markdown code blocks) with the corrected/verified dat
 - Set verificationPassed to true if data is now accurate (even if corrections were needed)
 - Only set verificationPassed to false if the PDF is unreadable or data cannot be verified`;
 
+  // Set up timeout with AbortController
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), AI_REQUEST_TIMEOUT_MS);
+
   try {
-    const response = await fetch('https://api.openai.com/v1/responses', {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${OPENAI_API_KEY}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'gpt-5.1',
-        input: [
-          {
-            role: 'user',
-            content: [
-              {
-                type: 'input_file',
-                filename: 'lab-result.pdf',
-                file_data: `data:application/pdf;base64,${pdfBase64}`,
-              },
-              { type: 'input_text', text: prompt },
-            ],
-          },
-        ],
-        max_output_tokens: 128000,
-        reasoning: {
-          effort: 'high',
-          summary: 'auto',
+    let response: Response;
+    try {
+      response = await fetch('https://api.openai.com/v1/responses', {
+        method: 'POST',
+        signal: controller.signal,
+        headers: {
+          Authorization: `Bearer ${OPENAI_API_KEY}`,
+          'Content-Type': 'application/json',
         },
-      }),
-    });
+        // @ts-expect-error - dispatcher is valid for undici but not in standard fetch types
+        dispatcher: longTimeoutAgent,
+        body: JSON.stringify({
+          model: 'gpt-5.1',
+          input: [
+            {
+              role: 'user',
+              content: [
+                {
+                  type: 'input_file',
+                  filename: 'lab-result.pdf',
+                  file_data: `data:application/pdf;base64,${pdfBase64}`,
+                },
+                { type: 'input_text', text: prompt },
+              ],
+            },
+          ],
+          max_output_tokens: 32000, // Reduced from 128000
+          reasoning: {
+            effort: 'high',
+            summary: 'auto',
+          },
+        }),
+      });
+    } catch (fetchError) {
+      if (fetchError instanceof Error) {
+        // Handle AbortError (manual timeout) or BodyTimeoutError (undici body timeout)
+        if (fetchError.name === 'AbortError' || (fetchError as { code?: string }).code === 'UND_ERR_BODY_TIMEOUT') {
+          return {
+            ...extractedData,
+            verificationPassed: false,
+            corrections: ['Verification timed out after 10 minutes - returning unverified extraction'],
+          };
+        }
+      }
+      throw fetchError;
+    } finally {
+      clearTimeout(timeoutId);
+    }
 
     if (!response.ok) {
-      // Return unverified if GPT fails (error logged at handler level)
-      return extractedData;
+      // Return unverified if GPT fails with clear message
+      return {
+        ...extractedData,
+        verificationPassed: false,
+        corrections: [`GPT verification failed with HTTP ${response.status} - returning unverified extraction`],
+      };
     }
 
     const responseText = await response.text();
@@ -302,7 +361,11 @@ Return ONLY valid JSON (no markdown code blocks) with the corrected/verified dat
       data = JSON.parse(responseText);
     } catch {
       // Return unverified if response is not valid JSON
-      return extractedData;
+      return {
+        ...extractedData,
+        verificationPassed: false,
+        corrections: ['GPT response was not valid JSON - returning unverified extraction'],
+      };
     }
 
     // Extract content from Responses API format
@@ -315,7 +378,11 @@ Return ONLY valid JSON (no markdown code blocks) with the corrected/verified dat
 
     if (!content) {
       // Return unverified if no content extracted
-      return extractedData;
+      return {
+        ...extractedData,
+        verificationPassed: false,
+        corrections: ['GPT returned empty content - returning unverified extraction'],
+      };
     }
 
     // Parse JSON from response
@@ -331,7 +398,11 @@ Return ONLY valid JSON (no markdown code blocks) with the corrected/verified dat
       verified = JSON.parse(jsonStr);
     } catch {
       // Return unverified if GPT content is not valid JSON
-      return extractedData;
+      return {
+        ...extractedData,
+        verificationPassed: false,
+        corrections: ['GPT output was not valid JSON - returning unverified extraction'],
+      };
     }
 
     return {
@@ -347,9 +418,14 @@ Return ONLY valid JSON (no markdown code blocks) with the corrected/verified dat
       verificationPassed: verified.verificationPassed ?? true,
       corrections: verified.corrections || [],
     };
-  } catch {
+  } catch (error) {
     // Return unverified extraction if GPT fails
-    return extractedData;
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    return {
+      ...extractedData,
+      verificationPassed: false,
+      corrections: [`GPT verification error: ${errorMessage} - returning unverified extraction`],
+    };
   }
 }
 

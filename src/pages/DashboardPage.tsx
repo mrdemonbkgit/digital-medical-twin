@@ -1,15 +1,28 @@
 import { Link } from 'react-router-dom';
-import { Calendar, Plus, ArrowRight } from 'lucide-react';
+import { Calendar, Plus, ArrowRight, FileUp } from 'lucide-react';
 import { PageWrapper } from '@/components/layout';
-import { Card, CardContent, CardHeader, CardTitle, Button, LoadingSpinner } from '@/components/common';
+import { Card, CardContent, CardHeader, CardTitle, Button, LoadingSpinner, FullPageSpinner } from '@/components/common';
 import { EventCard, eventTypes } from '@/components/event';
 import { useAuth } from '@/hooks/useAuth';
 import { useEvents, useEventMutation } from '@/hooks';
+import { useRequireProfile } from '@/hooks/useRequireProfile';
+import { ROUTES } from '@/routes/routes';
 
 export function DashboardPage() {
   const { user } = useAuth();
+  const { isLoading: isProfileLoading, isComplete, profile } = useRequireProfile();
   const { events, isLoading, refetch } = useEvents({ pagination: { limit: 5 } });
   const { remove, isDeleting } = useEventMutation();
+
+  // Show loading while checking profile status
+  if (isProfileLoading) {
+    return <FullPageSpinner />;
+  }
+
+  // Will redirect if profile not complete
+  if (!isComplete) {
+    return null;
+  }
 
   const handleDelete = async (id: string) => {
     try {
@@ -27,7 +40,7 @@ export function DashboardPage() {
         <Card>
           <CardContent>
             <h2 className="text-lg font-semibold text-gray-900">
-              Welcome back, {user?.email?.split('@')[0]}
+              Welcome back, {profile?.displayName || user?.email?.split('@')[0]}
             </h2>
             <p className="mt-1 text-gray-600">
               Your digital medical twin is tracking your health journey.
@@ -41,7 +54,7 @@ export function DashboardPage() {
             <CardTitle>Quick Add</CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-5">
+            <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-6">
               {eventTypes.map(({ type, label, icon: Icon, colors }) => (
                 <Link
                   key={type}
@@ -52,6 +65,14 @@ export function DashboardPage() {
                   <span className="text-sm font-medium text-gray-700">{label}</span>
                 </Link>
               ))}
+              {/* Upload Lab PDF quick action */}
+              <Link
+                to={ROUTES.LAB_UPLOADS}
+                className="flex items-center gap-2 p-3 rounded-lg border-2 transition-all bg-cyan-50 border-cyan-200 hover:border-cyan-400 hover:bg-cyan-100"
+              >
+                <FileUp className="w-5 h-5 text-cyan-600" />
+                <span className="text-sm font-medium text-gray-700">Upload Lab</span>
+              </Link>
             </div>
           </CardContent>
         </Card>

@@ -1,0 +1,282 @@
+import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import {
+  FileText,
+  Loader2,
+  CheckCircle,
+  AlertCircle,
+  Clock,
+  Trash2,
+  Eye,
+  Plus,
+  RefreshCw,
+  ExternalLink,
+} from 'lucide-react';
+import { Button } from '@/components/common';
+import { getLabUploadPdfUrl } from '@/api/labUploads';
+import type { LabUpload, ProcessingStage } from '@/types';
+
+interface LabUploadCardProps {
+  upload: LabUpload;
+  onDelete: (id: string) => Promise<void>;
+  onRetry: (id: string) => Promise<void>;
+  onPreview: (upload: LabUpload) => void;
+  isDeleting?: boolean;
+}
+
+const stageMessages: Record<ProcessingStage, string> = {
+  fetching_pdf: 'Fetching PDF...',
+  extracting_gemini: 'Extracting with Gemini...',
+  verifying_gpt: 'Verifying with GPT...',
+  post_processing: 'Matching biomarkers to standards...',
+};
+
+// Hook to track elapsed time
+function useElapsedTime(startTime?: string, isActive?: boolean) {
+  const [elapsed, setElapsed] = useState(0);
+
+  useEffect(() => {
+    if (!startTime || !isActive) {
+      setElapsed(0);
+      return;
+    }
+
+    const start = new Date(startTime).getTime();
+    setElapsed(Math.floor((Date.now() - start) / 1000));
+
+    const interval = setInterval(() => {
+      setElapsed(Math.floor((Date.now() - start) / 1000));
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [startTime, isActive]);
+
+  return elapsed;
+}
+
+function formatElapsed(seconds: number): string {
+  const mins = Math.floor(seconds / 60);
+  const secs = seconds % 60;
+  return `${mins}:${secs.toString().padStart(2, '0')}`;
+}
+
+function formatFileSize(bytes: number): string {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
+}
+
+// Allow deleting stuck jobs after 5 minutes
+const STUCK_JOB_THRESHOLD_SECONDS = 300;
+
+export function LabUploadCard({
+  upload,
+  onDelete,
+  onRetry,
+  onPreview,
+  isDeleting = false,
+}: LabUploadCardProps) {
+  const isProcessing = upload.status === 'processing';
+  const elapsed = useElapsedTime(upload.startedAt, isProcessing);
+
+  // Allow delete if job is stuck (processing for more than 5 minutes)
+  const isStuck = isProcessing && elapsed > STUCK_JOB_THRESHOLD_SECONDS;
+  const canDelete = !isProcessing || isStuck;
+
+  const handleViewPdf = async () => {
+    try {
+      const url = await getLabUploadPdfUrl(upload.storagePath);
+      window.open(url, '_blank');
+    } catch (err) {
+      console.error('Failed to get PDF URL:', err);
+    }
+  };
+
+  const getStatusBadge = () => {
+    switch (upload.status) {
+      case 'pending':
+        return (
+          <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
+            <Clock className="h-3 w-3" />
+            Pending
+          </span>
+        );
+      case 'processing':
+        return (
+          <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-600">
+            <Loader2 className="h-3 w-3 animate-spin" />
+            Processing
+          </span>
+        );
+      case 'complete':
+        return (
+          <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-600">
+            <CheckCircle className="h-3 w-3" />
+            Complete
+          </span>
+        );
+      case 'failed':
+        return (
+          <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-600">
+            <AlertCircle className="h-3 w-3" />
+            Failed
+          </span>
+        );
+    }
+  };
+
+  return (
+    <div className="border border-gray-200 rounded-lg p-4 bg-white hover:shadow-sm transition-shadow">
+      <div className="flex items-start justify-between gap-4">
+        {/* File info */}
+        <div className="flex items-start gap-3 min-w-0 flex-1">
+          <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
+            <FileText className="h-5 w-5 text-blue-600" />
+          </div>
+          <div className="min-w-0 flex-1">
+            <p className="text-sm font-medium text-gray-900 truncate">
+              {upload.filename}
+            </p>
+            <p className="text-xs text-gray-500">
+              {formatFileSize(upload.fileSize)} • {new Date(upload.createdAt).toLocaleDateString()}
+            </p>
+            {getStatusBadge()}
+          </div>
+        </div>
+
+        {/* Actions */}
+        <div className="flex items-center gap-2 flex-shrink-0">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleViewPdf}
+            title="View PDF"
+          >
+            <Eye className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => onDelete(upload.id)}
+            disabled={isDeleting || !canDelete}
+            className="text-gray-400 hover:text-red-600"
+            title={isStuck ? 'Delete stuck job' : 'Delete'}
+          >
+            {isDeleting ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Trash2 className="h-4 w-4" />
+            )}
+          </Button>
+        </div>
+      </div>
+
+      {/* Processing progress */}
+      {isProcessing && (
+        <div className={`mt-3 flex items-center gap-2 text-sm rounded-lg px-3 py-2 ${
+          isStuck ? 'text-amber-600 bg-amber-50' : 'text-blue-600 bg-blue-50'
+        }`}>
+          <Loader2 className="h-4 w-4 animate-spin" />
+          <span className="flex-1">
+            {isStuck
+              ? 'Job appears stuck - you can delete and retry'
+              : upload.processingStage ? stageMessages[upload.processingStage] : 'Processing...'}
+          </span>
+          {upload.startedAt && (
+            <span className={`font-mono text-xs ${isStuck ? 'text-amber-500' : 'text-blue-500'}`}>
+              {formatElapsed(elapsed)}
+            </span>
+          )}
+        </div>
+      )}
+
+      {/* Failed state */}
+      {upload.status === 'failed' && (
+        <div className="mt-3 space-y-2">
+          <div className="flex items-center gap-2 text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">
+            <AlertCircle className="h-4 w-4 flex-shrink-0" />
+            <span className="flex-1">{upload.errorMessage || 'Extraction failed'}</span>
+          </div>
+          <Button
+            variant="secondary"
+            size="sm"
+            onClick={() => onRetry(upload.id)}
+            className="w-full"
+          >
+            <RefreshCw className="h-4 w-4 mr-2" />
+            Retry Extraction
+          </Button>
+        </div>
+      )}
+
+      {/* Complete state */}
+      {upload.status === 'complete' && upload.extractedData && (
+        <div className="mt-3 space-y-2">
+          {/* Extraction summary */}
+          <div className="flex items-center justify-between text-sm">
+            <span className="text-gray-600">
+              {upload.extractedData.biomarkers.length} biomarker{upload.extractedData.biomarkers.length !== 1 ? 's' : ''} extracted
+            </span>
+            {upload.verificationPassed ? (
+              <span className="text-green-600 flex items-center gap-1">
+                <CheckCircle className="h-3 w-3" />
+                Verified
+              </span>
+            ) : (
+              <span className="text-amber-600 flex items-center gap-1">
+                <AlertCircle className="h-3 w-3" />
+                Unverified
+              </span>
+            )}
+          </div>
+
+          {/* Corrections */}
+          {upload.corrections && upload.corrections.length > 0 && (
+            <div className="text-xs text-gray-500 bg-gray-50 rounded px-2 py-1">
+              {upload.corrections.length} correction{upload.corrections.length !== 1 ? 's' : ''} applied
+            </div>
+          )}
+
+          {/* Actions */}
+          <div className="flex gap-2">
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => onPreview(upload)}
+              className="flex-1"
+            >
+              <Eye className="h-4 w-4 mr-2" />
+              Preview
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => onRetry(upload.id)}
+              title="Re-extract data"
+            >
+              <RefreshCw className="h-4 w-4" />
+            </Button>
+            {upload.eventId ? (
+              <Link to={`/event/${upload.eventId}`} className="flex-1">
+                <Button variant="primary" size="sm" className="w-full">
+                  <ExternalLink className="h-4 w-4 mr-2" />
+                  View Event
+                </Button>
+              </Link>
+            ) : (
+              <Link
+                to={`/event/new/lab_result?fromUpload=${upload.id}`}
+                className="flex-1"
+              >
+                <Button variant="primary" size="sm" className="w-full">
+                  <Plus className="h-4 w-4 mr-2" />
+                  Create Event
+                </Button>
+              </Link>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}

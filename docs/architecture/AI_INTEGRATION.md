@@ -1,6 +1,6 @@
 # AI Integration
 
-> Last Updated: 2025-11-27
+> Last Updated: 2025-11-28
 
 ## Summary
 
@@ -156,7 +156,9 @@ interface AIResponse {
 
 ## Lab Result PDF Extraction
 
-Two-stage AI pipeline for extracting data from lab result PDFs.
+Two-stage AI pipeline for extracting data from lab result PDFs. Uses asynchronous processing via the Lab Uploads feature.
+
+**See:** /docs/features/LAB_UPLOADS.md for user-facing details.
 
 ### Architecture
 

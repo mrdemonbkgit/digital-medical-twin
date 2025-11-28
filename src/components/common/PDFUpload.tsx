@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from 'react';
+import { useCallback, useRef, useState, useEffect } from 'react';
 import { Upload, FileText, X, Loader2, AlertCircle, CheckCircle } from 'lucide-react';
 import { Button } from './Button';
 import type { LabResultAttachment } from '@/types/events';
@@ -203,6 +203,7 @@ interface ExtractionStatusProps {
   verificationPassed?: boolean;
   corrections?: string[];
   biomarkerCount?: number;
+  startTime?: number;
 }
 
 const stageMessages: Record<ExtractionStage, { text: string; showSpinner: boolean }> = {
@@ -215,19 +216,58 @@ const stageMessages: Record<ExtractionStage, { text: string; showSpinner: boolea
   error: { text: 'Extraction failed', showSpinner: false },
 };
 
+// Hook to track elapsed time
+function useElapsedTime(startTime?: number, isActive?: boolean) {
+  const [elapsed, setElapsed] = useState(0);
+
+  useEffect(() => {
+    if (!startTime || !isActive) {
+      setElapsed(0);
+      return;
+    }
+
+    // Set initial elapsed time
+    setElapsed(Math.floor((Date.now() - startTime) / 1000));
+
+    const interval = setInterval(() => {
+      setElapsed(Math.floor((Date.now() - startTime) / 1000));
+    }, 1000);
+
+    return () => clearInterval(interval);
+  }, [startTime, isActive]);
+
+  return elapsed;
+}
+
+// Format seconds to MM:SS
+function formatElapsed(seconds: number): string {
+  const mins = Math.floor(seconds / 60);
+  const secs = seconds % 60;
+  return `${mins}:${secs.toString().padStart(2, '0')}`;
+}
+
 export function ExtractionStatus({
   extractionStage,
   verificationPassed,
   corrections,
   biomarkerCount,
+  startTime,
 }: ExtractionStatusProps) {
+  const isActive = ['uploading', 'fetching_pdf', 'extracting_gemini', 'verifying_gpt'].includes(extractionStage);
+  const elapsed = useElapsedTime(startTime, isActive);
+
   // Show progress during active extraction stages
-  if (extractionStage === 'uploading' || extractionStage === 'fetching_pdf' || extractionStage === 'extracting_gemini' || extractionStage === 'verifying_gpt') {
+  if (isActive) {
     const { text, showSpinner } = stageMessages[extractionStage];
     return (
       <div className="flex items-center gap-2 text-sm text-blue-600 bg-blue-50 rounded-lg px-3 py-2">
         {showSpinner && <Loader2 className="h-4 w-4 animate-spin" />}
-        {text}
+        <span className="flex-1">{text}</span>
+        {startTime && (
+          <span className="font-mono text-xs text-blue-500">
+            {formatElapsed(elapsed)}
+          </span>
+        )}
       </div>
     );
   }

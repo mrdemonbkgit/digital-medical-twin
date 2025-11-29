@@ -5,7 +5,8 @@ export type AIProvider = 'openai' | 'google';
 export type AIModel = 'gpt-5.1' | 'gemini-3-pro-preview';
 
 // Provider-specific reasoning parameters
-export type OpenAIReasoningEffort = 'none' | 'minimal' | 'low' | 'medium' | 'high';
+// Note: OpenAI gpt-5.1 only supports none, low, medium, high (not 'minimal')
+export type OpenAIReasoningEffort = 'none' | 'low' | 'medium' | 'high';
 export type GeminiThinkingLevel = 'low' | 'high';
 
 // Model configurations - latest models only
@@ -22,7 +23,6 @@ export const MODEL_DISPLAY_NAMES: Record<AIModel, string> = {
 // Reasoning effort display names for OpenAI
 export const OPENAI_REASONING_EFFORT_OPTIONS: Array<{ value: OpenAIReasoningEffort; label: string; description: string }> = [
   { value: 'none', label: 'None', description: 'No reasoning (fastest)' },
-  { value: 'minimal', label: 'Minimal', description: 'Very light reasoning' },
   { value: 'low', label: 'Low', description: 'Light reasoning' },
   { value: 'medium', label: 'Medium', description: 'Balanced reasoning' },
   { value: 'high', label: 'High', description: 'Deep reasoning (slowest)' },

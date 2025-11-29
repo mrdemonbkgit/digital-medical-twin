@@ -75,7 +75,8 @@ const OPENAI_API_KEY = process.env.OPENAI_API_KEY || '';
 const GOOGLE_API_KEY = process.env.GOOGLE_API_KEY || '';
 
 // Reasoning parameter types
-type OpenAIReasoningEffort = 'none' | 'minimal' | 'low' | 'medium' | 'high';
+// Note: OpenAI gpt-5.1 only supports none, low, medium, high (not 'minimal')
+type OpenAIReasoningEffort = 'none' | 'low' | 'medium' | 'high';
 type GeminiThinkingLevel = 'low' | 'high';
 
 // Supabase client

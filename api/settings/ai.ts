@@ -3,7 +3,8 @@ import { createClient } from '@supabase/supabase-js';
 import { withLogger, LoggedRequest } from '../lib/logger/withLogger.js';
 
 // Valid values for reasoning parameters
-const VALID_OPENAI_REASONING_EFFORTS = ['none', 'minimal', 'low', 'medium', 'high'];
+// Note: OpenAI gpt-5.1 does not support 'minimal' reasoning effort
+const VALID_OPENAI_REASONING_EFFORTS = ['none', 'low', 'medium', 'high'];
 const VALID_GEMINI_THINKING_LEVELS = ['low', 'high'];
 
 function createSupabaseClient(authHeader: string | undefined) {

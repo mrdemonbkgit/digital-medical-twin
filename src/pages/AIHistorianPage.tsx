@@ -3,13 +3,22 @@ import { Link } from 'react-router-dom';
 import { Bot, Settings, AlertCircle, Loader2, Trash2 } from 'lucide-react';
 import { PageWrapper } from '@/components/layout';
 import { Button } from '@/components/common';
-import { ChatMessage, ChatInput, SuggestedQuestions } from '@/components/ai';
+import { ChatMessage, ChatInput, SuggestedQuestions, ReasoningLevelSelect } from '@/components/ai';
 import { useAIChat, useAISettings } from '@/hooks';
+import type { OpenAIReasoningEffort, GeminiThinkingLevel } from '@/types/ai';
 
 export function AIHistorianPage() {
   const { messages, isLoading, error, sendMessage, clearChat } = useAIChat();
-  const { settings, isLoading: settingsLoading } = useAISettings();
+  const { settings, isLoading: settingsLoading, updateSettings } = useAISettings();
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  const handleReasoningChange = async (value: OpenAIReasoningEffort) => {
+    await updateSettings({ openaiReasoningEffort: value });
+  };
+
+  const handleThinkingChange = async (value: GeminiThinkingLevel) => {
+    await updateSettings({ geminiThinkingLevel: value });
+  };
 
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
@@ -72,12 +81,24 @@ export function AIHistorianPage() {
               </p>
             </div>
           </div>
-          {messages.length > 0 && (
-            <Button variant="ghost" size="sm" onClick={clearChat}>
-              <Trash2 className="h-4 w-4 mr-1" />
-              Clear
-            </Button>
-          )}
+          <div className="flex items-center gap-2">
+            {settings.provider && (
+              <ReasoningLevelSelect
+                provider={settings.provider}
+                openaiReasoningEffort={settings.openaiReasoningEffort}
+                geminiThinkingLevel={settings.geminiThinkingLevel}
+                onChangeOpenAI={handleReasoningChange}
+                onChangeGemini={handleThinkingChange}
+                disabled={isLoading}
+              />
+            )}
+            {messages.length > 0 && (
+              <Button variant="ghost" size="sm" onClick={clearChat}>
+                <Trash2 className="h-4 w-4 mr-1" />
+                Clear
+              </Button>
+            )}
+          </div>
         </div>
 
         {/* Messages area */}

@@ -18,9 +18,32 @@ export function BiomarkersPage() {
   const [expandedCategories, setExpandedCategories] = useState<Set<string>>(new Set());
   const [selectedBiomarker, setSelectedBiomarker] = useState<BiomarkerStandard | null>(null);
 
-  const { biomarkers, isLoading, error, groupedByCategory } = useBiomarkers({
-    searchQuery: searchQuery.length >= 2 ? searchQuery : undefined,
-  });
+  // Load all biomarkers once, filter client-side for instant search
+  const { biomarkers: allBiomarkers, isLoading, error } = useBiomarkers({});
+
+  // Client-side filtering based on search query
+  const filteredBiomarkers = useMemo(() => {
+    if (!searchQuery.trim()) return allBiomarkers;
+
+    const query = searchQuery.toLowerCase();
+    return allBiomarkers.filter((biomarker) =>
+      biomarker.name.toLowerCase().includes(query) ||
+      biomarker.code.toLowerCase().includes(query) ||
+      biomarker.aliases.some((alias) => alias.toLowerCase().includes(query))
+    );
+  }, [allBiomarkers, searchQuery]);
+
+  // Group filtered biomarkers by category
+  const groupedByCategory = useMemo(() => {
+    const grouped: Record<string, BiomarkerStandard[]> = {};
+    for (const biomarker of filteredBiomarkers) {
+      if (!grouped[biomarker.category]) {
+        grouped[biomarker.category] = [];
+      }
+      grouped[biomarker.category].push(biomarker);
+    }
+    return grouped as Record<BiomarkerCategory, BiomarkerStandard[]>;
+  }, [filteredBiomarkers]);
 
   // Get categories in display order
   const categories = useMemo(() => {
@@ -96,7 +119,7 @@ export function BiomarkersPage() {
                   Standardized Biomarkers
                 </h2>
                 <p className="text-sm text-gray-600 mt-1">
-                  Reference information for {biomarkers.length} biomarkers with standard
+                  Reference information for {allBiomarkers.length} biomarkers with standard
                   units and reference ranges
                 </p>
               </div>

@@ -1,5 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { createClient } from '@supabase/supabase-js';
+import { withLogger, LoggedRequest } from '../lib/logger/withLogger.js';
 
 // Valid values for reasoning parameters
 const VALID_OPENAI_REASONING_EFFORTS = ['none', 'minimal', 'low', 'medium', 'high'];
@@ -58,7 +59,8 @@ function getAllowedOrigin(req: VercelRequest): string {
   return allowedOrigins[0];
 }
 
-export default async function handler(req: VercelRequest, res: VercelResponse) {
+async function handler(req: LoggedRequest, res: VercelResponse) {
+  const log = req.log.child('AISettings');
   // CORS headers
   const allowedOrigin = getAllowedOrigin(req);
   res.setHeader('Access-Control-Allow-Credentials', 'true');
@@ -147,7 +149,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     return res.status(405).json({ error: 'Method not allowed' });
   } catch (error) {
-    console.error('AI Settings API error:', error);
+    log.error('AI Settings API error', error);
 
     if (error instanceof Error && error.message === 'Unauthorized') {
       return res.status(401).json({ error: 'Unauthorized' });
@@ -156,3 +158,5 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(500).json({ error: 'Internal server error' });
   }
 }
+
+export default withLogger(handler);

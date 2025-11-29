@@ -34,7 +34,7 @@ export function useBiomarkers(options: UseBiomarkersOptions = {}): UseBiomarkers
     try {
       let data: BiomarkerStandard[];
 
-      if (searchQuery && searchQuery.length >= 2) {
+      if (searchQuery) {
         data = await searchBiomarkers(searchQuery);
       } else if (category) {
         data = await getBiomarkersByCategory(category);

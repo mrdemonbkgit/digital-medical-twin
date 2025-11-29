@@ -2,6 +2,7 @@ import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { createClient } from '@supabase/supabase-js';
 import { Agent } from 'undici';
 import { withLogger, LoggedRequest } from '../lib/logger/withLogger.js';
+import type { Logger } from '../lib/logger/Logger.js';
 
 // Types
 interface Biomarker {
@@ -291,7 +292,8 @@ Important:
 // Stage 2: GPT verification
 async function verifyWithGPT(
   pdfBase64: string,
-  extractedData: ExtractedLabData
+  extractedData: ExtractedLabData,
+  log: Logger
 ): Promise<{ verified: ExtractedLabData; verificationPassed: boolean; corrections: string[] }> {
   if (!OPENAI_API_KEY) {
     return { verified: extractedData, verificationPassed: false, corrections: ['OpenAI API key not configured - skipping verification'] };
@@ -341,8 +343,10 @@ Return ONLY valid JSON (no markdown code blocks) with the corrected/verified dat
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), GPT_TIMEOUT_MS);
 
-  console.log('Starting GPT verification request...');
-  console.log('OpenAI API key configured:', !!OPENAI_API_KEY, 'key length:', OPENAI_API_KEY?.length);
+  log.debug('Starting GPT verification request', {
+    apiKeyConfigured: !!OPENAI_API_KEY,
+    apiKeyLength: OPENAI_API_KEY?.length,
+  });
 
   try {
     let response: Response;
@@ -394,7 +398,10 @@ Return ONLY valid JSON (no markdown code blocks) with the corrected/verified dat
 
     if (!response.ok) {
       const errorBody = await response.text().catch(() => 'Unable to read error body');
-      console.error('GPT verification HTTP error:', response.status, errorBody.substring(0, 500));
+      log.error('GPT verification HTTP error', undefined, {
+        status: response.status,
+        errorBody: errorBody.substring(0, 500),
+      });
       return {
         verified: extractedData,
         verificationPassed: false,
@@ -403,7 +410,7 @@ Return ONLY valid JSON (no markdown code blocks) with the corrected/verified dat
     }
 
     const responseText = await response.text();
-    console.log('GPT response received, length:', responseText.length);
+    log.debug('GPT response received', { responseLength: responseText.length });
 
     let data;
     try {
@@ -728,7 +735,7 @@ async function handler(req: LoggedRequest, res: VercelResponse) {
       await updateUploadStatus(supabase, uploadId, { processing_stage: 'verifying_gpt' });
       log.info('Stage 2: Verifying with GPT');
 
-      const verificationResult = await verifyWithGPT(pdfBase64, extractedData);
+      const verificationResult = await verifyWithGPT(pdfBase64, extractedData, log);
       finalData = verificationResult.verified;
       verificationPassed = verificationResult.verificationPassed;
       corrections = verificationResult.corrections;

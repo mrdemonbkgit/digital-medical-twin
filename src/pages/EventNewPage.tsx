@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, useSearchParams, Link, Navigate } from 'react-router-dom';
 import { ArrowLeft, Save, AlertCircle } from 'lucide-react';
+import { logger } from '@/lib/logger';
 import { PageWrapper } from '@/components/layout';
 import { Button, Card, CardContent, LoadingSpinner } from '@/components/common';
 import {
@@ -205,7 +206,7 @@ export function EventNewPage() {
           setFormData(prefilled);
         }
       } catch (err) {
-        console.error('Failed to load upload data:', err);
+        logger.error('Failed to load upload data', err instanceof Error ? err : undefined);
       } finally {
         setIsLoadingUpload(false);
       }
@@ -231,7 +232,7 @@ export function EventNewPage() {
         try {
           await updateLabUpload(sourceUpload.id, { eventId: event.id });
         } catch (err) {
-          console.error('Failed to link event to upload:', err);
+          logger.error('Failed to link event to upload', err instanceof Error ? err : undefined);
         }
         // Navigate back to lab uploads page
         navigate(ROUTES.LAB_UPLOADS);

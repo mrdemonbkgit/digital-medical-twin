@@ -1,3 +1,5 @@
+import { logger } from '@/lib/logger';
+
 // Biomarker Standard Types
 
 export type BiomarkerCategory =
@@ -229,6 +231,6 @@ export function convertToStandardUnit(
   }
 
   // No conversion found, return original
-  console.warn(`No conversion factor found for ${fromUnit} to ${standardUnit}`);
+  logger.warn('No biomarker conversion factor found', { fromUnit, standardUnit });
   return value;
 }

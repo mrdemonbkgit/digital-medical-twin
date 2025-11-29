@@ -1,6 +1,7 @@
 import { useState, useCallback } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { User, Heart, Users, Activity, ChevronRight, ChevronLeft, Check } from 'lucide-react';
+import { logger } from '@/lib/logger';
 import { PageWrapper } from '@/components/layout';
 import {
   Card,
@@ -156,7 +157,7 @@ export function ProfileSetupPage() {
       await complete();
       navigate(returnTo);
     } catch (err) {
-      console.error('Failed to create profile:', err);
+      logger.error('Failed to create profile', err instanceof Error ? err : undefined);
     }
   }, [formData, currentStep, validateStep, create, complete, navigate, returnTo]);
 

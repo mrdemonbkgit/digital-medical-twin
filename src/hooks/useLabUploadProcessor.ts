@@ -86,16 +86,15 @@ export function useLabUploadProcessor(): UseLabUploadProcessorReturn {
   const triggerProcessing = useCallback(async (uploadId: string) => {
     const log = logger.child('LabUploadProcessor');
     log.info('Triggering processing', { uploadId });
-    console.log('[DEBUG] triggerProcessing called for:', uploadId);
 
     try {
       const { data: { session } } = await supabase.auth.getSession();
-      console.log('[DEBUG] Got session:', !!session?.access_token);
+      log.debug('Got session', { hasToken: !!session?.access_token });
       if (!session?.access_token) {
         throw new Error('Not authenticated');
       }
 
-      console.log('[DEBUG] Making fetch to /api/ai/process-lab-upload');
+      log.debug('Making fetch to /api/ai/process-lab-upload');
       const response = await fetch('/api/ai/process-lab-upload', {
         method: 'POST',
         headers: {
@@ -106,19 +105,17 @@ export function useLabUploadProcessor(): UseLabUploadProcessorReturn {
         body: JSON.stringify({ uploadId }),
       });
 
-      console.log('[DEBUG] Fetch response status:', response.status);
+      log.debug('Fetch response', { status: response.status });
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        console.error('[DEBUG] Fetch error:', errorData);
+        log.error('Fetch error', undefined, { errorData });
         throw new Error(errorData.error || `HTTP ${response.status}`);
       }
 
       // Processing started successfully - polling will track progress
       log.info('Processing triggered successfully', { uploadId });
-      console.log('[DEBUG] Processing triggered successfully');
     } catch (err) {
-      console.error('[DEBUG] triggerProcessing error:', err);
-      log.error('Failed to trigger processing', err);
+      log.error('Failed to trigger processing', err instanceof Error ? err : undefined);
       // Error will be captured by polling or shown directly
       throw err;
     }

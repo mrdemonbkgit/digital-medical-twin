@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState, useCallback, type ReactNode } from 'react';
 import * as authApi from '@/api/auth';
+import { logger } from '@/lib/logger';
 import type { User, AuthContextValue, LoginCredentials, RegisterCredentials } from '@/types';
 
 const AuthContext = createContext<AuthContextValue | null>(null);
@@ -19,7 +20,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
     // Check for existing session on mount
     authApi.getCurrentUser()
       .then(setUser)
-      .catch(() => setUser(null))
+      .catch((err) => {
+        logger.warn('Failed to get current user session', { error: err instanceof Error ? err.message : String(err) });
+        setUser(null);
+      })
       .finally(() => setIsLoading(false));
 
     // Listen for auth state changes

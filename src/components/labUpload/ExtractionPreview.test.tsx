@@ -244,12 +244,14 @@ describe('ExtractionPreview', () => {
   });
 
   describe('Biomarkers Table', () => {
-    it('shows biomarker count in header', () => {
+    it('shows biomarker count in tab', () => {
       renderWithRouter(
         <ExtractionPreview upload={mockUploadWithData} onClose={mockOnClose} />
       );
 
-      expect(screen.getByText('Biomarkers (3)')).toBeInTheDocument();
+      // Tab button shows biomarker count - use getAllByText since it appears in multiple places
+      const biomarkerElements = screen.getAllByText(/Biomarkers \(3\)/);
+      expect(biomarkerElements.length).toBeGreaterThan(0);
     });
 
     it('renders biomarker names', () => {

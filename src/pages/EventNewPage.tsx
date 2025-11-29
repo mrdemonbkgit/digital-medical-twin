@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate, useSearchParams, Link, Navigate } from 'react-router-dom';
-import { ArrowLeft, Save } from 'lucide-react';
+import { ArrowLeft, Save, AlertCircle } from 'lucide-react';
 import { PageWrapper } from '@/components/layout';
 import { Button, Card, CardContent, LoadingSpinner } from '@/components/common';
 import {
@@ -141,6 +141,7 @@ export function EventNewPage() {
   const fromUploadId = searchParams.get('fromUpload');
   const [sourceUpload, setSourceUpload] = useState<LabUpload | null>(null);
   const [isLoadingUpload, setIsLoadingUpload] = useState(!!fromUploadId);
+  const [excludedBiomarkerCount, setExcludedBiomarkerCount] = useState(0);
 
   // Validate the event type from URL - redirect to selector if invalid
   if (!isValidEventType(type)) {
@@ -172,9 +173,23 @@ export function EventNewPage() {
 
           // Use processed biomarkers if available (matched to standards with converted values)
           // Fall back to raw biomarkers if post-processing wasn't completed
-          const biomarkers = extracted.processedBiomarkers && extracted.processedBiomarkers.length > 0
-            ? processedToStandardBiomarkers(extracted.processedBiomarkers)
-            : extracted.biomarkers || [];
+          let allBiomarkers: Biomarker[];
+          let totalCount: number;
+
+          if (extracted.processedBiomarkers && extracted.processedBiomarkers.length > 0) {
+            // From processed biomarkers - already filters to matched only
+            allBiomarkers = processedToStandardBiomarkers(extracted.processedBiomarkers);
+            totalCount = extracted.processedBiomarkers.length;
+          } else {
+            // From raw biomarkers - filter to only those with standardCode
+            const rawBiomarkers = extracted.biomarkers || [];
+            allBiomarkers = rawBiomarkers.filter(b => b.standardCode);
+            totalCount = rawBiomarkers.length;
+          }
+
+          // Track excluded count for warning
+          const excludedCount = totalCount - allBiomarkers.length;
+          setExcludedBiomarkerCount(excludedCount);
 
           // Pre-fill form with extracted data
           const prefilled: CreateLabResultInput = {
@@ -183,7 +198,7 @@ export function EventNewPage() {
             title: extracted.labName ? `Lab Results - ${extracted.labName}` : '',
             labName: extracted.labName,
             orderingDoctor: extracted.orderingDoctor,
-            biomarkers,
+            biomarkers: allBiomarkers,
             notes: '',
           };
 
@@ -306,6 +321,21 @@ export function EventNewPage() {
             <span className="font-medium text-gray-900">{typeInfo.label}</span>
           </div>
           <CardContent className="p-6">
+            {excludedBiomarkerCount > 0 && (
+              <div className="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-lg flex gap-3">
+                <AlertCircle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+                <div>
+                  <p className="text-sm font-medium text-amber-800">
+                    {excludedBiomarkerCount} biomarker{excludedBiomarkerCount !== 1 ? 's' : ''} excluded
+                  </p>
+                  <p className="text-sm text-amber-700 mt-1">
+                    {excludedBiomarkerCount !== 1 ? 'These biomarkers' : 'This biomarker'} could not be matched to our standards database
+                    and {excludedBiomarkerCount !== 1 ? 'have' : 'has'} been excluded. You can add{' '}
+                    {excludedBiomarkerCount !== 1 ? 'them' : 'it'} manually using the biomarker dropdown below.
+                  </p>
+                </div>
+              </div>
+            )}
             <form onSubmit={handleSubmit} className="space-y-6">
               {renderForm()}
 

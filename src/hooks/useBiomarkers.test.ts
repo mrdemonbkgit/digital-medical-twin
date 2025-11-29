@@ -127,8 +127,9 @@ describe('useBiomarkers', () => {
     expect(getAllBiomarkers).not.toHaveBeenCalled();
   });
 
-  it('fetches all biomarkers when searchQuery is less than 2 chars', async () => {
-    vi.mocked(getAllBiomarkers).mockResolvedValue(mockBiomarkers);
+  it('searches biomarkers even with single character query', async () => {
+    const searchResults = [mockBiomarkers[0]];
+    vi.mocked(searchBiomarkers).mockResolvedValue(searchResults);
 
     const { result } = renderHook(() => useBiomarkers({ searchQuery: 'l' }));
 
@@ -136,8 +137,9 @@ describe('useBiomarkers', () => {
       expect(result.current.isLoading).toBe(false);
     });
 
-    expect(getAllBiomarkers).toHaveBeenCalled();
-    expect(searchBiomarkers).not.toHaveBeenCalled();
+    expect(searchBiomarkers).toHaveBeenCalledWith('l');
+    expect(getAllBiomarkers).not.toHaveBeenCalled();
+    expect(result.current.biomarkers).toEqual(searchResults);
   });
 
   it('handles API errors gracefully', async () => {

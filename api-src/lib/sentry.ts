@@ -8,8 +8,7 @@ export function initSentry() {
   Sentry.init({
     dsn: process.env.SENTRY_DSN,
     environment: process.env.VERCEL_ENV || 'development',
-    // Use same sampling rate for all environments to avoid dev performance issues
-    tracesSampleRate: 0.1,
+    tracesSampleRate: process.env.VERCEL_ENV === 'production' ? 0.1 : 1.0,
   });
 
   initialized = true;

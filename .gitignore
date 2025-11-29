@@ -3,6 +3,8 @@ node_modules/
 
 # Build output
 dist/
+# Compiled API output (source is in api-src/)
+api/
 
 # Environment files
 .env

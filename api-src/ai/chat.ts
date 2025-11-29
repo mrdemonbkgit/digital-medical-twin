@@ -649,10 +649,6 @@ function getAllowedOrigin(req: VercelRequest): string {
 async function handler(req: LoggedRequest, res: VercelResponse) {
   const log = req.log.child('Chat');
 
-  // Performance timing instrumentation
-  const timings: Record<string, number> = {};
-  const startTotal = Date.now();
-
   // CORS headers - restrict to allowed origins
   const allowedOrigin = getAllowedOrigin(req);
   res.setHeader('Access-Control-Allow-Credentials', 'true');
@@ -674,10 +670,13 @@ async function handler(req: LoggedRequest, res: VercelResponse) {
   }
 
   try {
-    const authStart = Date.now();
+    // === TIMING DEBUG ===
+    const timings: Record<string, number> = {};
+    const t_start = Date.now();
+
     const supabase = createSupabaseClient(authHeader);
     const userId = await getUserId(supabase, authHeader);
-    timings.auth = Date.now() - authStart;
+    timings.auth = Date.now() - t_start;
 
     // Get request body
     const { message, history = [] } = req.body as {
@@ -689,31 +688,14 @@ async function handler(req: LoggedRequest, res: VercelResponse) {
       return res.status(400).json({ error: 'Message is required' });
     }
 
-    // Fetch all data in parallel for better performance
-    const dbStart = Date.now();
-    const [settingsResult, eventsResult, profileResult] = await Promise.all([
-      supabase
-        .from('user_settings')
-        .select('ai_provider, ai_model, openai_reasoning_effort, gemini_thinking_level')
-        .eq('user_id', userId)
-        .single(),
-      supabase
-        .from('events')
-        .select('*')
-        .eq('user_id', userId)
-        .order('date', { ascending: false })
-        .limit(100),
-      supabase
-        .from('user_profiles')
-        .select('display_name, gender, date_of_birth, height_cm, weight_kg, medical_conditions, current_medications, allergies, surgical_history, family_history, smoking_status, alcohol_frequency, exercise_frequency')
-        .eq('user_id', userId)
-        .single(),
-    ]);
-    timings.dbQueries = Date.now() - dbStart;
-
-    const { data: settings, error: settingsError } = settingsResult;
-    const { data: events, error: eventsError } = eventsResult;
-    const { data: userProfile } = profileResult;
+    // Get user's AI settings
+    const t_settings = Date.now();
+    const { data: settings, error: settingsError } = await supabase
+      .from('user_settings')
+      .select('ai_provider, ai_model, openai_reasoning_effort, gemini_thinking_level')
+      .eq('user_id', userId)
+      .single();
+    timings.settings = Date.now() - t_settings;
 
     if (settingsError && settingsError.code !== 'PGRST116') {
       throw settingsError;
@@ -735,15 +717,36 @@ async function handler(req: LoggedRequest, res: VercelResponse) {
       });
     }
 
+    // Fetch user's health events
+    const t_events = Date.now();
+    const { data: events, error: eventsError } = await supabase
+      .from('events')
+      .select('*')
+      .eq('user_id', userId)
+      .order('date', { ascending: false })
+      .limit(100);
+    timings.events = Date.now() - t_events;
+
     if (eventsError) {
       throw eventsError;
     }
 
+    // Fetch user's profile (ignore error - profile may not exist)
+    const t_profile = Date.now();
+    const { data: userProfile } = await supabase
+      .from('user_profiles')
+      .select('display_name, gender, date_of_birth, height_cm, weight_kg, medical_conditions, current_medications, allergies, surgical_history, family_history, smoking_status, alcohol_frequency, exercise_frequency')
+      .eq('user_id', userId)
+      .single();
+    timings.profile = Date.now() - t_profile;
+
     // Build context from profile and events
+    const t_context = Date.now();
     const profileContext = formatUserProfileForContext(userProfile as UserProfileRow | null);
     const context = formatEventsForContext(events || []);
     const eventCount = events?.length || 0;
     const truncated = eventCount >= 100;
+    timings.contextFormat = Date.now() - t_context;
 
     // Build messages for AI
     const contextHeader = `The following is the user's health timeline (${eventCount} events${truncated ? ', showing most recent 100' : ''}):\n\n`;
@@ -759,7 +762,7 @@ async function handler(req: LoggedRequest, res: VercelResponse) {
     // Call AI provider and track elapsed time
     const model = settings.ai_model || (provider === 'openai' ? 'gpt-5.1' : 'gemini-3-pro-preview');
 
-    const aiStart = Date.now();
+    const t_ai = Date.now();
     let result: ExtendedAIResponse;
 
     if (provider === 'openai') {
@@ -769,11 +772,13 @@ async function handler(req: LoggedRequest, res: VercelResponse) {
       const thinkingLevel = (settings.gemini_thinking_level || 'high') as GeminiThinkingLevel;
       result = await geminiComplete(apiKey, model, messages, thinkingLevel);
     }
+    timings.aiProvider = Date.now() - t_ai;
 
-    timings.aiProvider = Date.now() - aiStart;
-    const elapsedTime = formatElapsedTime(timings.aiProvider);
+    const elapsedMs = Date.now() - t_ai;
+    const elapsedTime = formatElapsedTime(elapsedMs);
 
     // Extract source events (simple heuristic: mentioned dates/titles)
+    const t_sources = Date.now();
     const sources: Array<{ eventId: string; type: string; date: string; title: string }> = [];
     if (events) {
       for (const event of events) {
@@ -791,15 +796,12 @@ async function handler(req: LoggedRequest, res: VercelResponse) {
         }
       }
     }
+    timings.sourceExtraction = Date.now() - t_sources;
 
-    // Log performance timings
-    timings.total = Date.now() - startTotal;
-    log.info('Chat request timings (ms)', {
-      timings,
-      provider,
-      model,
-      eventCount: events?.length || 0,
-    });
+    timings.total = Date.now() - t_start;
+
+    // Log timings for debugging
+    console.log('[CHAT TIMING] Backend breakdown:', timings);
 
     return res.status(200).json({
       content: result.content,
@@ -810,8 +812,7 @@ async function handler(req: LoggedRequest, res: VercelResponse) {
       webSearchResults: result.webSearchResults,
       citations: result.citations,
       elapsedTime,
-      // Include timings in response for debugging (remove in production if needed)
-      ...(process.env.VERCEL_ENV !== 'production' && { _timings: timings }),
+      _timings: timings, // Include in response for frontend debugging
     });
   } catch (error) {
     log.error('Chat request failed', error);

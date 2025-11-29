@@ -35,6 +35,10 @@ export function useAIChat(): UseAIChatReturn {
     async (content: string) => {
       if (!content.trim()) return;
 
+      // === TIMING DEBUG ===
+      const t0 = performance.now();
+      console.log('[CHAT TIMING] t0: User send initiated');
+
       setError(null);
       setIsLoading(true);
 
@@ -49,13 +53,18 @@ export function useAIChat(): UseAIChatReturn {
       setMessages((prev) => [...prev, userMessage]);
 
       try {
+        const t_auth = performance.now();
         const token = await getAuthToken();
+        console.log(`[CHAT TIMING] Auth token retrieved: ${(performance.now() - t_auth).toFixed(0)}ms`);
 
         // Build history from previous messages (exclude the one we just added)
         const history = messages.map((m) => ({
           role: m.role,
           content: m.content,
         }));
+
+        const t1 = performance.now();
+        console.log(`[CHAT TIMING] t1: Before fetch (prep: ${(t1 - t0).toFixed(0)}ms)`);
 
         const response = await fetch('/api/ai/chat', {
           method: 'POST',
@@ -69,12 +78,26 @@ export function useAIChat(): UseAIChatReturn {
           }),
         });
 
+        const t2 = performance.now();
+        console.log(`[CHAT TIMING] t2: Fetch complete (network: ${(t2 - t1).toFixed(0)}ms)`);
+
         if (!response.ok) {
           const data = await response.json();
           throw new Error(data.error || 'Failed to get AI response');
         }
 
         const data = await response.json();
+
+        const t3 = performance.now();
+        console.log(`[CHAT TIMING] t3: JSON parsed (parse: ${(t3 - t2).toFixed(0)}ms)`);
+
+        // Log backend timings if available
+        if (data._timings) {
+          console.log('[CHAT TIMING] Backend breakdown:', data._timings);
+          // Calculate network overhead (frontend fetch time - backend total)
+          const networkOverhead = (t2 - t1) - data._timings.total;
+          console.log(`[CHAT TIMING] Network/proxy overhead: ${networkOverhead.toFixed(0)}ms`);
+        }
 
         // Add assistant message with sources and activity metadata from API
         const assistantMessage: ChatMessage = {
@@ -92,6 +115,9 @@ export function useAIChat(): UseAIChatReturn {
         };
 
         setMessages((prev) => [...prev, assistantMessage]);
+
+        const t4 = performance.now();
+        console.log(`[CHAT TIMING] t4: State updated (total: ${(t4 - t0).toFixed(0)}ms)`);
       } catch (err) {
         const message = err instanceof Error ? err.message : 'Failed to send message';
         setError(message);

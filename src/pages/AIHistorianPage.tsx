@@ -82,14 +82,16 @@ export function AIHistorianPage() {
             </div>
           </div>
           <div className="flex items-center gap-2">
-            <ReasoningLevelSelect
-              provider={settings.provider!}
-              openaiReasoningEffort={settings.openaiReasoningEffort}
-              geminiThinkingLevel={settings.geminiThinkingLevel}
-              onChangeOpenAI={handleReasoningChange}
-              onChangeGemini={handleThinkingChange}
-              disabled={isLoading}
-            />
+            {settings.provider && (
+              <ReasoningLevelSelect
+                provider={settings.provider}
+                openaiReasoningEffort={settings.openaiReasoningEffort}
+                geminiThinkingLevel={settings.geminiThinkingLevel}
+                onChangeOpenAI={handleReasoningChange}
+                onChangeGemini={handleThinkingChange}
+                disabled={isLoading}
+              />
+            )}
             {messages.length > 0 && (
               <Button variant="ghost" size="sm" onClick={clearChat}>
                 <Trash2 className="h-4 w-4 mr-1" />

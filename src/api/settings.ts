@@ -31,7 +31,7 @@ export async function updateAISettings(updates: {
   model?: AIModel | null;
   openaiReasoningEffort?: OpenAIReasoningEffort;
   geminiThinkingLevel?: GeminiThinkingLevel;
-}): Promise<AISettings> {
+}): Promise<Partial<AISettings>> {
   const {
     data: { user },
   } = await supabase.auth.getUser();
@@ -61,11 +61,11 @@ export async function updateAISettings(updates: {
     throw new Error(error.message);
   }
 
-  // Return the updated settings
+  // Return only the fields that were updated - let the hook preserve existing state for others
   return {
-    provider: (updates.provider as AIProvider) ?? null,
-    model: (updates.model as AIModel) ?? null,
-    openaiReasoningEffort: updates.openaiReasoningEffort ?? 'medium',
-    geminiThinkingLevel: updates.geminiThinkingLevel ?? 'high',
+    provider: updates.provider !== undefined ? updates.provider : undefined,
+    model: updates.model !== undefined ? updates.model : undefined,
+    openaiReasoningEffort: updates.openaiReasoningEffort,
+    geminiThinkingLevel: updates.geminiThinkingLevel,
   };
 }

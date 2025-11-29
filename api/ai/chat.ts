@@ -54,6 +54,22 @@ interface HealthEvent {
   [key: string]: unknown;
 }
 
+interface UserProfileRow {
+  display_name: string | null;
+  gender: string;
+  date_of_birth: string;
+  height_cm: number | null;
+  weight_kg: number | null;
+  medical_conditions: string[];
+  current_medications: string[];
+  allergies: string[];
+  surgical_history: string[];
+  family_history: Record<string, string[]> | null;
+  smoking_status: string | null;
+  alcohol_frequency: string | null;
+  exercise_frequency: string | null;
+}
+
 // Server-side API keys (no longer using user-provided keys)
 const OPENAI_API_KEY = process.env.OPENAI_API_KEY || '';
 const GOOGLE_API_KEY = process.env.GOOGLE_API_KEY || '';
@@ -91,17 +107,23 @@ async function getUserId(supabase: ReturnType<typeof createClient>, authHeader: 
 // System prompt for AI Historian
 const SYSTEM_PROMPT = `You are a personal health historian assistant. Your role is to help users understand and analyze their health data over time.
 
+You have access to:
+1. The user's health profile (demographics, medical history, family history, lifestyle factors)
+2. The user's health timeline including lab results, doctor visits, medications, interventions, and health metrics
+
 Guidelines:
 - Be helpful, empathetic, and thorough in your analysis
+- Consider the user's age, gender, and medical conditions for personalized context
+- Reference their current medications when discussing potential interactions or lab results
+- Consider family history when discussing disease risks or preventive measures
+- Account for lifestyle factors when analyzing health trends
 - Always base your responses on the provided health context
 - If asked about data not in the context, clearly state you don't have that information
 - Never provide medical diagnoses or treatment recommendations
 - Suggest consulting healthcare providers for medical decisions
 - Highlight trends and patterns you observe in the data
 - Be precise about dates and values when discussing specific events
-- If the context is truncated, mention that there may be additional relevant data not shown
-
-You have access to the user's health timeline including lab results, doctor visits, medications, interventions, and health metrics.`;
+- If the context is truncated, mention that there may be additional relevant data not shown`;
 
 // Format events for context
 function formatEventsForContext(events: HealthEvent[]): string {
@@ -157,6 +179,66 @@ function formatEventsForContext(events: HealthEvent[]): string {
       return lines.join('\n');
     })
     .join('\n\n---\n\n');
+}
+
+// Format user profile for context
+function formatUserProfileForContext(profile: UserProfileRow | null): string {
+  if (!profile) {
+    return '=== USER PROFILE ===\nNo profile available.\n=== END PROFILE ===';
+  }
+
+  // Calculate age from date of birth
+  let age: number | null = null;
+  if (profile.date_of_birth) {
+    const today = new Date();
+    const birthDate = new Date(profile.date_of_birth);
+    age = today.getFullYear() - birthDate.getFullYear();
+    const monthDiff = today.getMonth() - birthDate.getMonth();
+    if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+      age--;
+    }
+  }
+
+  // Calculate BMI
+  const bmi =
+    profile.height_cm && profile.weight_kg
+      ? (profile.weight_kg / Math.pow(profile.height_cm / 100, 2)).toFixed(1)
+      : null;
+
+  // Format family history
+  let familyHistoryText = 'Family History: None listed';
+  if (profile.family_history && Object.keys(profile.family_history).length > 0) {
+    const entries = Object.entries(profile.family_history)
+      .map(([condition, relatives]) => `  - ${condition.replace(/_/g, ' ')}: ${relatives.join(', ')}`)
+      .join('\n');
+    familyHistoryText = `Family History:\n${entries}`;
+  }
+
+  const sections: (string | null)[] = [
+    '=== USER PROFILE ===',
+    `Name: ${profile.display_name || 'Not provided'}`,
+    age !== null ? `Age: ${age} years old` : null,
+    `Gender: ${profile.gender || 'Not specified'}`,
+    profile.height_cm ? `Height: ${profile.height_cm} cm` : null,
+    profile.weight_kg ? `Weight: ${profile.weight_kg} kg` : null,
+    bmi ? `BMI: ${bmi}` : null,
+    '',
+    'Medical History:',
+    `- Conditions: ${profile.medical_conditions?.length ? profile.medical_conditions.join(', ') : 'None listed'}`,
+    `- Current Medications: ${profile.current_medications?.length ? profile.current_medications.join(', ') : 'None listed'}`,
+    `- Allergies: ${profile.allergies?.length ? profile.allergies.join(', ') : 'None listed'}`,
+    `- Surgical History: ${profile.surgical_history?.length ? profile.surgical_history.join(', ') : 'None listed'}`,
+    '',
+    familyHistoryText,
+    '',
+    'Lifestyle:',
+    `- Smoking: ${profile.smoking_status?.replace(/_/g, ' ') || 'Not specified'}`,
+    `- Alcohol: ${profile.alcohol_frequency?.replace(/_/g, ' ') || 'Not specified'}`,
+    `- Exercise: ${profile.exercise_frequency?.replace(/_/g, ' ') || 'Not specified'}`,
+    '=== END PROFILE ===',
+  ];
+
+  return sections.filter((s) => s !== null).join('\n');
 }
 
 // OpenAI Responses API completion (supports reasoning, tools, web search)
@@ -639,7 +721,15 @@ async function handler(req: LoggedRequest, res: VercelResponse) {
       throw eventsError;
     }
 
-    // Build context from events
+    // Fetch user's profile (ignore error - profile may not exist)
+    const { data: userProfile } = await supabase
+      .from('user_profiles')
+      .select('display_name, gender, date_of_birth, height_cm, weight_kg, medical_conditions, current_medications, allergies, surgical_history, family_history, smoking_status, alcohol_frequency, exercise_frequency')
+      .eq('user_id', userId)
+      .single();
+
+    // Build context from profile and events
+    const profileContext = formatUserProfileForContext(userProfile as UserProfileRow | null);
     const context = formatEventsForContext(events || []);
     const eventCount = events?.length || 0;
     const truncated = eventCount >= 100;
@@ -649,6 +739,7 @@ async function handler(req: LoggedRequest, res: VercelResponse) {
 
     const messages: ProviderMessage[] = [
       { role: 'system', content: SYSTEM_PROMPT },
+      { role: 'system', content: profileContext },
       { role: 'system', content: contextHeader + context },
       ...history.map((h) => ({ role: h.role as 'user' | 'assistant', content: h.content })),
       { role: 'user', content: message },

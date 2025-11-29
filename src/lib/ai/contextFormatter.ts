@@ -1,4 +1,5 @@
 import type { HealthEvent, Biomarker } from '@/types/events';
+import type { UserProfileRow, FamilyHistory } from '@/types/userProfile';
 import { formatContextHeader, CONTEXT_FOOTER } from './prompts';
 
 /**
@@ -114,4 +115,79 @@ ${CONTEXT_FOOTER}`;
  */
 export function estimateTokens(text: string): number {
   return Math.ceil(text.length / 4);
+}
+
+/**
+ * Calculate age from date of birth
+ */
+function calculateAge(dateOfBirth: string): number {
+  const today = new Date();
+  const birthDate = new Date(dateOfBirth);
+  let age = today.getFullYear() - birthDate.getFullYear();
+  const monthDiff = today.getMonth() - birthDate.getMonth();
+  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate())) {
+    age--;
+  }
+  return age;
+}
+
+/**
+ * Format family history for context
+ */
+function formatFamilyHistoryForContext(familyHistory: FamilyHistory | null): string {
+  if (!familyHistory || Object.keys(familyHistory).length === 0) {
+    return 'Family History: None listed';
+  }
+
+  const entries = Object.entries(familyHistory)
+    .map(([condition, relatives]) => {
+      const formattedCondition = condition.replace(/_/g, ' ');
+      return `  - ${formattedCondition}: ${relatives.join(', ')}`;
+    })
+    .join('\n');
+
+  return `Family History:\n${entries}`;
+}
+
+/**
+ * Format user profile for AI context
+ * Uses database row format (snake_case) as that's what comes from Supabase
+ */
+export function formatUserProfileForContext(profile: UserProfileRow | null): string {
+  if (!profile) {
+    return '=== USER PROFILE ===\nNo profile available.\n=== END PROFILE ===';
+  }
+
+  const age = profile.date_of_birth ? calculateAge(profile.date_of_birth) : null;
+
+  const bmi =
+    profile.height_cm && profile.weight_kg
+      ? (profile.weight_kg / Math.pow(profile.height_cm / 100, 2)).toFixed(1)
+      : null;
+
+  const sections: (string | null)[] = [
+    '=== USER PROFILE ===',
+    `Name: ${profile.display_name || 'Not provided'}`,
+    age !== null ? `Age: ${age} years old` : null,
+    `Gender: ${profile.gender || 'Not specified'}`,
+    profile.height_cm ? `Height: ${profile.height_cm} cm` : null,
+    profile.weight_kg ? `Weight: ${profile.weight_kg} kg` : null,
+    bmi ? `BMI: ${bmi}` : null,
+    '',
+    'Medical History:',
+    `- Conditions: ${profile.medical_conditions?.length ? profile.medical_conditions.join(', ') : 'None listed'}`,
+    `- Current Medications: ${profile.current_medications?.length ? profile.current_medications.join(', ') : 'None listed'}`,
+    `- Allergies: ${profile.allergies?.length ? profile.allergies.join(', ') : 'None listed'}`,
+    `- Surgical History: ${profile.surgical_history?.length ? profile.surgical_history.join(', ') : 'None listed'}`,
+    '',
+    formatFamilyHistoryForContext(profile.family_history),
+    '',
+    'Lifestyle:',
+    `- Smoking: ${profile.smoking_status?.replace(/_/g, ' ') || 'Not specified'}`,
+    `- Alcohol: ${profile.alcohol_frequency?.replace(/_/g, ' ') || 'Not specified'}`,
+    `- Exercise: ${profile.exercise_frequency?.replace(/_/g, ' ') || 'Not specified'}`,
+    '=== END PROFILE ===',
+  ];
+
+  return sections.filter((s) => s !== null).join('\n');
 }

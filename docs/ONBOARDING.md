@@ -8,7 +8,7 @@ Project setup, tech stack, and directory structure. Read this first when startin
 
 ## Keywords
 
-`setup` `install` `structure` `tech stack` `getting started` `directory` `project`
+`setup` `install` `structure` `tech stack` `getting started` `directory` `project` `dev server` `WSL2` `vercel dev` `express` `hot reload`
 
 ## Table of Contents
 
@@ -17,6 +17,7 @@ Project setup, tech stack, and directory structure. Read this first when startin
 - [Directory Structure](#directory-structure)
 - [Setup Instructions](#setup-instructions)
 - [Available Scripts](#available-scripts)
+- [Local API Development](#local-api-development)
 
 ---
 
@@ -95,10 +96,20 @@ Users log health events (bloodwork, doctor visits, medications, interventions, m
 │   ├── /pages/               # Page components
 │   ├── /hooks/               # Custom hooks
 │   ├── /context/             # React context providers
-│   ├── /api/                 # API layer
+│   ├── /api/                 # API layer (frontend)
 │   ├── /types/               # TypeScript types
 │   ├── /utils/               # Utility functions
 │   └── /styles/              # Global styles
+│
+├── /api-src/                 # API source (TypeScript)
+│   ├── /ai/                  # AI endpoints
+│   ├── /settings/            # Settings endpoints
+│   └── /lib/                 # Shared API utilities
+│
+├── /api/                     # Compiled API output (gitignored)
+│
+├── /dev-server/              # Local development server
+│   └── server.ts             # Express server with hot reload
 │
 ├── /public/                  # Static assets
 └── /tests/                   # Test files
@@ -126,7 +137,64 @@ npm run dev
 
 | Command | Description |
 |---------|-------------|
-| `npm run dev` | Start development server |
+| `npm run dev` | Start Vite dev server (frontend only) |
+| `npm run dev:api` | Start Express API server with hot reload (recommended for API work) |
+| `npm run dev:vercel` | Start Vercel dev server (slower, production-accurate) |
+| `npm run build:api` | Compile API TypeScript to JavaScript |
 | `npm run build` | Production build |
 | `npm run test` | Run test suite |
 | `npm run lint` | Run linter |
+
+---
+
+## Local API Development
+
+### Why Use the Express Dev Server?
+
+The Vercel CLI (`vercel dev`) simulates AWS Lambda by spawning a **new Node.js process for each request**. On WSL2's 9p filesystem (`/mnt/c/...`), this causes ~32 second delays per API call due to slow cross-filesystem I/O.
+
+The Express dev server bypasses this by running all handlers in a single persistent process with hot reload support.
+
+### Performance Comparison
+
+| Metric | `vercel dev` (WSL2) | `npm run dev:api` |
+|--------|---------------------|-------------------|
+| First request | ~32 seconds | ~100ms |
+| Subsequent requests | ~32 seconds | ~1ms |
+| Hot reload | N/A (always cold) | ~1-2 seconds |
+
+### Usage
+
+```bash
+# Terminal 1: Start frontend
+npm run dev
+
+# Terminal 2: Start API server (recommended)
+npm run dev:api
+```
+
+Vite proxies `/api/*` requests to the Express server on port 3001.
+
+### How It Works
+
+1. **TypeScript compilation**: `api-src/*.ts` → `api/*.js` (via `tsconfig.api.json`)
+2. **Watch mode**: TypeScript compiler watches for changes
+3. **Hot reload**: Express server reloads handlers via ESM dynamic imports with cache-busting
+4. **File watcher**: chokidar detects changes to compiled `.js` files
+
+### Limitations
+
+- **Lib changes need restart**: Changes to `api-src/lib/*` require restarting the dev server
+- **New routes need restart**: Adding new API files requires restart to register routes
+- **Not 100% production parity**: Express vs Vercel serverless, but compatible for all common use cases
+
+### When to Use `vercel dev`
+
+Use `npm run dev:vercel` when you need:
+- Exact production behavior testing
+- Vercel-specific features (edge functions, middleware)
+- To debug production-only issues
+
+### Searchability Keywords
+
+`slow API` `32 seconds` `vercel dev slow` `WSL2 performance` `@vercel/fun` `process spawning` `cold start` `hot reload` `express dev server`

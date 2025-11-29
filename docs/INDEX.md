@@ -1,6 +1,6 @@
 # Documentation Index
 
-> Last Updated: 2025-11-29 (Clarified personal health tracking app design, removed patient info from lab results UI)
+> Last Updated: 2025-11-29 (Added Express dev server documentation for WSL2 performance)
 
 ## Summary
 
@@ -37,6 +37,9 @@ Master index for all project documentation. Search here first to find relevant d
 | Project overview | /docs/ONBOARDING.md | Full doc |
 | Tech stack | /docs/ONBOARDING.md | #tech-stack |
 | Directory structure | /docs/ONBOARDING.md | #directory-structure |
+| Local API development | /docs/ONBOARDING.md | #local-api-development |
+| Express dev server | /docs/ONBOARDING.md | #local-api-development |
+| WSL2 performance | /docs/ONBOARDING.md | #local-api-development |
 | Agent workflow | /docs/AGENT_PROTOCOL.md | Full doc |
 | Reading docs | /docs/AGENT_PROTOCOL.md | #reading-strategy |
 | Updating docs | /docs/AGENT_PROTOCOL.md | #updating-documentation |
@@ -94,6 +97,8 @@ Master index for all project documentation. Search here first to find relevant d
 ### C
 
 - **changelog**: /docs/CHANGELOG.md
+- **chokidar**: /docs/ONBOARDING.md#local-api-development
+- **cold start**: /docs/ONBOARDING.md#local-api-development
 - **charts**: /docs/features/INSIGHTS_DASHBOARD.md
 - **citations**: /docs/architecture/AI_INTEGRATION.md#gemini-grounding--citations
 - **cloud**: /docs/architecture/DATABASE_SCHEMA.md
@@ -108,6 +113,8 @@ Master index for all project documentation. Search here first to find relevant d
 - **decisions**: /docs/DECISION_LOG.md
 - **deliverables**: /docs/ROADMAP.md
 - **deployment**: /docs/DECISION_LOG.md#2025-11-26-hosting-platform-selection
+- **dev server**: /docs/ONBOARDING.md#local-api-development
+- **dev:api**: /docs/ONBOARDING.md#local-api-development
 - **directory**: /docs/ONBOARDING.md#directory-structure
 - **doctor packet**: /docs/ideas/gpt-5.1-feature-ideas.md#care-team-share-packs
 - **doctor visits**: /docs/features/DATA_TRACKING.md
@@ -117,6 +124,7 @@ Master index for all project documentation. Search here first to find relevant d
 
 - **email**: /docs/architecture/AUTH_SYSTEM.md
 - **encryption**: /docs/SECURITY.md#api-key-management
+- **express**: /docs/ONBOARDING.md#local-api-development
 - **events**: /docs/features/DATA_TRACKING.md, src/api/events.ts, src/types/events.ts
 - **EventCard**: src/components/event/EventCard.tsx
 - **EventForm**: src/components/event/forms/
@@ -142,6 +150,7 @@ Master index for all project documentation. Search here first to find relevant d
 - **health**: /docs/ONBOARDING.md, /docs/features/DATA_TRACKING.md
 - **historian**: /docs/features/AI_HISTORIAN.md
 - **hooks**: src/hooks/ (useEvents, useEvent, useEventMutation)
+- **hot reload**: /docs/ONBOARDING.md#local-api-development
 
 ### I
 
@@ -211,6 +220,7 @@ Master index for all project documentation. Search here first to find relevant d
 - **serverless**: /docs/DECISION_LOG.md#2025-11-26-ai-api-architecture
 - **session**: /docs/SECURITY.md#authentication-flow
 - **setup**: /docs/ONBOARDING.md#setup-instructions
+- **slow API**: /docs/ONBOARDING.md#local-api-development
 - **state**: /docs/development/STATE_MANAGEMENT.md
 - **storage**: /docs/architecture/DATABASE_SCHEMA.md
 - **supabase**: /docs/DECISION_LOG.md#2025-11-26-database-provider-selection, supabase/migrations/
@@ -246,4 +256,5 @@ Master index for all project documentation. Search here first to find relevant d
 
 - **wearables**: /docs/ideas/FEATURE_SUGGESTIONS_OPUS_4_5.md#1-wearable-device-integration
 - **web search**: /docs/architecture/AI_INTEGRATION.md#gemini-grounding--citations
-- **WSL2**: /docs/DATABASE_MIGRATIONS.md
+- **WSL2**: /docs/DATABASE_MIGRATIONS.md, /docs/ONBOARDING.md#local-api-development
+- **WSL2 performance**: /docs/ONBOARDING.md#local-api-development

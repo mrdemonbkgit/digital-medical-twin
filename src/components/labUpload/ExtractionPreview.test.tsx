@@ -78,6 +78,7 @@ const mockUploadWithData: LabUpload = {
     testDate: '2024-01-01',
     biomarkers: [
       {
+        standardCode: 'LDL',
         name: 'LDL Cholesterol',
         value: 120,
         unit: 'mg/dL',
@@ -85,15 +86,15 @@ const mockUploadWithData: LabUpload = {
         referenceMax: 100,
       },
       {
+        standardCode: 'HDL',
         name: 'HDL Cholesterol',
         value: 55,
         unit: 'mg/dL',
         referenceMin: 40,
         referenceMax: 60,
-        secondaryValue: 1.42,
-        secondaryUnit: 'mmol/L',
       },
       {
+        standardCode: 'GLUCOSE_FASTING',
         name: 'Glucose',
         value: 75,
         unit: 'mg/dL',
@@ -216,51 +217,6 @@ describe('ExtractionPreview', () => {
     });
   });
 
-  describe('Patient Information', () => {
-    it('shows patient name', () => {
-      renderWithRouter(
-        <ExtractionPreview upload={mockUploadWithData} onClose={mockOnClose} />
-      );
-
-      expect(screen.getByText('Patient Information')).toBeInTheDocument();
-      expect(screen.getByText('John Doe')).toBeInTheDocument();
-    });
-
-    it('shows patient gender', () => {
-      renderWithRouter(
-        <ExtractionPreview upload={mockUploadWithData} onClose={mockOnClose} />
-      );
-
-      expect(screen.getByText('male')).toBeInTheDocument();
-    });
-
-    it('shows patient birthday', () => {
-      renderWithRouter(
-        <ExtractionPreview upload={mockUploadWithData} onClose={mockOnClose} />
-      );
-
-      expect(screen.getByText('1990-01-15')).toBeInTheDocument();
-    });
-
-    it('does not show patient section when no patient data', () => {
-      const noPatientUpload = {
-        ...mockUploadWithData,
-        extractedData: {
-          ...mockUploadWithData.extractedData!,
-          clientName: undefined,
-          clientGender: undefined,
-          clientBirthday: undefined,
-        },
-      };
-
-      renderWithRouter(
-        <ExtractionPreview upload={noPatientUpload} onClose={mockOnClose} />
-      );
-
-      expect(screen.queryByText('Patient Information')).not.toBeInTheDocument();
-    });
-  });
-
   describe('Lab Information', () => {
     it('shows lab name', () => {
       renderWithRouter(
@@ -326,22 +282,14 @@ describe('ExtractionPreview', () => {
       expect(units.length).toBeGreaterThan(0);
     });
 
-    it('shows secondary value when present', () => {
-      renderWithRouter(
-        <ExtractionPreview upload={mockUploadWithData} onClose={mockOnClose} />
-      );
-
-      expect(screen.getByText(/1.42 mmol\/L/)).toBeInTheDocument();
-    });
-
     it('shows reference ranges', () => {
       renderWithRouter(
         <ExtractionPreview upload={mockUploadWithData} onClose={mockOnClose} />
       );
 
-      expect(screen.getByText('0 - 100')).toBeInTheDocument();
-      expect(screen.getByText('40 - 60')).toBeInTheDocument();
-      expect(screen.getByText('70 - 100')).toBeInTheDocument();
+      expect(screen.getByText('0-100')).toBeInTheDocument();
+      expect(screen.getByText('40-60')).toBeInTheDocument();
+      expect(screen.getByText('70-100')).toBeInTheDocument();
     });
 
     it('shows High flag for values above max', () => {
@@ -413,6 +361,7 @@ describe('ExtractionPreview', () => {
           ...mockUploadWithData.extractedData!,
           biomarkers: [
             {
+              standardCode: 'TEST',
               name: 'Test',
               value: 50,
               unit: 'units',
@@ -439,6 +388,7 @@ describe('ExtractionPreview', () => {
           ...mockUploadWithData.extractedData!,
           biomarkers: [
             {
+              standardCode: 'TEST',
               name: 'Test',
               value: 5,
               unit: 'units',
@@ -463,6 +413,7 @@ describe('ExtractionPreview', () => {
           ...mockUploadWithData.extractedData!,
           biomarkers: [
             {
+              standardCode: 'TEST',
               name: 'Test',
               value: 50,
               unit: 'units',
@@ -517,13 +468,13 @@ describe('ExtractionPreview', () => {
       expect(screen.getByText('HDL Cholesterol')).toBeInTheDocument();
     });
 
-    it('shows original name when different from standard', () => {
+    it('shows standard name for renamed biomarkers', () => {
       renderWithRouter(
         <ExtractionPreview upload={mockUploadWithProcessed} onClose={mockOnClose} />
       );
 
-      // HDL was originally "High Density Lipoprotein"
-      expect(screen.getByText(/Original: High Density Lipoprotein/)).toBeInTheDocument();
+      // HDL was originally "High Density Lipoprotein" but shows as "HDL Cholesterol"
+      expect(screen.getByText('HDL Cholesterol')).toBeInTheDocument();
     });
 
     it('shows standard code for matched biomarkers', () => {
@@ -542,8 +493,8 @@ describe('ExtractionPreview', () => {
       );
 
       // HDL was converted from 1.42 mmol/L to 55 mg/dL
-      expect(screen.getByText('55.00')).toBeInTheDocument();
-      expect(screen.getByText(/Original: 1.42 mmol\/L/)).toBeInTheDocument();
+      expect(screen.getByText('55.0')).toBeInTheDocument();
+      expect(screen.getByText(/was 1.42/)).toBeInTheDocument();
     });
 
     it('shows original name for unmatched biomarkers', () => {
@@ -596,15 +547,6 @@ describe('ExtractionPreview', () => {
       expect(screen.queryByText('Unmatched Biomarkers Need Review')).not.toBeInTheDocument();
     });
 
-    it('shows validation issues indicator when present', () => {
-      renderWithRouter(
-        <ExtractionPreview upload={mockUploadWithProcessed} onClose={mockOnClose} />
-      );
-
-      // Glucose has validation issues
-      expect(screen.getByText('Issues')).toBeInTheDocument();
-    });
-
     it('shows flags for processed biomarkers', () => {
       renderWithRouter(
         <ExtractionPreview upload={mockUploadWithProcessed} onClose={mockOnClose} />
@@ -620,9 +562,9 @@ describe('ExtractionPreview', () => {
         <ExtractionPreview upload={mockUploadWithProcessed} onClose={mockOnClose} />
       );
 
-      expect(screen.getByText('0 - 100')).toBeInTheDocument();
-      expect(screen.getByText('40 - 60')).toBeInTheDocument();
-      expect(screen.getByText('70 - 100')).toBeInTheDocument();
+      expect(screen.getByText('0-100')).toBeInTheDocument();
+      expect(screen.getByText('40-60')).toBeInTheDocument();
+      expect(screen.getByText('70-100')).toBeInTheDocument();
     });
   });
 

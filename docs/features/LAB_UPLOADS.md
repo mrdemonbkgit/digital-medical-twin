@@ -1,10 +1,12 @@
 # Lab Uploads Feature
 
-> Last Updated: 2025-11-28
+> Last Updated: 2025-11-29
 
 ## Summary
 
 Dedicated page for uploading lab result PDFs and queueing them for AI-powered extraction. Features a 3-stage AI pipeline (Gemini extraction → GPT verification → Gemini post-processing) that standardizes biomarkers against a database of ~100 common markers with unit conversion and gender-specific reference ranges.
+
+**Note:** This is a personal health tracking app. Patient information (name, gender, birthday) is extracted from PDFs but not stored or displayed since the user is assumed to be the patient. Gender for reference ranges comes from the user's profile.
 
 ## Keywords
 
@@ -97,7 +99,8 @@ A dedicated `/lab-uploads` page where users:
 │                                                                  │
 │  3. Stage 1: Gemini Extraction                                   │
 │     - processing_stage: 'extracting_gemini'                      │
-│     - Extract biomarkers, patient info, metadata                 │
+│     - Extract biomarkers, lab info, test date, metadata          │
+│     - Patient info extracted but not stored (personal app)       │
 │                                                                  │
 │  4. Stage 2: GPT Verification (optional)                         │
 │     - processing_stage: 'verifying_gpt'                          │
@@ -334,6 +337,26 @@ The ExtractionPreview modal displays processed biomarkers with:
 - **Unmatched biomarkers**: Highlighted with amber, original values preserved
 - **Summary bar**: Count of matched vs unmatched
 - **Warning notice**: When unmatched biomarkers need review
+
+### Debug Tab
+
+The ExtractionPreview modal includes a Debug Info tab for troubleshooting extraction issues:
+
+| Component | Path | Description |
+|-----------|------|-------------|
+| DebugTab | `src/components/labUpload/DebugTab.tsx` | Main debug tab container |
+| DebugSummary | `src/components/labUpload/DebugSummary.tsx` | Quick stats (total time, counts) |
+| StageTimeline | `src/components/labUpload/StageTimeline.tsx` | Stage-by-stage timing breakdown |
+| MatchDetailsTable | `src/components/labUpload/MatchDetailsTable.tsx` | Per-biomarker match results |
+| RawResponseSection | `src/components/labUpload/RawResponseSection.tsx` | Expandable raw AI responses |
+
+**Debug Info Captured:**
+
+| Stage | Data Captured |
+|-------|---------------|
+| Gemini Extraction | Raw response, duration, biomarker count |
+| GPT Verification | Raw response, duration, corrections made |
+| Post-Processing | Raw response, duration, match details with conversion factors |
 
 ---
 

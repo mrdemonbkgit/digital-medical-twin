@@ -28,6 +28,8 @@ import type {
   CreateMedicationInput,
   CreateLabResultInput,
   LabUpload,
+  Biomarker,
+  ProcessedBiomarker,
 } from '@/types';
 
 const VALID_EVENT_TYPES: EventType[] = [
@@ -37,6 +39,21 @@ const VALID_EVENT_TYPES: EventType[] = [
   'intervention',
   'metric',
 ];
+
+// Convert processed biomarkers (from PDF extraction) to standard Biomarker format
+function processedToStandardBiomarkers(processed: ProcessedBiomarker[]): Biomarker[] {
+  return processed
+    .filter((p) => p.matched && p.standardCode) // Only include matched biomarkers
+    .map((p) => ({
+      standardCode: p.standardCode!,
+      name: p.standardName || p.originalName,
+      value: p.standardValue ?? p.originalValue,
+      unit: p.standardUnit || p.originalUnit,
+      referenceMin: p.referenceMin ?? undefined,
+      referenceMax: p.referenceMax ?? undefined,
+      flag: p.flag ?? undefined,
+    }));
+}
 
 function isValidEventType(type: string | undefined): type is EventType {
   return !!type && VALID_EVENT_TYPES.includes(type as EventType);
@@ -153,17 +170,20 @@ export function EventNewPage() {
           setSourceUpload(upload);
           const extracted = upload.extractedData;
 
+          // Use processed biomarkers if available (matched to standards with converted values)
+          // Fall back to raw biomarkers if post-processing wasn't completed
+          const biomarkers = extracted.processedBiomarkers && extracted.processedBiomarkers.length > 0
+            ? processedToStandardBiomarkers(extracted.processedBiomarkers)
+            : extracted.biomarkers || [];
+
           // Pre-fill form with extracted data
           const prefilled: CreateLabResultInput = {
             type: 'lab_result',
             date: extracted.testDate || new Date().toISOString().split('T')[0],
             title: extracted.labName ? `Lab Results - ${extracted.labName}` : '',
-            clientName: extracted.clientName,
-            clientGender: extracted.clientGender,
-            clientBirthday: extracted.clientBirthday,
             labName: extracted.labName,
             orderingDoctor: extracted.orderingDoctor,
-            biomarkers: extracted.biomarkers || [],
+            biomarkers,
             notes: '',
           };
 

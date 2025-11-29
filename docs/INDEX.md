@@ -1,6 +1,6 @@
 # Documentation Index
 
-> Last Updated: 2025-11-28 (Added User Profile, Biomarker Standards, Post-processing pipeline)
+> Last Updated: 2025-11-29 (Clarified personal health tracking app design, removed patient info from lab results UI)
 
 ## Summary
 
@@ -187,7 +187,7 @@ Master index for all project documentation. Search here first to find relevant d
 - **ProfilePage**: src/pages/ProfilePage.tsx
 - **phases**: /docs/ROADMAP.md
 - **planning**: /docs/ROADMAP.md
-- **presets**: /docs/features/DATA_TRACKING.md#biomarker-presets, src/lib/biomarkerPresets.ts
+- **presets**: See biomarker standards in /docs/features/LAB_UPLOADS.md#biomarker-standards-database
 - **product**: /PRODUCT_DESCRIPTION.md
 - **protocol**: /docs/AGENT_PROTOCOL.md
 - **proxy**: /docs/DECISION_LOG.md#2025-11-26-ai-api-architecture

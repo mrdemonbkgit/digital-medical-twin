@@ -1,22 +1,17 @@
 import { Plus, Trash2 } from 'lucide-react';
-import type { Biomarker } from '@/types';
+import type { Biomarker, BiomarkerStandard, Gender } from '@/types';
 import { Button, Input } from '@/components/common';
+import { BiomarkerSelect } from './BiomarkerSelect';
 import { cn } from '@/utils/cn';
 
 interface BiomarkerInputProps {
   biomarkers: Biomarker[];
   onChange: (biomarkers: Biomarker[]) => void;
+  availableStandards: BiomarkerStandard[];
+  userGender?: Gender;
   error?: string;
+  isLoading?: boolean;
 }
-
-const emptyBiomarker: Biomarker = {
-  name: '',
-  value: 0,
-  unit: '',
-  referenceMin: undefined,
-  referenceMax: undefined,
-  flag: undefined,
-};
 
 function calculateFlag(
   value: number,
@@ -32,37 +27,80 @@ function calculateFlag(
 export function BiomarkerInput({
   biomarkers,
   onChange,
+  availableStandards,
+  userGender = 'male',
   error,
+  isLoading = false,
 }: BiomarkerInputProps) {
+  // Get list of already-used standard codes to prevent duplicates
+  const usedCodes = biomarkers.map((b) => b.standardCode).filter(Boolean);
+
   const handleAdd = () => {
-    onChange([...biomarkers, { ...emptyBiomarker }]);
+    // Add empty biomarker entry (user will select from dropdown)
+    onChange([
+      ...biomarkers,
+      {
+        standardCode: '',
+        name: '',
+        value: 0,
+        unit: '',
+        referenceMin: undefined,
+        referenceMax: undefined,
+        flag: undefined,
+      },
+    ]);
   };
 
   const handleRemove = (index: number) => {
     onChange(biomarkers.filter((_, i) => i !== index));
   };
 
-  const handleChange = (
-    index: number,
-    field: keyof Biomarker,
-    value: string | number
-  ) => {
+  const handleSelectBiomarker = (index: number, standard: BiomarkerStandard | null) => {
     const updated = biomarkers.map((b, i) => {
       if (i !== index) return b;
 
-      const newBiomarker = { ...b, [field]: value };
-
-      // Recalculate flag when value or reference range changes
-      if (field === 'value' || field === 'referenceMin' || field === 'referenceMax') {
-        newBiomarker.flag = calculateFlag(
-          field === 'value' ? (value as number) : newBiomarker.value,
-          field === 'referenceMin' ? (value as number) : newBiomarker.referenceMin,
-          field === 'referenceMax' ? (value as number) : newBiomarker.referenceMax
-        );
+      if (!standard) {
+        // Cleared selection
+        return {
+          standardCode: '',
+          name: '',
+          value: 0,
+          unit: '',
+          referenceMin: undefined,
+          referenceMax: undefined,
+          flag: undefined,
+        };
       }
 
-      return newBiomarker;
+      // Get gender-specific reference range (default to male)
+      const gender = userGender === 'female' ? 'female' : 'male';
+      const range = standard.referenceRanges[gender];
+
+      return {
+        standardCode: standard.code,
+        name: standard.name,
+        value: b.value, // Keep existing value if any
+        unit: standard.standardUnit,
+        referenceMin: range.low,
+        referenceMax: range.high,
+        flag: calculateFlag(b.value, range.low, range.high),
+      };
     });
+
+    onChange(updated);
+  };
+
+  const handleValueChange = (index: number, value: number) => {
+    const updated = biomarkers.map((b, i) => {
+      if (i !== index) return b;
+
+      return {
+        ...b,
+        value,
+        flag: calculateFlag(value, b.referenceMin, b.referenceMax),
+      };
+    });
+
     onChange(updated);
   };
 
@@ -72,7 +110,13 @@ export function BiomarkerInput({
         <label className="block text-sm font-medium text-gray-700">
           Biomarkers
         </label>
-        <Button type="button" variant="secondary" size="sm" onClick={handleAdd}>
+        <Button
+          type="button"
+          variant="secondary"
+          size="sm"
+          onClick={handleAdd}
+          disabled={isLoading}
+        >
           <Plus className="w-4 h-4 mr-1" />
           Add Biomarker
         </Button>
@@ -80,7 +124,11 @@ export function BiomarkerInput({
 
       {error && <p className="text-sm text-red-600">{error}</p>}
 
-      {biomarkers.length === 0 ? (
+      {isLoading ? (
+        <p className="text-sm text-gray-500 text-center py-4 border border-dashed border-gray-300 rounded-lg">
+          Loading biomarker standards...
+        </p>
+      ) : biomarkers.length === 0 ? (
         <p className="text-sm text-gray-500 text-center py-4 border border-dashed border-gray-300 rounded-lg">
           No biomarkers added yet. Click "Add Biomarker" to start.
         </p>
@@ -104,12 +152,9 @@ export function BiomarkerInput({
                     <span
                       className={cn(
                         'ml-2 text-xs uppercase px-2 py-0.5 rounded',
-                        biomarker.flag === 'high' &&
-                          'bg-red-100 text-red-700',
-                        biomarker.flag === 'low' &&
-                          'bg-blue-100 text-blue-700',
-                        biomarker.flag === 'normal' &&
-                          'bg-green-100 text-green-700'
+                        biomarker.flag === 'high' && 'bg-red-100 text-red-700',
+                        biomarker.flag === 'low' && 'bg-blue-100 text-blue-700',
+                        biomarker.flag === 'normal' && 'bg-green-100 text-green-700'
                       )}
                     >
                       {biomarker.flag}
@@ -128,11 +173,11 @@ export function BiomarkerInput({
               </div>
 
               <div className="grid gap-3 sm:grid-cols-2">
-                <Input
-                  label="Name"
-                  placeholder="e.g., Hemoglobin A1c"
-                  value={biomarker.name}
-                  onChange={(e) => handleChange(index, 'name', e.target.value)}
+                <BiomarkerSelect
+                  biomarkers={availableStandards}
+                  value={biomarker.standardCode || null}
+                  onChange={(standard) => handleSelectBiomarker(index, standard)}
+                  excludeCodes={usedCodes.filter((code): code is string => code !== undefined && code !== biomarker.standardCode)}
                 />
                 <div className="grid grid-cols-2 gap-2">
                   <Input
@@ -141,78 +186,30 @@ export function BiomarkerInput({
                     step="any"
                     value={biomarker.value || ''}
                     onChange={(e) =>
-                      handleChange(index, 'value', parseFloat(e.target.value) || 0)
+                      handleValueChange(index, parseFloat(e.target.value) || 0)
                     }
+                    disabled={!biomarker.standardCode}
                   />
                   <Input
                     label="Unit"
-                    placeholder="e.g., %"
                     value={biomarker.unit}
-                    onChange={(e) => handleChange(index, 'unit', e.target.value)}
+                    disabled
+                    className="bg-gray-100"
                   />
                 </div>
               </div>
 
-              {/* Secondary value/unit (if available from PDF extraction) */}
-              {(biomarker.secondaryValue !== undefined || biomarker.secondaryUnit) && (
-                <div className="grid gap-3 sm:grid-cols-2">
-                  <div className="grid grid-cols-2 gap-2">
-                    <Input
-                      label="Secondary Value"
-                      type="number"
-                      step="any"
-                      value={biomarker.secondaryValue ?? ''}
-                      onChange={(e) =>
-                        handleChange(
-                          index,
-                          'secondaryValue',
-                          e.target.value ? parseFloat(e.target.value) : undefined as unknown as number
-                        )
-                      }
-                    />
-                    <Input
-                      label="Secondary Unit"
-                      placeholder="e.g., mmol/L"
-                      value={biomarker.secondaryUnit ?? ''}
-                      onChange={(e) => handleChange(index, 'secondaryUnit', e.target.value)}
-                    />
-                  </div>
-                  <p className="text-xs text-gray-500 self-end pb-2">
-                    Alternative unit from lab report
-                  </p>
+              {/* Reference range display (read-only) */}
+              {biomarker.standardCode && (
+                <div className="flex items-center gap-4 text-sm text-gray-500">
+                  <span>
+                    Reference Range:{' '}
+                    <span className="text-gray-700">
+                      {biomarker.referenceMin} - {biomarker.referenceMax} {biomarker.unit}
+                    </span>
+                  </span>
                 </div>
               )}
-
-              <div className="grid gap-3 sm:grid-cols-2">
-                <Input
-                  label="Reference Min (optional)"
-                  type="number"
-                  step="any"
-                  placeholder="e.g., 4.0"
-                  value={biomarker.referenceMin ?? ''}
-                  onChange={(e) =>
-                    handleChange(
-                      index,
-                      'referenceMin',
-                      e.target.value ? parseFloat(e.target.value) : undefined as unknown as number
-                    )
-                  }
-                />
-                <Input
-                  label="Reference Max (optional)"
-                  type="number"
-                  step="any"
-                  placeholder="e.g., 5.6"
-                  value={biomarker.referenceMax ?? ''}
-                  onChange={(e) =>
-                    handleChange(
-                      index,
-                      'referenceMax',
-                      e.target.value ? parseFloat(e.target.value) : undefined as unknown as number
-                    )
-                  }
-                />
-              </div>
             </div>
           ))}
         </div>

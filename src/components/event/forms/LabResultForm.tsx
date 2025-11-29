@@ -1,11 +1,10 @@
 import { Link } from 'react-router-dom';
 import { FileUp } from 'lucide-react';
-import type { LabResult, Biomarker, ClientGender } from '@/types';
-import { Input, TextArea, Select, TagInput } from '@/components/common';
+import type { LabResult, Biomarker, Gender } from '@/types';
+import { Input, TextArea, TagInput } from '@/components/common';
 import { DatePicker } from '@/components/forms';
 import { BiomarkerInput } from '../BiomarkerInput';
-import { PRESET_OPTIONS, presetToBiomarkers } from '@/lib/biomarkerPresets';
-import { useUserTags } from '@/hooks';
+import { useBiomarkers, useUserTags, useUserProfile } from '@/hooks';
 import { ROUTES } from '@/routes/routes';
 
 type LabResultFormData = Omit<LabResult, 'id' | 'userId' | 'createdAt' | 'updatedAt'>;
@@ -18,6 +17,11 @@ interface LabResultFormProps {
 
 export function LabResultForm({ data, onChange, errors }: LabResultFormProps) {
   const { tags: suggestedTags } = useUserTags();
+  const { biomarkers: biomarkerStandards, isLoading: isLoadingStandards } = useBiomarkers({});
+  const { profile } = useUserProfile();
+
+  // Get user's gender for reference ranges (default to male)
+  const userGender: Gender = profile?.gender || 'male';
 
   const handleChange = <K extends keyof LabResultFormData>(
     field: K,
@@ -29,33 +33,6 @@ export function LabResultForm({ data, onChange, errors }: LabResultFormProps) {
   const handleBiomarkersChange = (biomarkers: Biomarker[]) => {
     handleChange('biomarkers', biomarkers);
   };
-
-  const handlePresetSelect = (presetKey: string) => {
-    if (!presetKey) return;
-
-    const presetBiomarkers = presetToBiomarkers(presetKey);
-    const existingNames = new Set(data.biomarkers.map((b) => b.name.toLowerCase()));
-    const newBiomarkers = presetBiomarkers.filter(
-      (b) => !existingNames.has(b.name.toLowerCase())
-    );
-
-    const updates: Partial<LabResultFormData> = {
-      biomarkers: [...data.biomarkers, ...newBiomarkers],
-    };
-
-    const preset = PRESET_OPTIONS.find((p) => p.value === presetKey);
-    if (preset && !data.title) {
-      updates.title = preset.label;
-    }
-
-    onChange({ ...data, ...updates });
-  };
-
-  const genderOptions = [
-    { value: 'male', label: 'Male' },
-    { value: 'female', label: 'Female' },
-    { value: 'other', label: 'Other' },
-  ];
 
   return (
     <div className="space-y-4">
@@ -92,31 +69,6 @@ export function LabResultForm({ data, onChange, errors }: LabResultFormProps) {
         required
       />
 
-      {/* Patient Info Section */}
-      <div className="border border-gray-200 rounded-lg p-4 space-y-4">
-        <h3 className="text-sm font-medium text-gray-700">Patient Information</h3>
-        <div className="grid gap-4 sm:grid-cols-3">
-          <Input
-            label="Client Name"
-            placeholder="Patient name"
-            value={data.clientName || ''}
-            onChange={(e) => handleChange('clientName', e.target.value || undefined)}
-          />
-          <Select
-            label="Gender"
-            placeholder="Select gender"
-            options={genderOptions}
-            value={data.clientGender || ''}
-            onChange={(e) => handleChange('clientGender', (e.target.value as ClientGender) || undefined)}
-          />
-          <DatePicker
-            label="Birthday"
-            value={data.clientBirthday || ''}
-            onChange={(e) => handleChange('clientBirthday', e.target.value || undefined)}
-          />
-        </div>
-      </div>
-
       {/* Lab Info Section */}
       <div className="grid gap-4 sm:grid-cols-2">
         <Input
@@ -135,22 +87,12 @@ export function LabResultForm({ data, onChange, errors }: LabResultFormProps) {
 
       {/* Biomarkers Section */}
       <div className="border-t border-gray-200 pt-4">
-        <div className="mb-4">
-          <Select
-            label="Quick Add: Lab Panel Preset"
-            placeholder="Select a preset to add biomarkers..."
-            options={PRESET_OPTIONS}
-            value=""
-            onChange={(e) => handlePresetSelect(e.target.value)}
-          />
-          <p className="mt-1 text-xs text-gray-500">
-            Select a preset to add common biomarkers with reference ranges. You can still edit values after.
-          </p>
-        </div>
-
         <BiomarkerInput
           biomarkers={data.biomarkers}
           onChange={handleBiomarkersChange}
+          availableStandards={biomarkerStandards}
+          userGender={userGender}
+          isLoading={isLoadingStandards}
           error={errors?.biomarkers}
         />
       </div>
@@ -179,9 +121,6 @@ export function createEmptyLabResult(): LabResultFormData {
     type: 'lab_result',
     date: new Date().toISOString().split('T')[0],
     title: '',
-    clientName: undefined,
-    clientGender: undefined,
-    clientBirthday: undefined,
     labName: undefined,
     orderingDoctor: undefined,
     biomarkers: [],

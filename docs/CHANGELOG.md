@@ -1,6 +1,6 @@
 # Changelog
 
-> Last Updated: 2025-11-28
+> Last Updated: 2025-11-29
 
 ## Summary
 
@@ -13,11 +13,45 @@ Version history and release notes for Digital Medical Twin. Lists all notable ch
 ## Table of Contents
 
 - [Unreleased](#unreleased)
+- [Phase 6 - Polish and Launch](#phase-6---polish-and-launch-partial)
 - [Phase 5 - Data Enhancement](#phase-5---data-enhancement)
 - [Phase 4.7 - AI Integration](#phase-47---ai-integration)
 - [Phase 2 - Core Data Entry](#phase-2---core-data-entry)
 - [Phase 1 - Foundation](#phase-1---foundation)
 - [Format](#format)
+
+---
+
+## 2025-11-29
+
+### Added
+
+- **Extraction Debug UI**
+  - Debug Info tab in ExtractionPreview modal for troubleshooting
+  - `DebugTab`, `DebugSummary`, `StageTimeline`, `MatchDetailsTable`, `RawResponseSection` components
+  - Captures timing, raw AI responses, and match details for all 3 extraction stages
+  - `ExtractionDebugInfo` type in `src/types/labUploads.ts`
+
+- **BiomarkerSelect Component**
+  - Searchable dropdown for selecting biomarkers from standards database
+  - Groups by category with search across name, code, and aliases
+  - `src/components/event/BiomarkerSelect.tsx`
+
+- **Extended Biomarker Categories**
+  - Added 9 new categories: autoimmune, blood_gas, coagulation, hematology, mineral, nutrition, pancreatic, tumor_marker, urinalysis
+  - Updated `BiomarkerCategory` type and `BIOMARKER_CATEGORIES` map
+  - Updated `categoryOrder` in BiomarkerSelect
+
+### Fixed
+
+- **Biomarker.standardCode type regression**: Made `standardCode` optional to support unmatched biomarkers
+- **EventNewPage raw biomarker fallback**: Falls back to raw biomarkers when post-processing fails or returns empty
+- **BiomarkerInput type guard**: Fixed excludeCodes filter to properly handle undefined values
+- **Division by zero in match details**: Added guard for zero originalValue in conversion factor calculation
+
+### Removed
+
+- `src/lib/biomarkerPresets.ts` and `src/lib/biomarkerPresets.test.ts` - Replaced by biomarker_standards database
 
 ---
 

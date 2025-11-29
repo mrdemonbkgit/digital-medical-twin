@@ -108,11 +108,6 @@ function LabResultDetails({ event }: { event: LabResult }) {
                   )}
                 >
                   {biomarker.value} {biomarker.unit}
-                  {biomarker.secondaryValue !== undefined && biomarker.secondaryUnit && (
-                    <span className="ml-1 text-gray-500 font-normal">
-                      ({biomarker.secondaryValue} {biomarker.secondaryUnit})
-                    </span>
-                  )}
                   {biomarker.flag && biomarker.flag !== 'normal' && (
                     <span className="ml-1 text-xs uppercase">({biomarker.flag})</span>
                   )}

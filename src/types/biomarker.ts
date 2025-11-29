@@ -13,6 +13,15 @@ export type BiomarkerCategory =
   | 'inflammation'
   | 'cardiac'
   | 'iron'
+  | 'autoimmune'
+  | 'blood_gas'
+  | 'coagulation'
+  | 'hematology'
+  | 'mineral'
+  | 'nutrition'
+  | 'pancreatic'
+  | 'tumor_marker'
+  | 'urinalysis'
   | 'other';
 
 // Reference range for a specific gender
@@ -125,6 +134,42 @@ export const BIOMARKER_CATEGORIES: Record<BiomarkerCategory, { label: string; de
   iron: {
     label: 'Iron Studies',
     description: 'Iron levels and storage',
+  },
+  autoimmune: {
+    label: 'Autoimmune Markers',
+    description: 'Antibodies and markers for autoimmune conditions',
+  },
+  blood_gas: {
+    label: 'Blood Gas',
+    description: 'Arterial blood gas and acid-base balance',
+  },
+  coagulation: {
+    label: 'Coagulation',
+    description: 'Blood clotting factors and times',
+  },
+  hematology: {
+    label: 'Hematology',
+    description: 'Blood cell morphology and related markers',
+  },
+  mineral: {
+    label: 'Minerals',
+    description: 'Essential mineral levels',
+  },
+  nutrition: {
+    label: 'Nutrition',
+    description: 'Nutritional status markers',
+  },
+  pancreatic: {
+    label: 'Pancreatic',
+    description: 'Pancreatic enzymes and function markers',
+  },
+  tumor_marker: {
+    label: 'Tumor Markers',
+    description: 'Cancer screening and monitoring markers',
+  },
+  urinalysis: {
+    label: 'Urinalysis',
+    description: 'Urine analysis markers',
   },
   other: {
     label: 'Other',

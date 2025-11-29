@@ -18,11 +18,10 @@ export interface BaseEvent {
 }
 
 export interface Biomarker {
+  standardCode?: string; // Links to biomarker_standards.code (optional for unmatched biomarkers)
   name: string;
   value: number;
   unit: string;
-  secondaryValue?: number; // Alternative unit value (e.g., mmol/L if primary is mg/dL)
-  secondaryUnit?: string; // Alternative unit
   referenceMin?: number;
   referenceMax?: number;
   flag?: 'high' | 'low' | 'normal';
@@ -36,14 +35,8 @@ export interface LabResultAttachment {
   uploadedAt: string;
 }
 
-export type ClientGender = 'male' | 'female' | 'other';
-
 export interface LabResult extends BaseEvent {
   type: 'lab_result';
-  // Patient info (extracted from PDF)
-  clientName?: string;
-  clientGender?: ClientGender;
-  clientBirthday?: string;
   // Lab info
   labName?: string;
   orderingDoctor?: string;

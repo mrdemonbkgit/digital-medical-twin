@@ -511,12 +511,12 @@ INSERT INTO public.biomarker_standards (code, name, aliases, category, standard_
   0, 84),
 
 ('thyroid_peroxidase_ab', 'Thyroid Peroxidase Antibodies',
-  ARRAY['TPO Ab', 'anti-TPO', 'TPO antibodies'],
+  ARRAY['TPO Ab', 'anti-TPO', 'TPO antibodies', 'TPOAb', 'Anti-TPO Antibodies'],
   'thyroid', 'IU/mL',
   '{}'::jsonb,
   '{"male": {"low": 0, "high": 34}, "female": {"low": 0, "high": 34}}'::jsonb,
-  'Antibodies against thyroid enzyme',
-  'Elevated levels indicate autoimmune thyroid disease (Hashimoto''s).',
+  'Antibodies against thyroid peroxidase enzyme',
+  'Elevated in Hashimoto thyroiditis and Graves disease.',
   0, 85),
 
 -- ============================================================================
@@ -1413,15 +1413,6 @@ INSERT INTO public.biomarker_standards (code, name, aliases, category, standard_
   'Elevated in liver failure and can cause hepatic encephalopathy.',
   0, 236),
 
-('anti_tpo', 'Anti-TPO Antibodies',
-  ARRAY['anti-TPO', 'thyroid peroxidase antibodies', 'TPOAb'],
-  'autoimmune', 'IU/mL',
-  '{}'::jsonb,
-  '{"male": {"low": 0, "high": 34}, "female": {"low": 0, "high": 34}}'::jsonb,
-  'Antibodies against thyroid peroxidase',
-  'Elevated in Hashimoto thyroiditis and Graves disease.',
-  0, 237),
-
 ('anti_thyroglobulin', 'Anti-Thyroglobulin Antibodies',
   ARRAY['TgAb', 'anti-Tg', 'thyroglobulin antibodies'],
   'autoimmune', 'IU/mL',
@@ -1429,4 +1420,4 @@ INSERT INTO public.biomarker_standards (code, name, aliases, category, standard_
   '{"male": {"low": 0, "high": 40}, "female": {"low": 0, "high": 40}}'::jsonb,
   'Antibodies against thyroglobulin',
   'Elevated in autoimmune thyroid disease. May interfere with thyroglobulin testing.',
-  0, 238);
+  0, 237);

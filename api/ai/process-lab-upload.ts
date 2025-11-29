@@ -45,6 +45,62 @@ interface BiomarkerStandard {
   };
 }
 
+// Debug types for extraction process
+interface BiomarkerMatchDetail {
+  originalName: string;
+  matchedCode: string | null;
+  matchedName: string | null;
+  confidence?: number;
+  conversionApplied?: {
+    fromValue: number;
+    fromUnit: string;
+    toValue: number;
+    toUnit: string;
+    factor: number;
+  };
+  validationIssues: string[];
+}
+
+interface ExtractionDebugInfo {
+  totalDurationMs: number;
+  pdfSizeBytes: number;
+  stage1: {
+    name: 'Gemini Extraction';
+    startedAt: string;
+    completedAt: string;
+    durationMs: number;
+    biomarkersExtracted: number;
+    rawResponse: string;
+    model: string;
+    thinkingLevel: string;
+  };
+  stage2: {
+    name: 'GPT Verification';
+    skipped: boolean;
+    startedAt?: string;
+    completedAt?: string;
+    durationMs?: number;
+    verificationPassed?: boolean;
+    correctionsCount: number;
+    corrections: string[];
+    rawResponse?: string;
+    model?: string;
+    reasoningEffort?: string;
+  };
+  stage3: {
+    name: 'Biomarker Matching';
+    startedAt: string;
+    completedAt: string;
+    durationMs: number;
+    standardsCount: number;
+    matchedCount: number;
+    unmatchedCount: number;
+    userGender: 'male' | 'female';
+    rawResponse: string;
+    matchDetails: BiomarkerMatchDetail[];
+  };
+}
+
 interface ExtractedLabData {
   clientName?: string;
   clientGender?: 'male' | 'female' | 'other';
@@ -54,6 +110,7 @@ interface ExtractedLabData {
   testDate?: string;
   biomarkers: Biomarker[];
   processedBiomarkers?: ProcessedBiomarker[];
+  debugInfo?: ExtractionDebugInfo;
 }
 
 interface ExtractionResult {
@@ -169,8 +226,16 @@ async function fetchPDFAsBase64(
   return base64;
 }
 
+// Result type including raw response for debugging
+interface GeminiExtractionResult {
+  data: ExtractedLabData;
+  rawResponse: string;
+  model: string;
+  thinkingLevel: string;
+}
+
 // Stage 1: Gemini extraction
-async function extractWithGemini(pdfBase64: string): Promise<ExtractedLabData> {
+async function extractWithGemini(pdfBase64: string): Promise<GeminiExtractionResult> {
   if (!GOOGLE_API_KEY) {
     throw new Error('Google API key not configured');
   }
@@ -262,7 +327,8 @@ Important:
     throw new Error(`Gemini API error: ${response.status} - ${errorText.substring(0, 200)}`);
   }
 
-  const data = await response.json();
+  const responseText = await response.text();
+  const data = JSON.parse(responseText);
   const content = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
 
   // Parse JSON from response
@@ -276,17 +342,32 @@ Important:
   try {
     const extracted = JSON.parse(jsonStr);
     return {
-      clientName: extracted.clientName,
-      clientGender: extracted.clientGender,
-      clientBirthday: extracted.clientBirthday,
-      labName: extracted.labName,
-      orderingDoctor: extracted.orderingDoctor,
-      testDate: extracted.testDate,
-      biomarkers: extracted.biomarkers || [],
+      data: {
+        clientName: extracted.clientName,
+        clientGender: extracted.clientGender,
+        clientBirthday: extracted.clientBirthday,
+        labName: extracted.labName,
+        orderingDoctor: extracted.orderingDoctor,
+        testDate: extracted.testDate,
+        biomarkers: extracted.biomarkers || [],
+      },
+      rawResponse: content.slice(0, 50000), // Truncate to 50KB
+      model: 'gemini-3-pro-preview',
+      thinkingLevel: 'high',
     };
   } catch {
     throw new Error('Failed to parse extraction result from Gemini');
   }
+}
+
+// Result type for GPT verification including debug info
+interface GPTVerificationResult {
+  verified: ExtractedLabData;
+  verificationPassed: boolean;
+  corrections: string[];
+  rawResponse?: string;
+  model?: string;
+  reasoningEffort?: string;
 }
 
 // Stage 2: GPT verification
@@ -294,7 +375,7 @@ async function verifyWithGPT(
   pdfBase64: string,
   extractedData: ExtractedLabData,
   log: Logger
-): Promise<{ verified: ExtractedLabData; verificationPassed: boolean; corrections: string[] }> {
+): Promise<GPTVerificationResult> {
   if (!OPENAI_API_KEY) {
     return { verified: extractedData, verificationPassed: false, corrections: ['OpenAI API key not configured - skipping verification'] };
   }
@@ -470,6 +551,9 @@ Return ONLY valid JSON (no markdown code blocks) with the corrected/verified dat
       },
       verificationPassed: verified.verificationPassed ?? true,
       corrections: verified.corrections || [],
+      rawResponse: content.slice(0, 50000), // Truncate to 50KB
+      model: 'gpt-5.1',
+      reasoningEffort: 'medium',
     };
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
@@ -496,12 +580,19 @@ async function fetchBiomarkerStandards(
   return data as BiomarkerStandard[];
 }
 
+// Result type for post-processing including debug info
+interface PostProcessResult {
+  processedBiomarkers: ProcessedBiomarker[];
+  rawResponse: string;
+  matchDetails: BiomarkerMatchDetail[];
+}
+
 // Stage 3: Post-processing with Gemini - match biomarkers to standards
 async function postProcessWithGemini(
   extractedData: ExtractedLabData,
   standards: BiomarkerStandard[],
   userGender: 'male' | 'female'
-): Promise<ProcessedBiomarker[]> {
+): Promise<PostProcessResult> {
   if (!GOOGLE_API_KEY) {
     throw new Error('Google API key not configured for post-processing');
   }
@@ -600,7 +691,8 @@ Important:
     throw new Error(`Gemini post-processing API error: ${response.status} - ${errorText.substring(0, 200)}`);
   }
 
-  const data = await response.json();
+  const responseText = await response.text();
+  const data = JSON.parse(responseText);
   const content = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
 
   // Parse JSON from response
@@ -641,7 +733,29 @@ Important:
     }
   }
 
-  return processedBiomarkers;
+  // Build match details for debugging
+  const matchDetails: BiomarkerMatchDetail[] = processedBiomarkers.map((b) => ({
+    originalName: b.originalName,
+    matchedCode: b.standardCode,
+    matchedName: b.standardName,
+    conversionApplied:
+      b.standardValue !== null && b.standardValue !== b.originalValue
+        ? {
+            fromValue: b.originalValue,
+            fromUnit: b.originalUnit,
+            toValue: b.standardValue,
+            toUnit: b.standardUnit!,
+            factor: b.originalValue !== 0 ? b.standardValue / b.originalValue : 0,
+          }
+        : undefined,
+    validationIssues: b.validationIssues || [],
+  }));
+
+  return {
+    processedBiomarkers,
+    rawResponse: content.slice(0, 50000), // Truncate to 50KB
+    matchDetails,
+  };
 }
 
 async function handler(req: LoggedRequest, res: VercelResponse) {
@@ -712,6 +826,41 @@ async function handler(req: LoggedRequest, res: VercelResponse) {
 
     log.info('Starting extraction', { uploadId, filename: upload.filename });
 
+    // Initialize debug info
+    const pdfSizeBytes = upload.file_size || 0;
+    const debugInfo: ExtractionDebugInfo = {
+      totalDurationMs: 0,
+      pdfSizeBytes,
+      stage1: {
+        name: 'Gemini Extraction',
+        startedAt: '',
+        completedAt: '',
+        durationMs: 0,
+        biomarkersExtracted: 0,
+        rawResponse: '',
+        model: 'gemini-3-pro-preview',
+        thinkingLevel: 'high',
+      },
+      stage2: {
+        name: 'GPT Verification',
+        skipped: upload.skip_verification,
+        correctionsCount: 0,
+        corrections: [],
+      },
+      stage3: {
+        name: 'Biomarker Matching',
+        startedAt: '',
+        completedAt: '',
+        durationMs: 0,
+        standardsCount: 0,
+        matchedCount: 0,
+        unmatchedCount: 0,
+        userGender: 'male',
+        rawResponse: '',
+        matchDetails: [],
+      },
+    };
+
     // Stage 0: Fetch PDF
     log.info('Fetching PDF from storage');
     const pdfBase64 = await fetchPDFAsBase64(supabase, upload.storage_path);
@@ -722,7 +871,19 @@ async function handler(req: LoggedRequest, res: VercelResponse) {
     await updateUploadStatus(supabase, uploadId, { processing_stage: 'extracting_gemini' });
     log.info('Stage 1: Extracting with Gemini');
 
-    const extractedData = await extractWithGemini(pdfBase64);
+    const stage1Start = Date.now();
+    debugInfo.stage1.startedAt = new Date().toISOString();
+
+    const geminiResult = await extractWithGemini(pdfBase64);
+    const extractedData = geminiResult.data;
+
+    debugInfo.stage1.completedAt = new Date().toISOString();
+    debugInfo.stage1.durationMs = Date.now() - stage1Start;
+    debugInfo.stage1.biomarkersExtracted = extractedData.biomarkers.length;
+    debugInfo.stage1.rawResponse = geminiResult.rawResponse;
+    debugInfo.stage1.model = geminiResult.model;
+    debugInfo.stage1.thinkingLevel = geminiResult.thinkingLevel;
+
     log.info('Stage 1 complete', { biomarkerCount: extractedData.biomarkers.length });
 
     // Stage 2: Verify with GPT (optional)
@@ -735,21 +896,38 @@ async function handler(req: LoggedRequest, res: VercelResponse) {
       await updateUploadStatus(supabase, uploadId, { processing_stage: 'verifying_gpt' });
       log.info('Stage 2: Verifying with GPT');
 
+      const stage2Start = Date.now();
+      debugInfo.stage2.startedAt = new Date().toISOString();
+
       const verificationResult = await verifyWithGPT(pdfBase64, extractedData, log);
       finalData = verificationResult.verified;
       verificationPassed = verificationResult.verificationPassed;
       corrections = verificationResult.corrections;
       extractionConfidence = verificationPassed ? 0.95 : 0.7;
 
+      debugInfo.stage2.completedAt = new Date().toISOString();
+      debugInfo.stage2.durationMs = Date.now() - stage2Start;
+      debugInfo.stage2.verificationPassed = verificationPassed;
+      debugInfo.stage2.correctionsCount = corrections.length;
+      debugInfo.stage2.corrections = corrections;
+      debugInfo.stage2.rawResponse = verificationResult.rawResponse;
+      debugInfo.stage2.model = verificationResult.model;
+      debugInfo.stage2.reasoningEffort = verificationResult.reasoningEffort;
+
       log.info('Stage 2 complete', { verificationPassed, correctionsCount: corrections.length });
     } else {
       log.info('Skipping verification (user preference)');
       corrections = ['Verification skipped by user'];
+      debugInfo.stage2.corrections = corrections;
+      debugInfo.stage2.correctionsCount = 1;
     }
 
     // Stage 3: Post-processing - match to standards and convert units
     await updateUploadStatus(supabase, uploadId, { processing_stage: 'post_processing' });
     log.info('Stage 3: Post-processing with Gemini');
+
+    const stage3Start = Date.now();
+    debugInfo.stage3.startedAt = new Date().toISOString();
 
     try {
       // Get user profile for gender-specific reference ranges
@@ -767,25 +945,35 @@ async function handler(req: LoggedRequest, res: VercelResponse) {
             ? 'female'
             : 'male';
 
+      debugInfo.stage3.userGender = userGender;
+
       // Fetch biomarker standards
       const standards = await fetchBiomarkerStandards(supabase);
+      debugInfo.stage3.standardsCount = standards.length;
       log.info('Fetched biomarker standards', { count: standards.length });
 
       // Run post-processing
-      const processedBiomarkers = await postProcessWithGemini(finalData, standards, userGender);
+      const postProcessResult = await postProcessWithGemini(finalData, standards, userGender);
 
       // Count matched vs unmatched
-      const matchedCount = processedBiomarkers.filter((b) => b.matched).length;
-      const unmatchedCount = processedBiomarkers.filter((b) => !b.matched).length;
+      const matchedCount = postProcessResult.processedBiomarkers.filter((b) => b.matched).length;
+      const unmatchedCount = postProcessResult.processedBiomarkers.filter((b) => !b.matched).length;
+
+      debugInfo.stage3.completedAt = new Date().toISOString();
+      debugInfo.stage3.durationMs = Date.now() - stage3Start;
+      debugInfo.stage3.matchedCount = matchedCount;
+      debugInfo.stage3.unmatchedCount = unmatchedCount;
+      debugInfo.stage3.rawResponse = postProcessResult.rawResponse;
+      debugInfo.stage3.matchDetails = postProcessResult.matchDetails;
 
       log.info('Stage 3 complete', {
-        totalBiomarkers: processedBiomarkers.length,
+        totalBiomarkers: postProcessResult.processedBiomarkers.length,
         matched: matchedCount,
         unmatched: unmatchedCount,
       });
 
       // Add processed biomarkers to final data
-      finalData.processedBiomarkers = processedBiomarkers;
+      finalData.processedBiomarkers = postProcessResult.processedBiomarkers;
 
       // Add post-processing info to corrections
       if (unmatchedCount > 0) {
@@ -795,7 +983,13 @@ async function handler(req: LoggedRequest, res: VercelResponse) {
       const errorMessage = postProcessError instanceof Error ? postProcessError.message : 'Unknown error';
       log.error('Stage 3 failed (continuing without processed biomarkers)', postProcessError);
       corrections.push(`Post-processing failed: ${errorMessage} - biomarkers not standardized`);
+      debugInfo.stage3.completedAt = new Date().toISOString();
+      debugInfo.stage3.durationMs = Date.now() - stage3Start;
     }
+
+    // Calculate total duration and add debug info to final data
+    debugInfo.totalDurationMs = Date.now() - startTime;
+    finalData.debugInfo = debugInfo;
 
     // Update with final results
     await updateUploadStatus(supabase, uploadId, {

@@ -1,10 +1,74 @@
-import type { Biomarker, ClientGender } from './events';
+import type { Biomarker } from './events';
 
 // Upload status lifecycle
 export type LabUploadStatus = 'pending' | 'processing' | 'complete' | 'failed';
 
 // Processing stages for progress tracking
 export type ProcessingStage = 'fetching_pdf' | 'extracting_gemini' | 'verifying_gpt' | 'post_processing';
+
+// Debug information for extraction process
+export interface ExtractionDebugInfo {
+  // Overall metrics
+  totalDurationMs: number;
+  pdfSizeBytes: number;
+
+  // Stage 1: Gemini Extraction
+  stage1: {
+    name: 'Gemini Extraction';
+    startedAt: string;
+    completedAt: string;
+    durationMs: number;
+    biomarkersExtracted: number;
+    rawResponse: string; // Truncated if too large
+    model: string;
+    thinkingLevel: string;
+  };
+
+  // Stage 2: GPT Verification
+  stage2: {
+    name: 'GPT Verification';
+    skipped: boolean;
+    startedAt?: string;
+    completedAt?: string;
+    durationMs?: number;
+    verificationPassed?: boolean;
+    correctionsCount: number;
+    corrections: string[];
+    rawResponse?: string;
+    model?: string;
+    reasoningEffort?: string;
+  };
+
+  // Stage 3: Post-Processing
+  stage3: {
+    name: 'Biomarker Matching';
+    startedAt: string;
+    completedAt: string;
+    durationMs: number;
+    standardsCount: number;
+    matchedCount: number;
+    unmatchedCount: number;
+    userGender: 'male' | 'female';
+    rawResponse: string;
+    matchDetails: BiomarkerMatchDetail[];
+  };
+}
+
+// Per-biomarker matching details for debugging
+export interface BiomarkerMatchDetail {
+  originalName: string;
+  matchedCode: string | null;
+  matchedName: string | null;
+  confidence?: number;
+  conversionApplied?: {
+    fromValue: number;
+    fromUnit: string;
+    toValue: number;
+    toUnit: string;
+    factor: number;
+  };
+  validationIssues: string[];
+}
 
 // Processed biomarker - matched to standard with converted values
 export interface ProcessedBiomarker {
@@ -29,10 +93,12 @@ export interface ProcessedBiomarker {
   validationIssues?: string[];
 }
 
-// Extracted data structure (matches what AI returns)
+// Extracted data structure (matches what AI returns from PDF)
+// Note: clientName/clientGender/clientBirthday are extracted but not used
+// since this is a personal health tracking app
 export interface ExtractedLabData {
   clientName?: string;
-  clientGender?: ClientGender;
+  clientGender?: 'male' | 'female' | 'other';
   clientBirthday?: string;
   labName?: string;
   orderingDoctor?: string;
@@ -40,6 +106,8 @@ export interface ExtractedLabData {
   biomarkers: Biomarker[];
   // Added in post-processing phase
   processedBiomarkers?: ProcessedBiomarker[];
+  // Debug information for troubleshooting
+  debugInfo?: ExtractionDebugInfo;
 }
 
 // Main lab upload entity

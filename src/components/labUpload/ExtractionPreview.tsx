@@ -1,6 +1,6 @@
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
-  User,
   Building2,
   Stethoscope,
   Calendar,
@@ -11,10 +11,11 @@ import {
   ExternalLink,
   Link2,
   Link2Off,
-  Info,
+  Bug,
 } from 'lucide-react';
 import { Modal, Button } from '@/components/common';
 import type { LabUpload, Biomarker, ProcessedBiomarker } from '@/types';
+import { DebugTab } from './DebugTab';
 
 interface ExtractionPreviewProps {
   upload: LabUpload;
@@ -63,69 +64,53 @@ function ProcessedBiomarkerRow({ biomarker }: { biomarker: ProcessedBiomarker })
   return (
     <tr className={`hover:bg-gray-50 ${!biomarker.matched ? 'bg-amber-50/50' : ''}`}>
       {/* Name column with original and standard names */}
-      <td className="px-4 py-2">
-        <div className="text-sm text-gray-900">
+      <td className="px-2 py-2">
+        <div className="text-sm text-gray-900 truncate" title={biomarker.matched ? biomarker.standardName || '' : biomarker.originalName}>
           {biomarker.matched ? biomarker.standardName : biomarker.originalName}
         </div>
-        {biomarker.matched && biomarker.originalName !== biomarker.standardName && (
-          <div className="text-xs text-gray-500">
-            Original: {biomarker.originalName}
-          </div>
-        )}
         {biomarker.standardCode && (
-          <div className="text-xs text-gray-400 font-mono">
+          <div className="text-xs text-gray-400 font-mono truncate">
             {biomarker.standardCode}
           </div>
         )}
       </td>
 
       {/* Value column with original and standardized */}
-      <td className="px-4 py-2 text-right">
+      <td className="px-2 py-2 text-right">
         <div className="text-sm text-gray-900 font-mono">
           {biomarker.matched && biomarker.standardValue !== null
-            ? biomarker.standardValue.toFixed(2)
+            ? biomarker.standardValue.toFixed(1)
             : biomarker.originalValue}
         </div>
         {biomarker.matched &&
           biomarker.standardValue !== null &&
           biomarker.standardValue !== biomarker.originalValue && (
-            <div className="text-xs text-gray-500">
-              Original: {biomarker.originalValue} {biomarker.originalUnit}
+            <div className="text-xs text-gray-500 truncate" title={`Original: ${biomarker.originalValue} ${biomarker.originalUnit}`}>
+              was {biomarker.originalValue}
             </div>
           )}
       </td>
 
       {/* Unit column */}
-      <td className="px-4 py-2 text-sm text-gray-500">
+      <td className="px-2 py-2 text-sm text-gray-500 truncate">
         {biomarker.matched ? biomarker.standardUnit : biomarker.originalUnit}
       </td>
 
       {/* Reference range column */}
-      <td className="px-4 py-2 text-sm text-gray-500 text-center">
+      <td className="px-2 py-2 text-sm text-gray-500 text-center">
         {biomarker.referenceMin !== null || biomarker.referenceMax !== null
-          ? `${biomarker.referenceMin ?? '-'} - ${biomarker.referenceMax ?? '-'}`
+          ? `${biomarker.referenceMin ?? '-'}-${biomarker.referenceMax ?? '-'}`
           : '-'}
       </td>
 
       {/* Flag column */}
-      <td className="px-4 py-2 text-center">
+      <td className="px-2 py-2 text-center">
         <FlagBadge flag={biomarker.flag} />
       </td>
 
       {/* Status column */}
-      <td className="px-4 py-2 text-center">
+      <td className="px-2 py-2 text-center">
         <MatchBadge matched={biomarker.matched} />
-        {biomarker.validationIssues && biomarker.validationIssues.length > 0 && (
-          <div className="mt-1">
-            <span
-              className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-xs font-medium bg-red-100 text-red-700 cursor-help"
-              title={biomarker.validationIssues.join(', ')}
-            >
-              <Info className="h-3 w-3" />
-              Issues
-            </span>
-          </div>
-        )}
       </td>
     </tr>
   );
@@ -135,22 +120,17 @@ function RawBiomarkerRow({ biomarker }: { biomarker: Biomarker }) {
   const flag = getBiomarkerFlag(biomarker);
   return (
     <tr className="hover:bg-gray-50">
-      <td className="px-4 py-2 text-sm text-gray-900">{biomarker.name}</td>
-      <td className="px-4 py-2 text-sm text-gray-900 text-right font-mono">
+      <td className="px-2 py-2 text-sm text-gray-900 truncate" title={biomarker.name}>{biomarker.name}</td>
+      <td className="px-2 py-2 text-sm text-gray-900 text-right font-mono">
         {biomarker.value}
-        {biomarker.secondaryValue && (
-          <span className="text-gray-400 text-xs ml-1">
-            ({biomarker.secondaryValue} {biomarker.secondaryUnit})
-          </span>
-        )}
       </td>
-      <td className="px-4 py-2 text-sm text-gray-500">{biomarker.unit}</td>
-      <td className="px-4 py-2 text-sm text-gray-500 text-center">
+      <td className="px-2 py-2 text-sm text-gray-500 truncate">{biomarker.unit}</td>
+      <td className="px-2 py-2 text-sm text-gray-500 text-center">
         {biomarker.referenceMin !== undefined || biomarker.referenceMax !== undefined
-          ? `${biomarker.referenceMin ?? '-'} - ${biomarker.referenceMax ?? '-'}`
+          ? `${biomarker.referenceMin ?? '-'}-${biomarker.referenceMax ?? '-'}`
           : '-'}
       </td>
-      <td className="px-4 py-2 text-center">
+      <td className="px-2 py-2 text-center">
         <FlagBadge flag={flag} />
       </td>
     </tr>
@@ -185,25 +165,25 @@ function ProcessedBiomarkersTable({ biomarkers }: { biomarkers: ProcessedBiomark
 
       {/* Processed biomarkers table */}
       <div className="border border-gray-200 rounded-lg overflow-hidden">
-        <table className="min-w-full divide-y divide-gray-200">
+        <table className="w-full table-fixed divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
-              <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+              <th className="w-[30%] px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase">
                 Name
               </th>
-              <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">
+              <th className="w-[12%] px-2 py-2 text-right text-xs font-medium text-gray-500 uppercase">
                 Value
               </th>
-              <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+              <th className="w-[12%] px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase">
                 Unit
               </th>
-              <th className="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase">
-                Reference
+              <th className="w-[16%] px-2 py-2 text-center text-xs font-medium text-gray-500 uppercase">
+                Ref
               </th>
-              <th className="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase">
+              <th className="w-[12%] px-2 py-2 text-center text-xs font-medium text-gray-500 uppercase">
                 Flag
               </th>
-              <th className="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase">
+              <th className="w-[18%] px-2 py-2 text-center text-xs font-medium text-gray-500 uppercase">
                 Status
               </th>
             </tr>
@@ -243,22 +223,22 @@ function RawBiomarkersTable({ biomarkers }: { biomarkers: Biomarker[] }) {
         <span className="text-xs font-normal text-gray-500">(raw extraction)</span>
       </h4>
       <div className="border border-gray-200 rounded-lg overflow-hidden">
-        <table className="min-w-full divide-y divide-gray-200">
+        <table className="w-full table-fixed divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
-              <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+              <th className="w-[35%] px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase">
                 Name
               </th>
-              <th className="px-4 py-2 text-right text-xs font-medium text-gray-500 uppercase">
+              <th className="w-[15%] px-2 py-2 text-right text-xs font-medium text-gray-500 uppercase">
                 Value
               </th>
-              <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+              <th className="w-[15%] px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase">
                 Unit
               </th>
-              <th className="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase">
-                Reference
+              <th className="w-[20%] px-2 py-2 text-center text-xs font-medium text-gray-500 uppercase">
+                Ref
               </th>
-              <th className="px-4 py-2 text-center text-xs font-medium text-gray-500 uppercase">
+              <th className="w-[15%] px-2 py-2 text-center text-xs font-medium text-gray-500 uppercase">
                 Flag
               </th>
             </tr>
@@ -274,7 +254,33 @@ function RawBiomarkersTable({ biomarkers }: { biomarkers: Biomarker[] }) {
   );
 }
 
+type TabType = 'biomarkers' | 'debug';
+
+function TabButton({
+  active,
+  onClick,
+  children
+}: {
+  active: boolean;
+  onClick: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
+        active
+          ? 'border-blue-500 text-blue-600'
+          : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+      }`}
+    >
+      {children}
+    </button>
+  );
+}
+
 export function ExtractionPreview({ upload, onClose }: ExtractionPreviewProps) {
+  const [activeTab, setActiveTab] = useState<TabType>('biomarkers');
   const data = upload.extractedData;
 
   if (!data) {
@@ -285,102 +291,101 @@ export function ExtractionPreview({ upload, onClose }: ExtractionPreviewProps) {
     );
   }
 
+  const biomarkerCount = data.processedBiomarkers?.length || data.biomarkers.length;
+
   return (
     <Modal isOpen={true} onClose={onClose} title="Extraction Preview" size="xl">
-      <div className="space-y-6 max-h-[70vh] overflow-y-auto">
-        {/* Verification Status */}
-        <div className="flex items-center gap-2">
-          {upload.verificationPassed ? (
-            <span className="inline-flex items-center gap-1 text-sm text-green-600">
-              <CheckCircle className="h-4 w-4" />
-              Verified by GPT
-            </span>
+      <div className="flex flex-col max-h-[70vh]">
+        {/* Tab Navigation */}
+        <div className="flex border-b border-gray-200 -mx-6 px-6 flex-shrink-0">
+          <TabButton
+            active={activeTab === 'biomarkers'}
+            onClick={() => setActiveTab('biomarkers')}
+          >
+            <FlaskConical className="h-4 w-4 inline mr-1.5" />
+            Biomarkers ({biomarkerCount})
+          </TabButton>
+          <TabButton
+            active={activeTab === 'debug'}
+            onClick={() => setActiveTab('debug')}
+          >
+            <Bug className="h-4 w-4 inline mr-1.5" />
+            Debug Info
+          </TabButton>
+        </div>
+
+        {/* Tab Content */}
+        <div className="flex-1 overflow-y-auto py-4 space-y-6">
+          {activeTab === 'biomarkers' ? (
+            <>
+              {/* Verification Status */}
+              <div className="flex items-center gap-2">
+                {upload.verificationPassed ? (
+                  <span className="inline-flex items-center gap-1 text-sm text-green-600">
+                    <CheckCircle className="h-4 w-4" />
+                    Verified by GPT
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center gap-1 text-sm text-amber-600">
+                    <AlertCircle className="h-4 w-4" />
+                    {upload.skipVerification ? 'Verification skipped' : 'Unverified'}
+                  </span>
+                )}
+                {upload.extractionConfidence && (
+                  <span className="text-sm text-gray-500">
+                    • {Math.round(upload.extractionConfidence * 100)}% confidence
+                  </span>
+                )}
+              </div>
+
+              {/* Corrections */}
+              {upload.corrections && upload.corrections.length > 0 && (
+                <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
+                  <h4 className="text-sm font-medium text-amber-800 mb-2">Corrections Applied</h4>
+                  <ul className="text-sm text-amber-700 list-disc list-inside space-y-1">
+                    {upload.corrections.map((correction, i) => (
+                      <li key={i}>{correction}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              {/* Lab Info */}
+              <div className="grid gap-4 sm:grid-cols-3 text-sm">
+                {data.labName && (
+                  <div className="flex items-center gap-2">
+                    <Building2 className="h-4 w-4 text-gray-400" />
+                    <span className="text-gray-900">{data.labName}</span>
+                  </div>
+                )}
+                {data.orderingDoctor && (
+                  <div className="flex items-center gap-2">
+                    <Stethoscope className="h-4 w-4 text-gray-400" />
+                    <span className="text-gray-900">{data.orderingDoctor}</span>
+                  </div>
+                )}
+                {data.testDate && (
+                  <div className="flex items-center gap-2">
+                    <Calendar className="h-4 w-4 text-gray-400" />
+                    <span className="text-gray-900">{data.testDate}</span>
+                  </div>
+                )}
+              </div>
+
+              {/* Biomarkers Table - show processed if available, otherwise raw */}
+              {data.processedBiomarkers && data.processedBiomarkers.length > 0 ? (
+                <ProcessedBiomarkersTable biomarkers={data.processedBiomarkers} />
+              ) : (
+                <RawBiomarkersTable biomarkers={data.biomarkers} />
+              )}
+            </>
           ) : (
-            <span className="inline-flex items-center gap-1 text-sm text-amber-600">
-              <AlertCircle className="h-4 w-4" />
-              {upload.skipVerification ? 'Verification skipped' : 'Unverified'}
-            </span>
-          )}
-          {upload.extractionConfidence && (
-            <span className="text-sm text-gray-500">
-              • {Math.round(upload.extractionConfidence * 100)}% confidence
-            </span>
+            <DebugTab debugInfo={data.debugInfo} />
           )}
         </div>
-
-        {/* Corrections */}
-        {upload.corrections && upload.corrections.length > 0 && (
-          <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
-            <h4 className="text-sm font-medium text-amber-800 mb-2">Corrections Applied</h4>
-            <ul className="text-sm text-amber-700 list-disc list-inside space-y-1">
-              {upload.corrections.map((correction, i) => (
-                <li key={i}>{correction}</li>
-              ))}
-            </ul>
-          </div>
-        )}
-
-        {/* Patient Info */}
-        {(data.clientName || data.clientGender || data.clientBirthday) && (
-          <div className="border border-gray-200 rounded-lg p-4">
-            <h4 className="text-sm font-medium text-gray-700 mb-3 flex items-center gap-2">
-              <User className="h-4 w-4" />
-              Patient Information
-            </h4>
-            <div className="grid gap-3 sm:grid-cols-3 text-sm">
-              {data.clientName && (
-                <div>
-                  <span className="text-gray-500">Name:</span>{' '}
-                  <span className="text-gray-900">{data.clientName}</span>
-                </div>
-              )}
-              {data.clientGender && (
-                <div>
-                  <span className="text-gray-500">Gender:</span>{' '}
-                  <span className="text-gray-900 capitalize">{data.clientGender}</span>
-                </div>
-              )}
-              {data.clientBirthday && (
-                <div>
-                  <span className="text-gray-500">Birthday:</span>{' '}
-                  <span className="text-gray-900">{data.clientBirthday}</span>
-                </div>
-              )}
-            </div>
-          </div>
-        )}
-
-        {/* Lab Info */}
-        <div className="grid gap-4 sm:grid-cols-3 text-sm">
-          {data.labName && (
-            <div className="flex items-center gap-2">
-              <Building2 className="h-4 w-4 text-gray-400" />
-              <span className="text-gray-900">{data.labName}</span>
-            </div>
-          )}
-          {data.orderingDoctor && (
-            <div className="flex items-center gap-2">
-              <Stethoscope className="h-4 w-4 text-gray-400" />
-              <span className="text-gray-900">{data.orderingDoctor}</span>
-            </div>
-          )}
-          {data.testDate && (
-            <div className="flex items-center gap-2">
-              <Calendar className="h-4 w-4 text-gray-400" />
-              <span className="text-gray-900">{data.testDate}</span>
-            </div>
-          )}
-        </div>
-
-        {/* Biomarkers Table - show processed if available, otherwise raw */}
-        {data.processedBiomarkers && data.processedBiomarkers.length > 0 ? (
-          <ProcessedBiomarkersTable biomarkers={data.processedBiomarkers} />
-        ) : (
-          <RawBiomarkersTable biomarkers={data.biomarkers} />
-        )}
 
         {/* Actions */}
-        <div className="flex justify-end gap-3 pt-4 border-t border-gray-200">
+        <div className="flex justify-end gap-3 pt-4 border-t border-gray-200 flex-shrink-0">
           <Button variant="secondary" onClick={onClose}>
             Close
           </Button>

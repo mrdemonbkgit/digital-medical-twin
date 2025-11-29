@@ -3,8 +3,8 @@
     "target": "ES2020",
     "module": "ESNext",
     "moduleResolution": "bundler",
-    "outDir": "api",
-    "rootDir": "api-src",
+    "outDir": "api-compiled",
+    "rootDir": "api",
     "declaration": false,
     "skipLibCheck": true,
     "esModuleInterop": true,
@@ -17,6 +17,6 @@
       "@shared/*": ["./shared/*"]
     }
   },
-  "include": ["api-src/**/*.ts"],
+  "include": ["api/**/*.ts"],
   "exclude": ["node_modules"]
 }

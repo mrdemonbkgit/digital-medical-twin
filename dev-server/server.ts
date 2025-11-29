@@ -7,7 +7,7 @@ import { pathToFileURL } from 'url';
 
 const app = express();
 const PORT = parseInt(process.env.DEV_API_PORT || '3001', 10);
-const API_DIR = join(process.cwd(), 'api');
+const API_DIR = join(process.cwd(), 'api-compiled');
 
 // Match Vercel's body parsing
 app.use(express.json({ limit: '50mb' }));

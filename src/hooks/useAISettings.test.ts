@@ -2,30 +2,57 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { renderHook, waitFor, act } from '@testing-library/react';
 import { useAISettings } from './useAISettings';
 
-// Mock supabase
+// Mock supabase with full chain support
+const mockFrom = vi.fn();
+const mockSelect = vi.fn();
+const mockSingle = vi.fn();
+const mockUpsert = vi.fn();
+const mockGetUser = vi.fn();
+
 vi.mock('@/lib/supabase', () => ({
   supabase: {
+    from: (table: string) => {
+      mockFrom(table);
+      return {
+        select: (columns: string) => {
+          mockSelect(columns);
+          return {
+            single: () => mockSingle(),
+          };
+        },
+        upsert: (data: unknown, options: unknown) => {
+          mockUpsert(data, options);
+          // Return the promise from mockUpsert, not mockUpsert itself
+          return mockUpsert();
+        },
+      };
+    },
     auth: {
-      getSession: vi.fn(),
+      getUser: () => mockGetUser(),
     },
   },
 }));
 
-// Mock fetch
-const mockFetch = vi.fn();
-global.fetch = mockFetch;
-
-// Import the mocked supabase
-import { supabase } from '@/lib/supabase';
-
 describe('useAISettings', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    // Default: authenticated user
-    vi.mocked(supabase.auth.getSession).mockResolvedValue({
-      data: { session: { access_token: 'test-token' } },
+    // Default: return settings from database
+    mockSingle.mockResolvedValue({
+      data: {
+        ai_provider: 'openai',
+        ai_model: 'gpt-5.1',
+        openai_reasoning_effort: 'high',
+        gemini_thinking_level: 'high',
+      },
       error: null,
-    } as ReturnType<typeof supabase.auth.getSession> extends Promise<infer T> ? T : never);
+    });
+    // Default: authenticated user
+    mockGetUser.mockResolvedValue({
+      data: { user: { id: 'user-123' } },
+      error: null,
+    });
+    // Default: upsert succeeds
+    mockUpsert.mockResolvedValue({ error: null });
   });
 
   afterEach(() => {
@@ -33,25 +60,13 @@ describe('useAISettings', () => {
   });
 
   it('returns loading state initially', () => {
-    mockFetch.mockImplementation(() => new Promise(() => {})); // Never resolves
+    mockSingle.mockImplementation(() => new Promise(() => {})); // Never resolves
     const { result } = renderHook(() => useAISettings());
     expect(result.current.isLoading).toBe(true);
     expect(result.current.settings).toBe(null);
   });
 
   it('fetches settings on mount', async () => {
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      headers: { get: () => 'application/json' },
-      json: () =>
-        Promise.resolve({
-          provider: 'openai',
-          model: 'gpt-5.1',
-          openaiReasoningEffort: 'high',
-          geminiThinkingLevel: 'high',
-        }),
-    });
-
     const { result } = renderHook(() => useAISettings());
 
     await waitFor(() => {
@@ -64,15 +79,14 @@ describe('useAISettings', () => {
       openaiReasoningEffort: 'high',
       geminiThinkingLevel: 'high',
     });
-    expect(mockFetch).toHaveBeenCalledWith('/api/settings/ai', {
-      headers: { Authorization: 'Bearer test-token' },
-    });
+    expect(mockFrom).toHaveBeenCalledWith('user_settings');
   });
 
-  it('returns default values when API unavailable', async () => {
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      headers: { get: () => 'text/html' }, // Not JSON - API unavailable
+  it('returns default values when no settings exist', async () => {
+    // PGRST116 = no rows found
+    mockSingle.mockResolvedValue({
+      data: null,
+      error: { code: 'PGRST116', message: 'No rows found' },
     });
 
     const { result } = renderHook(() => useAISettings());
@@ -87,19 +101,19 @@ describe('useAISettings', () => {
       openaiReasoningEffort: 'medium',
       geminiThinkingLevel: 'high',
     });
-    expect(result.current.error).toContain('API not available');
+    expect(result.current.error).toBe(null);
   });
 
   it('returns default values with provider-specific reasoning params', async () => {
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      headers: { get: () => 'application/json' },
-      json: () =>
-        Promise.resolve({
-          provider: 'google',
-          model: 'gemini-3-pro-preview',
-          // No reasoning params in response - should use defaults
-        }),
+    mockSingle.mockResolvedValue({
+      data: {
+        ai_provider: 'google',
+        ai_model: 'gemini-3-pro-preview',
+        // No reasoning params in DB - should use defaults
+        openai_reasoning_effort: null,
+        gemini_thinking_level: null,
+      },
+      error: null,
     });
 
     const { result } = renderHook(() => useAISettings());
@@ -112,11 +126,11 @@ describe('useAISettings', () => {
     expect(result.current.settings?.geminiThinkingLevel).toBe('high');
   });
 
-  it('handles authentication errors', async () => {
-    vi.mocked(supabase.auth.getSession).mockResolvedValue({
-      data: { session: null },
-      error: null,
-    } as ReturnType<typeof supabase.auth.getSession> extends Promise<infer T> ? T : never);
+  it('handles database errors gracefully', async () => {
+    mockSingle.mockResolvedValue({
+      data: null,
+      error: { code: 'PGRST500', message: 'Database error' },
+    });
 
     const { result } = renderHook(() => useAISettings());
 
@@ -124,7 +138,7 @@ describe('useAISettings', () => {
       expect(result.current.isLoading).toBe(false);
     });
 
-    expect(result.current.error).toBe('Not authenticated');
+    expect(result.current.error).toBe('Database error');
     // Should still have default settings so form renders
     expect(result.current.settings).toEqual({
       provider: null,
@@ -134,54 +148,17 @@ describe('useAISettings', () => {
     });
   });
 
-  it('handles API errors gracefully', async () => {
-    mockFetch.mockResolvedValueOnce({
-      ok: false,
-      status: 500,
-      headers: { get: () => 'application/json' },
-      json: () => Promise.resolve({ error: 'Internal server error' }),
-    });
-
-    const { result } = renderHook(() => useAISettings());
-
-    await waitFor(() => {
-      expect(result.current.isLoading).toBe(false);
-    });
-
-    expect(result.current.error).toBe('Internal server error');
-  });
-
   it('updateSettings sends correct payload', async () => {
-    // Initial fetch
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      headers: { get: () => 'application/json' },
-      json: () =>
-        Promise.resolve({
-          provider: null,
-          model: null,
-          openaiReasoningEffort: 'medium',
-          geminiThinkingLevel: 'high',
-        }),
+    // Initial fetch - no settings
+    mockSingle.mockResolvedValue({
+      data: null,
+      error: { code: 'PGRST116', message: 'No rows found' },
     });
 
     const { result } = renderHook(() => useAISettings());
 
     await waitFor(() => {
       expect(result.current.isLoading).toBe(false);
-    });
-
-    // Setup update response
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      headers: { get: () => 'application/json' },
-      json: () =>
-        Promise.resolve({
-          provider: 'openai',
-          model: 'gpt-5.1',
-          openaiReasoningEffort: 'high',
-          geminiThinkingLevel: 'high',
-        }),
     });
 
     // Update settings
@@ -193,31 +170,27 @@ describe('useAISettings', () => {
       });
     });
 
-    // Check that fetch was called with correct payload
-    expect(mockFetch).toHaveBeenLastCalledWith('/api/settings/ai', {
-      method: 'PUT',
-      headers: {
-        Authorization: 'Bearer test-token',
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        provider: 'openai',
-        model: 'gpt-5.1',
-        openaiReasoningEffort: 'high',
+    // Check that upsert was called with correct payload
+    expect(mockUpsert).toHaveBeenCalledWith(
+      expect.objectContaining({
+        user_id: 'user-123',
+        ai_provider: 'openai',
+        ai_model: 'gpt-5.1',
+        openai_reasoning_effort: 'high',
       }),
-    });
+      { onConflict: 'user_id' }
+    );
 
     // Check that state was updated
     expect(result.current.settings?.provider).toBe('openai');
     expect(result.current.settings?.openaiReasoningEffort).toBe('high');
   });
 
-  it('updateSettings throws on API error', async () => {
-    // Initial fetch
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      headers: { get: () => 'application/json' },
-      json: () => Promise.resolve({ provider: null, model: null }),
+  it('updateSettings throws on not authenticated', async () => {
+    // Initial fetch succeeds
+    mockSingle.mockResolvedValue({
+      data: { ai_provider: null, ai_model: null },
+      error: null,
     });
 
     const { result } = renderHook(() => useAISettings());
@@ -226,36 +199,30 @@ describe('useAISettings', () => {
       expect(result.current.isLoading).toBe(false);
     });
 
-    // Setup error response
-    mockFetch.mockResolvedValueOnce({
-      ok: false,
-      headers: { get: () => 'application/json' },
-      json: () => Promise.resolve({ error: 'Invalid provider' }),
+    // User not authenticated
+    mockGetUser.mockResolvedValue({
+      data: { user: null },
+      error: null,
     });
 
     // Update should throw
     let thrownError: Error | null = null;
     await act(async () => {
       try {
-        await result.current.updateSettings({ provider: 'invalid' as 'openai' });
+        await result.current.updateSettings({ provider: 'openai' });
       } catch (e) {
         thrownError = e as Error;
       }
     });
 
-    expect(thrownError?.message).toBe('Invalid provider');
+    expect(thrownError?.message).toBe('Not authenticated');
   });
 
-  it('refetch reloads settings', async () => {
-    // Initial fetch
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      headers: { get: () => 'application/json' },
-      json: () =>
-        Promise.resolve({
-          provider: 'openai',
-          model: 'gpt-5.1',
-        }),
+  it('updateSettings throws on database error', async () => {
+    // Initial fetch succeeds
+    mockSingle.mockResolvedValue({
+      data: { ai_provider: null, ai_model: null },
+      error: null,
     });
 
     const { result } = renderHook(() => useAISettings());
@@ -264,15 +231,49 @@ describe('useAISettings', () => {
       expect(result.current.isLoading).toBe(false);
     });
 
+    // Upsert fails
+    mockUpsert.mockResolvedValue({
+      error: { message: 'Database write error' },
+    });
+
+    // Update should throw
+    let thrownError: Error | null = null;
+    await act(async () => {
+      try {
+        await result.current.updateSettings({ provider: 'openai' });
+      } catch (e) {
+        thrownError = e as Error;
+      }
+    });
+
+    expect(thrownError?.message).toBe('Database write error');
+  });
+
+  it('refetch reloads settings', async () => {
+    // Initial fetch
+    mockSingle.mockResolvedValueOnce({
+      data: {
+        ai_provider: 'openai',
+        ai_model: 'gpt-5.1',
+      },
+      error: null,
+    });
+
+    const { result } = renderHook(() => useAISettings());
+
+    await waitFor(() => {
+      expect(result.current.isLoading).toBe(false);
+    });
+
+    expect(result.current.settings?.provider).toBe('openai');
+
     // Setup refetch response with different data
-    mockFetch.mockResolvedValueOnce({
-      ok: true,
-      headers: { get: () => 'application/json' },
-      json: () =>
-        Promise.resolve({
-          provider: 'google',
-          model: 'gemini-3-pro-preview',
-        }),
+    mockSingle.mockResolvedValueOnce({
+      data: {
+        ai_provider: 'google',
+        ai_model: 'gemini-3-pro-preview',
+      },
+      error: null,
     });
 
     // Refetch
@@ -281,6 +282,6 @@ describe('useAISettings', () => {
     });
 
     expect(result.current.settings?.provider).toBe('google');
-    expect(mockFetch).toHaveBeenCalledTimes(2);
+    expect(mockSingle).toHaveBeenCalledTimes(2);
   });
 });

@@ -1,4 +1,4 @@
-import { Clock, FileText, FlaskConical, CheckCircle, XCircle } from 'lucide-react';
+import { Clock, FileText, FlaskConical, CheckCircle, XCircle, Layers, GitMerge } from 'lucide-react';
 import type { ExtractionDebugInfo } from '@/types';
 
 interface DebugSummaryProps {
@@ -18,6 +18,8 @@ function formatBytes(bytes: number): string {
 
 export function DebugSummary({ debugInfo }: DebugSummaryProps) {
   const { stage1, stage2, stage3 } = debugInfo;
+  const isChunked = debugInfo.isChunked ?? false;
+  const pageCount = debugInfo.pageCount ?? 1;
   const totalBiomarkers = stage1.biomarkersExtracted;
   const matchedCount = stage3.matchedCount;
   const unmatchedCount = stage3.unmatchedCount;
@@ -25,7 +27,15 @@ export function DebugSummary({ debugInfo }: DebugSummaryProps) {
 
   return (
     <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-      <h4 className="text-sm font-medium text-gray-700 mb-3">Extraction Summary</h4>
+      <div className="flex items-center justify-between mb-3">
+        <h4 className="text-sm font-medium text-gray-700">Extraction Summary</h4>
+        {isChunked && (
+          <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-700">
+            <Layers className="h-3 w-3" />
+            Chunked: {pageCount} pages
+          </span>
+        )}
+      </div>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
         {/* Total Time */}
         <div className="flex items-center gap-2">
@@ -96,6 +106,24 @@ export function DebugSummary({ debugInfo }: DebugSummaryProps) {
               className="h-full bg-green-500 rounded-full transition-all duration-300"
               style={{ width: `${matchRate}%` }}
             />
+          </div>
+        </div>
+      )}
+
+      {/* Merge stats (only for chunked extraction) */}
+      {isChunked && debugInfo.mergeStage && (
+        <div className="mt-4 pt-3 border-t border-gray-200">
+          <div className="flex items-center gap-2 text-xs">
+            <GitMerge className="h-3.5 w-3.5 text-gray-400" />
+            <span className="text-gray-500">Merge:</span>
+            <span className="font-medium text-gray-700">
+              {debugInfo.mergeStage.totalBiomarkersBeforeMerge} biomarkers merged to {debugInfo.mergeStage.totalBiomarkersAfterMerge}
+            </span>
+            {debugInfo.mergeStage.duplicatesRemoved > 0 && (
+              <span className="text-amber-600">
+                ({debugInfo.mergeStage.duplicatesRemoved} duplicate{debugInfo.mergeStage.duplicatesRemoved !== 1 ? 's' : ''} removed)
+              </span>
+            )}
           </div>
         </div>
       )}

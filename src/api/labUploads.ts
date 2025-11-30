@@ -26,6 +26,8 @@ function rowToLabUpload(row: LabUploadRow): LabUpload {
     startedAt: row.started_at || undefined,
     completedAt: row.completed_at || undefined,
     eventId: row.event_id || undefined,
+    currentPage: row.current_page || undefined,
+    totalPages: row.total_pages || undefined,
   };
 }
 
@@ -33,7 +35,7 @@ function rowToLabUpload(row: LabUploadRow): LabUpload {
 function inputToRow(
   input: CreateLabUploadInput,
   userId: string
-): Omit<LabUploadRow, 'id' | 'created_at' | 'started_at' | 'completed_at' | 'event_id' | 'extracted_data' | 'extraction_confidence' | 'verification_passed' | 'corrections' | 'error_message' | 'processing_stage'> {
+): Omit<LabUploadRow, 'id' | 'created_at' | 'started_at' | 'completed_at' | 'event_id' | 'extracted_data' | 'extraction_confidence' | 'verification_passed' | 'corrections' | 'error_message' | 'processing_stage' | 'current_page' | 'total_pages'> {
   return {
     user_id: userId,
     filename: input.filename,
@@ -58,6 +60,8 @@ function updateToRow(input: UpdateLabUploadInput): Partial<LabUploadRow> {
   if (input.startedAt !== undefined) row.started_at = input.startedAt;
   if (input.completedAt !== undefined) row.completed_at = input.completedAt;
   if (input.eventId !== undefined) row.event_id = input.eventId;
+  if (input.currentPage !== undefined) row.current_page = input.currentPage;
+  if (input.totalPages !== undefined) row.total_pages = input.totalPages;
 
   return row;
 }

@@ -1,16 +1,67 @@
 import type { Biomarker } from './events';
 
 // Upload status lifecycle
-export type LabUploadStatus = 'pending' | 'processing' | 'complete' | 'failed';
+// 'partial' = extraction succeeded but post-processing failed (biomarkers not standardized)
+export type LabUploadStatus = 'pending' | 'processing' | 'complete' | 'partial' | 'failed';
 
 // Processing stages for progress tracking
-export type ProcessingStage = 'fetching_pdf' | 'extracting_gemini' | 'verifying_gpt' | 'post_processing';
+export type ProcessingStage =
+  | 'fetching_pdf'
+  | 'splitting_pages'
+  | 'extracting_gemini'
+  | 'verifying_gpt'
+  | 'post_processing';
+
+// Per-page debug info for chunked extraction
+export interface PageDebugInfo {
+  pageNumber: number;
+
+  // Gemini extraction for this page
+  extraction: {
+    startedAt: string;
+    completedAt: string;
+    durationMs: number;
+    biomarkersExtracted: number;
+    rawResponsePreview: string; // First 500 chars
+  };
+
+  // GPT verification for this page (optional if skipped)
+  verification?: {
+    startedAt: string;
+    completedAt: string;
+    durationMs: number;
+    verificationPassed: boolean;
+    correctionsCount: number;
+    corrections: string[];
+    rawResponsePreview?: string;
+  };
+}
+
+// Merge stage info for chunked extraction
+export interface MergeStageInfo {
+  name: 'Biomarker Merge';
+  totalBiomarkersBeforeMerge: number;
+  totalBiomarkersAfterMerge: number;
+  duplicatesRemoved: number;
+  conflictsResolved: number;
+  conflicts?: Array<{
+    biomarkerName: string;
+    sourcePages: number[];
+    values: number[];
+    resolvedValue: number;
+  }>;
+}
 
 // Debug information for extraction process
 export interface ExtractionDebugInfo {
   // Overall metrics
   totalDurationMs: number;
   pdfSizeBytes: number;
+
+  // Chunking metadata (for multi-page extraction)
+  isChunked?: boolean;
+  pageCount?: number;
+  chunkThreshold?: number; // e.g., 4
 
   // Stage 1: Gemini Extraction
   stage1: {
@@ -19,9 +70,12 @@ export interface ExtractionDebugInfo {
     completedAt: string;
     durationMs: number;
     biomarkersExtracted: number;
-    rawResponse: string; // Truncated if too large
+    rawResponse: string; // Truncated if too large, or "See per-page details" for chunked
     model: string;
     thinkingLevel: string;
+    // Per-page breakdown (only for chunked)
+    pagesProcessed?: number;
+    avgPageDurationMs?: number;
   };
 
   // Stage 2: GPT Verification
@@ -37,6 +91,10 @@ export interface ExtractionDebugInfo {
     rawResponse?: string;
     model?: string;
     reasoningEffort?: string;
+    // Per-page verification stats (only for chunked)
+    pagesVerified?: number;
+    pagesPassed?: number;
+    pagesFailed?: number;
   };
 
   // Stage 3: Post-Processing
@@ -52,6 +110,12 @@ export interface ExtractionDebugInfo {
     rawResponse: string;
     matchDetails: BiomarkerMatchDetail[];
   };
+
+  // Merge stage (only for chunked extraction)
+  mergeStage?: MergeStageInfo;
+
+  // Per-page details (only for chunked extraction)
+  pageDetails?: PageDebugInfo[];
 }
 
 // Per-biomarker matching details for debugging
@@ -129,6 +193,9 @@ export interface LabUpload {
   startedAt?: string;
   completedAt?: string;
   eventId?: string;
+  // Page progress tracking for chunked extraction
+  currentPage?: number;
+  totalPages?: number;
 }
 
 // Input for creating a new upload record
@@ -151,6 +218,9 @@ export interface UpdateLabUploadInput {
   startedAt?: string | null;
   completedAt?: string | null;
   eventId?: string | null;
+  // Page progress tracking for chunked extraction
+  currentPage?: number | null;
+  totalPages?: number | null;
 }
 
 // Database row shape (snake_case)
@@ -172,4 +242,7 @@ export interface LabUploadRow {
   started_at: string | null;
   completed_at: string | null;
   event_id: string | null;
+  // Page progress tracking for chunked extraction
+  current_page: number | null;
+  total_pages: number | null;
 }

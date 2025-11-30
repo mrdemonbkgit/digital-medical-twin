@@ -4,6 +4,7 @@ import { DebugSummary } from './DebugSummary';
 import { StageTimeline } from './StageTimeline';
 import { MatchDetailsTable } from './MatchDetailsTable';
 import { RawResponseSection } from './RawResponseSection';
+import { PageDebugAccordion } from './PageDebugAccordion';
 
 interface DebugTabProps {
   debugInfo?: ExtractionDebugInfo;
@@ -22,6 +23,9 @@ export function DebugTab({ debugInfo }: DebugTabProps) {
     );
   }
 
+  const isChunked = debugInfo.isChunked ?? false;
+  const hasPageDetails = isChunked && debugInfo.pageDetails && debugInfo.pageDetails.length > 0;
+
   return (
     <div className="space-y-6">
       {/* Summary Section */}
@@ -29,6 +33,11 @@ export function DebugTab({ debugInfo }: DebugTabProps) {
 
       {/* Stage Timeline */}
       <StageTimeline debugInfo={debugInfo} />
+
+      {/* Per-Page Details (only for chunked extraction) */}
+      {hasPageDetails && (
+        <PageDebugAccordion pageDetails={debugInfo.pageDetails!} />
+      )}
 
       {/* Match Details Table */}
       {debugInfo.stage3.matchDetails.length > 0 && (

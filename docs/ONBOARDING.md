@@ -101,12 +101,12 @@ Users log health events (bloodwork, doctor visits, medications, interventions, m
 │   ├── /utils/               # Utility functions
 │   └── /styles/              # Global styles
 │
-├── /api-src/                 # API source (TypeScript)
-│   ├── /ai/                  # AI endpoints
+├── /api/                     # API source (TypeScript) - Vercel serverless functions
+│   ├── /ai/                  # AI endpoints (chat, lab extraction)
 │   ├── /settings/            # Settings endpoints
-│   └── /lib/                 # Shared API utilities
+│   └── /lib/                 # Shared API utilities (logger, PDF splitter, etc.)
 │
-├── /api/                     # Compiled API output (gitignored)
+├── /api-compiled/            # Compiled API output for local dev (gitignored)
 │
 ├── /dev-server/              # Local development server
 │   └── server.ts             # Express server with hot reload
@@ -177,14 +177,14 @@ Vite proxies `/api/*` requests to the Express server on port 3001.
 
 ### How It Works
 
-1. **TypeScript compilation**: `api-src/*.ts` → `api/*.js` (via `tsconfig.api.json`)
+1. **TypeScript compilation**: `api/*.ts` → `api-compiled/*.js` (via `tsconfig.api.json`)
 2. **Watch mode**: TypeScript compiler watches for changes
 3. **Hot reload**: Express server reloads handlers via ESM dynamic imports with cache-busting
 4. **File watcher**: chokidar detects changes to compiled `.js` files
 
 ### Limitations
 
-- **Lib changes need restart**: Changes to `api-src/lib/*` require restarting the dev server
+- **Lib changes need restart**: Changes to `api/lib/*` require restarting the dev server
 - **New routes need restart**: Adding new API files requires restart to register routes
 - **Not 100% production parity**: Express vs Vercel serverless, but compatible for all common use cases
 

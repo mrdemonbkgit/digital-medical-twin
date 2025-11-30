@@ -26,6 +26,7 @@ interface LabUploadCardProps {
 
 const stageMessages: Record<ProcessingStage, string> = {
   fetching_pdf: 'Fetching PDF...',
+  splitting_pages: 'Splitting PDF into pages...',
   extracting_gemini: 'Extracting with Gemini...',
   verifying_gpt: 'Verifying with GPT...',
   post_processing: 'Matching biomarkers to standards...',
@@ -66,8 +67,8 @@ function formatFileSize(bytes: number): string {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
-// Allow deleting stuck jobs after 5 minutes
-const STUCK_JOB_THRESHOLD_SECONDS = 300;
+// Allow deleting stuck jobs after 20 minutes
+const STUCK_JOB_THRESHOLD_SECONDS = 1200;
 
 export function LabUploadCard({
   upload,
@@ -113,6 +114,13 @@ export function LabUploadCard({
           <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-600">
             <CheckCircle className="h-3 w-3" />
             Complete
+          </span>
+        );
+      case 'partial':
+        return (
+          <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-amber-100 text-amber-600">
+            <AlertCircle className="h-3 w-3" />
+            Partial
           </span>
         );
       case 'failed':
@@ -173,19 +181,40 @@ export function LabUploadCard({
 
       {/* Processing progress */}
       {isProcessing && (
-        <div className={`mt-3 flex items-center gap-2 text-sm rounded-lg px-3 py-2 ${
+        <div className={`mt-3 space-y-2 text-sm rounded-lg px-3 py-2 ${
           isStuck ? 'text-amber-600 bg-amber-50' : 'text-blue-600 bg-blue-50'
         }`}>
-          <Loader2 className="h-4 w-4 animate-spin" />
-          <span className="flex-1">
-            {isStuck
-              ? 'Job appears stuck - you can delete and retry'
-              : upload.processingStage ? stageMessages[upload.processingStage] : 'Processing...'}
-          </span>
-          {upload.startedAt && (
-            <span className={`font-mono text-xs ${isStuck ? 'text-amber-500' : 'text-blue-500'}`}>
-              {formatElapsed(elapsed)}
+          <div className="flex items-center gap-2">
+            <Loader2 className="h-4 w-4 animate-spin" />
+            <span className="flex-1">
+              {isStuck
+                ? 'Job appears stuck - you can delete and retry'
+                : upload.processingStage ? stageMessages[upload.processingStage] : 'Processing...'}
             </span>
+            {upload.startedAt && (
+              <span className={`font-mono text-xs ${isStuck ? 'text-amber-500' : 'text-blue-500'}`}>
+                {formatElapsed(elapsed)}
+              </span>
+            )}
+          </div>
+          {/* Page progress bar for chunked extraction */}
+          {upload.totalPages && upload.totalPages > 1 && (
+            <div className="space-y-1">
+              <div className="flex justify-between text-xs">
+                <span>
+                  Page {upload.currentPage || 1} of {upload.totalPages}
+                </span>
+                <span>
+                  {Math.round(((upload.currentPage || 1) / upload.totalPages) * 100)}%
+                </span>
+              </div>
+              <div className={`w-full h-1.5 rounded-full ${isStuck ? 'bg-amber-200' : 'bg-blue-200'}`}>
+                <div
+                  className={`h-1.5 rounded-full transition-all duration-300 ${isStuck ? 'bg-amber-500' : 'bg-blue-500'}`}
+                  style={{ width: `${((upload.currentPage || 1) / upload.totalPages) * 100}%` }}
+                />
+              </div>
+            </div>
           )}
         </div>
       )}

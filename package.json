@@ -5,10 +5,10 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "dev:api": "npm run build:api && concurrently \"npm run dev:api:watch\" \"tsx dev-server/server.ts\"",
+    "dev:api": "npm run build:api --silent && echo '[BUILD] Starting dev server...' && concurrently --names 'tsc,api' --prefix-colors 'gray,cyan' \"npm run dev:api:watch --silent\" \"tsx dev-server/server.ts\"",
     "dev:api:watch": "tsc -p tsconfig.api.json --watch --preserveWatchOutput --noCheck",
     "dev:vercel": "npm run build:api && concurrently \"npm run dev:api:watch\" \"vercel dev --listen 3001\"",
-    "build:api": "tsc -p tsconfig.api.json --noCheck",
+    "build:api": "echo '[BUILD] Compiling API TypeScript...' && tsc -p tsconfig.api.json --noCheck && echo '[BUILD] ✓ API compilation complete'",
     "build": "tsc -b && vite build",
     "lint": "tsc --noEmit",
     "preview": "vite preview",

@@ -1271,7 +1271,7 @@ Important:
           generationConfig: {
             temperature: 0.1,
             maxOutputTokens: 64000,
-            thinkingConfig: { thinkingLevel: 'high' },
+            thinkingConfig: { thinkingLevel: 'low' },
           },
         }),
       }

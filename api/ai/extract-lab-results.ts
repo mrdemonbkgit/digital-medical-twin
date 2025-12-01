@@ -1,7 +1,13 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { createClient } from '@supabase/supabase-js';
+import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { Agent } from 'undici';
 import { withLogger, LoggedRequest } from '../lib/logger/withLogger.js';
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type SupabaseClientAny = SupabaseClient<any, any, any>;
+
+// Verification status: clean = no corrections needed, corrected = corrections applied successfully, failed = couldn't verify
+type VerificationStatus = 'clean' | 'corrected' | 'failed';
 
 // Types
 interface Biomarker {
@@ -25,7 +31,8 @@ interface ExtractionResult {
   testDate?: string;
   biomarkers: Biomarker[];
   extractionConfidence: number;
-  verificationPassed: boolean;
+  verificationPassed?: boolean; // Backwards compatibility
+  verificationStatus: VerificationStatus;
   corrections?: string[];
   error?: string;
 }
@@ -58,7 +65,7 @@ function createSupabaseClient(authHeader: string | undefined) {
   });
 }
 
-async function getUserId(supabase: ReturnType<typeof createClient>, authHeader: string) {
+async function getUserId(supabase: SupabaseClientAny, authHeader: string) {
   const token = authHeader.replace('Bearer ', '');
   const {
     data: { user },
@@ -203,7 +210,8 @@ Important:
       testDate: extracted.testDate,
       biomarkers: extracted.biomarkers || [],
       extractionConfidence: 0.8,
-      verificationPassed: false,
+      verificationPassed: false, // Backwards compatibility
+      verificationStatus: 'failed',
     };
   } catch {
     throw new Error('Failed to parse extraction result from Gemini');
@@ -281,15 +289,10 @@ Return ONLY valid JSON (no markdown code blocks) with the corrected/verified dat
       "flag": "high" or "low" or "normal"
     }
   ],
-  "corrections": ["List each correction made, e.g., 'Fixed Glucose value from 95 to 96'"],
-  "verificationPassed": true
+  "corrections": ["List each correction made, e.g., 'Fixed Glucose value from 95 to 96', or empty array if none"]
 }
 
-## Important:
-- If extraction is accurate, set corrections to empty array []
-- If you made corrections, list each one clearly in the corrections array
-- Set verificationPassed to true if data is now accurate (even if corrections were needed)
-- Only set verificationPassed to false if the PDF is unreadable or data cannot be verified`;
+NOTE: If corrections array is empty, the extraction was clean. If corrections were made, they have been applied successfully.`;
 
   // Set up timeout with AbortController
   const controller = new AbortController();
@@ -335,7 +338,8 @@ Return ONLY valid JSON (no markdown code blocks) with the corrected/verified dat
         if (fetchError.name === 'AbortError' || (fetchError as { code?: string }).code === 'UND_ERR_BODY_TIMEOUT') {
           return {
             ...extractedData,
-            verificationPassed: false,
+            verificationPassed: false, // Backwards compatibility
+            verificationStatus: 'failed' as VerificationStatus,
             corrections: ['Verification timed out after 10 minutes - returning unverified extraction'],
           };
         }
@@ -349,7 +353,8 @@ Return ONLY valid JSON (no markdown code blocks) with the corrected/verified dat
       // Return unverified if GPT fails with clear message
       return {
         ...extractedData,
-        verificationPassed: false,
+        verificationPassed: false, // Backwards compatibility
+        verificationStatus: 'failed' as VerificationStatus,
         corrections: [`GPT verification failed with HTTP ${response.status} - returning unverified extraction`],
       };
     }
@@ -363,7 +368,8 @@ Return ONLY valid JSON (no markdown code blocks) with the corrected/verified dat
       // Return unverified if response is not valid JSON
       return {
         ...extractedData,
-        verificationPassed: false,
+        verificationPassed: false, // Backwards compatibility
+        verificationStatus: 'failed' as VerificationStatus,
         corrections: ['GPT response was not valid JSON - returning unverified extraction'],
       };
     }
@@ -380,7 +386,8 @@ Return ONLY valid JSON (no markdown code blocks) with the corrected/verified dat
       // Return unverified if no content extracted
       return {
         ...extractedData,
-        verificationPassed: false,
+        verificationPassed: false, // Backwards compatibility
+        verificationStatus: 'failed' as VerificationStatus,
         corrections: ['GPT returned empty content - returning unverified extraction'],
       };
     }
@@ -400,10 +407,15 @@ Return ONLY valid JSON (no markdown code blocks) with the corrected/verified dat
       // Return unverified if GPT content is not valid JSON
       return {
         ...extractedData,
-        verificationPassed: false,
+        verificationPassed: false, // Backwards compatibility
+        verificationStatus: 'failed' as VerificationStatus,
         corrections: ['GPT output was not valid JSON - returning unverified extraction'],
       };
     }
+
+    // Determine verification status based on corrections
+    const corrections: string[] = verified.corrections || [];
+    const verificationStatus: VerificationStatus = corrections.length === 0 ? 'clean' : 'corrected';
 
     return {
       success: true,
@@ -414,16 +426,18 @@ Return ONLY valid JSON (no markdown code blocks) with the corrected/verified dat
       orderingDoctor: verified.orderingDoctor,
       testDate: verified.testDate,
       biomarkers: verified.biomarkers || extractedData.biomarkers,
-      extractionConfidence: verified.verificationPassed ? 0.95 : 0.7,
-      verificationPassed: verified.verificationPassed ?? true,
-      corrections: verified.corrections || [],
+      extractionConfidence: 0.95, // High confidence since verification succeeded
+      verificationPassed: true, // Backwards compatibility - verification succeeded
+      verificationStatus,
+      corrections,
     };
   } catch (error) {
     // Return unverified extraction if GPT fails
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     return {
       ...extractedData,
-      verificationPassed: false,
+      verificationPassed: false, // Backwards compatibility
+      verificationStatus: 'failed' as VerificationStatus,
       corrections: [`GPT verification error: ${errorMessage} - returning unverified extraction`],
     };
   }
@@ -431,7 +445,7 @@ Return ONLY valid JSON (no markdown code blocks) with the corrected/verified dat
 
 // Fetch PDF from Supabase Storage and convert to base64
 async function fetchPDFAsBase64(
-  supabase: ReturnType<typeof createClient>,
+  supabase: SupabaseClientAny,
   storagePath: string
 ): Promise<string> {
   const { data, error } = await supabase.storage.from('lab-pdfs').download(storagePath);
@@ -580,7 +594,7 @@ async function handler(req: LoggedRequest, res: VercelResponse) {
     const correctionsCount = verifiedData.corrections?.length || 0;
     log.info('Stage 2 complete', {
       durationMs: stage2Duration,
-      verificationPassed: verifiedData.verificationPassed,
+      verificationStatus: verifiedData.verificationStatus,
       correctionsCount,
       corrections: verifiedData.corrections,
       finalBiomarkerCount: verifiedData.biomarkers.length,
@@ -595,7 +609,7 @@ async function handler(req: LoggedRequest, res: VercelResponse) {
       stage1Ms: stage1Duration,
       stage2Ms: stage2Duration,
       biomarkerCount: verifiedData.biomarkers.length,
-      verificationPassed: verifiedData.verificationPassed,
+      verificationStatus: verifiedData.verificationStatus,
     });
 
     if (acceptsSSE) {

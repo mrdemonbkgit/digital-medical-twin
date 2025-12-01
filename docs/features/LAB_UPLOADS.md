@@ -1,6 +1,6 @@
 # Lab Uploads Feature
 
-> Last Updated: 2025-11-29
+> Last Updated: 2025-12-02
 
 ## Summary
 
@@ -227,11 +227,22 @@ Content-Type: application/json
   success: boolean;
   extractedData?: ExtractedLabData;
   extractionConfidence?: number;
-  verificationPassed?: boolean;
+  verificationPassed?: boolean;   // Backwards compatibility (true if clean or corrected)
+  verificationStatus?: 'clean' | 'corrected' | 'failed';  // Detailed status
   corrections?: string[];
+  matchedBiomarkers?: number;
+  unmatchedBiomarkers?: number;
   error?: string;
 }
 ```
+
+**Verification Status Values:**
+
+| Status | Description |
+|--------|-------------|
+| `clean` | Extraction verified, no corrections needed |
+| `corrected` | Extraction verified, corrections were applied |
+| `failed` | Verification failed (timeout, error, etc.) |
 
 ### Client API Functions
 
@@ -355,8 +366,19 @@ The ExtractionPreview modal includes a Debug Info tab for troubleshooting extrac
 | Stage | Data Captured |
 |-------|---------------|
 | Gemini Extraction | Raw response, duration, biomarker count |
-| GPT Verification | Raw response, duration, corrections made |
+| GPT Verification | Raw response, duration, corrections made, verificationPassed, verificationStatus |
 | Post-Processing | Raw response, duration, match details with conversion factors |
+
+**Stage 2 Debug Fields:**
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `verificationPassed` | boolean | Backwards compatibility (true if status is clean or corrected) |
+| `verificationStatus` | string | 'clean', 'corrected', or 'failed' |
+| `pagesPassed` | number | Backwards compatibility (pagesClean + pagesCorrected) |
+| `pagesClean` | number | Pages verified without corrections |
+| `pagesCorrected` | number | Pages verified with corrections |
+| `pagesFailed` | number | Pages that failed verification |
 
 ---
 

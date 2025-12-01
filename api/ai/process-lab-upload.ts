@@ -1,10 +1,16 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { createClient } from '@supabase/supabase-js';
+import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { Agent } from 'undici';
 import { withLogger, LoggedRequest } from '../lib/logger/withLogger.js';
 import type { Logger } from '../lib/logger/Logger.js';
 import { getPageCount, splitPdfIntoPages, type PageChunk } from '../lib/pdfSplitter.js';
-import { mergeBiomarkers, mergeCorrections, calculateOverallVerification } from '../lib/biomarkerMerger.js';
+import { mergeBiomarkers, mergeCorrections, calculateOverallVerificationStatus } from '../lib/biomarkerMerger.js';
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type SupabaseClientAny = SupabaseClient<any, any, any>;
+
+// Verification status: clean = no corrections needed, corrected = corrections applied successfully, failed = couldn't verify
+export type VerificationStatus = 'clean' | 'corrected' | 'failed';
 
 // Types
 interface Biomarker {
@@ -77,7 +83,7 @@ interface PageDebugInfo {
     startedAt: string;
     completedAt: string;
     durationMs: number;
-    verificationPassed: boolean;
+    verificationStatus: VerificationStatus;
     correctionsCount: number;
     corrections: string[];
     rawResponsePreview?: string;
@@ -125,7 +131,8 @@ interface ExtractionDebugInfo {
     startedAt?: string;
     completedAt?: string;
     durationMs?: number;
-    verificationPassed?: boolean;
+    verificationPassed?: boolean; // Backwards compatibility
+    verificationStatus?: VerificationStatus;
     correctionsCount: number;
     corrections: string[];
     rawResponse?: string;
@@ -133,7 +140,9 @@ interface ExtractionDebugInfo {
     reasoningEffort?: string;
     // Per-page verification stats (only for chunked)
     pagesVerified?: number;
-    pagesPassed?: number;
+    pagesPassed?: number; // Backwards compatibility (pagesClean + pagesCorrected)
+    pagesClean?: number;
+    pagesCorrected?: number;
     pagesFailed?: number;
   };
   stage3: {
@@ -170,7 +179,7 @@ interface ExtractionResult {
   success: boolean;
   extractedData?: ExtractedLabData;
   extractionConfidence: number;
-  verificationPassed: boolean;
+  verificationStatus: VerificationStatus;
   corrections?: string[];
   error?: string;
 }
@@ -199,7 +208,7 @@ const CHUNK_PAGE_THRESHOLD = 4;
 interface PageProcessingResult {
   pageNumber: number;
   biomarkers: Biomarker[];
-  verificationPassed: boolean;
+  verificationStatus: VerificationStatus;
   corrections: string[];
   metadata?: Partial<ExtractedLabData>;
   // Debug timing info
@@ -231,7 +240,7 @@ function createSupabaseClient() {
   });
 }
 
-async function getUserId(supabase: ReturnType<typeof createClient>, authHeader: string) {
+async function getUserId(supabase: SupabaseClientAny, authHeader: string) {
   const token = authHeader.replace('Bearer ', '');
   const {
     data: { user },
@@ -260,7 +269,7 @@ function getAllowedOrigin(req: VercelRequest): string {
 
 // Update lab_uploads record in database
 async function updateUploadStatus(
-  supabase: ReturnType<typeof createClient>,
+  supabase: SupabaseClientAny,
   uploadId: string,
   updates: {
     status?: 'pending' | 'processing' | 'complete' | 'partial' | 'failed';
@@ -288,7 +297,7 @@ async function updateUploadStatus(
 
 // Fetch PDF from Supabase Storage and convert to base64
 async function fetchPDFAsBase64(
-  supabase: ReturnType<typeof createClient>,
+  supabase: SupabaseClientAny,
   storagePath: string
 ): Promise<string> {
   const { data, error } = await supabase.storage.from('lab-pdfs').download(storagePath);
@@ -668,9 +677,10 @@ async function verifyPageWithGPT(
   extractedBiomarkers: Biomarker[],
   pageNumber: number,
   log: Logger
-): Promise<{ biomarkers: Biomarker[]; passed: boolean; corrections: string[] }> {
+): Promise<{ biomarkers: Biomarker[]; status: VerificationStatus; corrections: string[] }> {
   if (!OPENAI_API_KEY) {
-    return { biomarkers: extractedBiomarkers, passed: false, corrections: ['OpenAI API key not configured - skipping verification'] };
+    log.warn(`Page ${pageNumber} verification skipped - no API key`);
+    return { biomarkers: extractedBiomarkers, status: 'failed', corrections: ['OpenAI API key not configured - skipping verification'] };
   }
 
   const biomarkersJson = JSON.stringify(extractedBiomarkers, null, 2);
@@ -697,9 +707,10 @@ For EACH biomarker:
 Return ONLY valid JSON (no markdown code blocks):
 {
   "biomarkers": [...corrected biomarkers array...],
-  "corrections": ["List each correction made, or empty if all correct"],
-  "verificationPassed": true or false
-}`;
+  "corrections": ["List each correction made, or empty array if none"]
+}
+
+NOTE: If corrections array is empty, the extraction was clean. If corrections were made, they have been applied successfully.`;
 
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), PAGE_VERIFICATION_TIMEOUT_MS);
@@ -740,9 +751,10 @@ Return ONLY valid JSON (no markdown code blocks):
     } catch (fetchError) {
       if (fetchError instanceof Error) {
         if (fetchError.name === 'AbortError' || (fetchError as { code?: string }).code === 'UND_ERR_BODY_TIMEOUT') {
+          log.warn(`Page ${pageNumber} GPT verification timed out`);
           return {
             biomarkers: extractedBiomarkers,
-            passed: false,
+            status: 'failed' as VerificationStatus,
             corrections: [`Page ${pageNumber} verification timed out - using unverified extraction`],
           };
         }
@@ -754,10 +766,10 @@ Return ONLY valid JSON (no markdown code blocks):
 
     if (!response.ok) {
       const errorBody = await response.text().catch(() => 'Unable to read error body');
-      log.warn(`Page ${pageNumber} GPT verification HTTP error`, { status: response.status });
+      log.warn(`Page ${pageNumber} GPT verification HTTP error`, { status: response.status, errorBody: errorBody.substring(0, 200) });
       return {
         biomarkers: extractedBiomarkers,
-        passed: false,
+        status: 'failed' as VerificationStatus,
         corrections: [`Page ${pageNumber} verification failed with HTTP ${response.status} - using unverified extraction`],
       };
     }
@@ -766,10 +778,11 @@ Return ONLY valid JSON (no markdown code blocks):
     let data;
     try {
       data = JSON.parse(responseText);
-    } catch {
+    } catch (parseError) {
+      log.warn(`Page ${pageNumber} GPT response not valid JSON`, { responsePreview: responseText.substring(0, 200) });
       return {
         biomarkers: extractedBiomarkers,
-        passed: false,
+        status: 'failed' as VerificationStatus,
         corrections: [`Page ${pageNumber} GPT response was not valid JSON - using unverified extraction`],
       };
     }
@@ -783,9 +796,10 @@ Return ONLY valid JSON (no markdown code blocks):
       ?.join('') || '';
 
     if (!content) {
+      log.warn(`Page ${pageNumber} GPT returned empty content`, { outputTypes: data.output?.map((i: { type: string }) => i.type) });
       return {
         biomarkers: extractedBiomarkers,
-        passed: false,
+        status: 'failed' as VerificationStatus,
         corrections: [`Page ${pageNumber} GPT returned empty content - using unverified extraction`],
       };
     }
@@ -801,24 +815,35 @@ Return ONLY valid JSON (no markdown code blocks):
     let verified;
     try {
       verified = JSON.parse(jsonStr);
-    } catch {
+    } catch (parseError) {
+      log.warn(`Page ${pageNumber} GPT output not valid JSON`, { contentPreview: jsonStr.substring(0, 300) });
       return {
         biomarkers: extractedBiomarkers,
-        passed: false,
+        status: 'failed' as VerificationStatus,
         corrections: [`Page ${pageNumber} GPT output was not valid JSON - using unverified extraction`],
       };
     }
 
+    // Determine verification status based on corrections
+    const corrections: string[] = verified.corrections || [];
+    const verificationStatus: VerificationStatus = corrections.length === 0 ? 'clean' : 'corrected';
+
+    // Log successful verification with any corrections made
+    if (corrections.length > 0) {
+      log.debug(`Page ${pageNumber} GPT made corrections`, { corrections });
+    }
+
     return {
       biomarkers: verified.biomarkers || extractedBiomarkers,
-      passed: verified.verificationPassed ?? true,
-      corrections: verified.corrections || [],
+      status: verificationStatus,
+      corrections,
     };
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+    log.warn(`Page ${pageNumber} GPT verification error`, { error: errorMessage });
     return {
       biomarkers: extractedBiomarkers,
-      passed: false,
+      status: 'failed' as VerificationStatus,
       corrections: [`Page ${pageNumber} verification error: ${errorMessage} - using unverified extraction`],
     };
   }
@@ -830,7 +855,7 @@ async function processPage(
   isFirstPage: boolean,
   skipVerification: boolean,
   uploadId: string,
-  supabase: ReturnType<typeof createClient>,
+  supabase: SupabaseClientAny,
   log: Logger
 ): Promise<PageProcessingResult> {
   // Initialize page debug info
@@ -873,7 +898,7 @@ async function processPage(
     return {
       pageNumber: pageChunk.pageNumber,
       biomarkers: extracted.biomarkers,
-      verificationPassed: false,
+      verificationStatus: 'failed' as VerificationStatus,
       corrections: ['Verification skipped by user'],
       metadata: isFirstPage ? extracted.metadata : undefined,
       debugInfo: pageDebug,
@@ -891,7 +916,7 @@ async function processPage(
     startedAt: new Date().toISOString(),
     completedAt: '',
     durationMs: 0,
-    verificationPassed: false,
+    verificationStatus: 'failed' as VerificationStatus,
     correctionsCount: 0,
     corrections: [],
   };
@@ -905,12 +930,12 @@ async function processPage(
 
   pageDebug.verification.completedAt = new Date().toISOString();
   pageDebug.verification.durationMs = Date.now() - verificationStart;
-  pageDebug.verification.verificationPassed = verified.passed;
+  pageDebug.verification.verificationStatus = verified.status;
   pageDebug.verification.correctionsCount = verified.corrections.length;
   pageDebug.verification.corrections = verified.corrections;
 
   log.info(`Page ${pageChunk.pageNumber} verification complete`, {
-    passed: verified.passed,
+    status: verified.status,
     corrections: verified.corrections.length,
     durationMs: pageDebug.verification.durationMs,
   });
@@ -918,7 +943,7 @@ async function processPage(
   return {
     pageNumber: pageChunk.pageNumber,
     biomarkers: verified.biomarkers,
-    verificationPassed: verified.passed,
+    verificationStatus: verified.status,
     corrections: verified.corrections,
     metadata: isFirstPage ? extracted.metadata : undefined,
     debugInfo: pageDebug,
@@ -930,7 +955,7 @@ async function processAllPagesSequentially(
   chunks: PageChunk[],
   uploadId: string,
   skipVerification: boolean,
-  supabase: ReturnType<typeof createClient>,
+  supabase: SupabaseClientAny,
   log: Logger
 ): Promise<PageProcessingResult[]> {
   const results: PageProcessingResult[] = [];
@@ -957,7 +982,7 @@ async function processAllPagesSequentially(
 // Result type for GPT verification including debug info
 interface GPTVerificationResult {
   verified: ExtractedLabData;
-  verificationPassed: boolean;
+  verificationStatus: VerificationStatus;
   corrections: string[];
   rawResponse?: string;
   model?: string;
@@ -971,7 +996,7 @@ async function verifyWithGPT(
   log: Logger
 ): Promise<GPTVerificationResult> {
   if (!OPENAI_API_KEY) {
-    return { verified: extractedData, verificationPassed: false, corrections: ['OpenAI API key not configured - skipping verification'] };
+    return { verified: extractedData, verificationStatus: 'failed', corrections: ['OpenAI API key not configured - skipping verification'] };
   }
 
   const extractedJson = JSON.stringify(extractedData, null, 2);
@@ -1011,9 +1036,10 @@ Return ONLY valid JSON (no markdown code blocks) with the corrected/verified dat
   "orderingDoctor": "verified or corrected value",
   "testDate": "YYYY-MM-DD",
   "biomarkers": [...],
-  "corrections": ["List each correction made"],
-  "verificationPassed": true
-}`;
+  "corrections": ["List each correction made, or empty array if none"]
+}
+
+NOTE: If corrections array is empty, the extraction was clean. If corrections were made, they have been applied successfully.`;
 
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), GPT_TIMEOUT_MS);
@@ -1061,7 +1087,7 @@ Return ONLY valid JSON (no markdown code blocks) with the corrected/verified dat
         if (fetchError.name === 'AbortError' || (fetchError as { code?: string }).code === 'UND_ERR_BODY_TIMEOUT') {
           return {
             verified: extractedData,
-            verificationPassed: false,
+            verificationStatus: 'failed',
             corrections: [`Verification timed out after ${GPT_TIMEOUT_MS / 60000} minutes - returning unverified extraction`],
           };
         }
@@ -1079,7 +1105,7 @@ Return ONLY valid JSON (no markdown code blocks) with the corrected/verified dat
       });
       return {
         verified: extractedData,
-        verificationPassed: false,
+        verificationStatus: 'failed',
         corrections: [`GPT verification failed with HTTP ${response.status}: ${errorBody.substring(0, 200)} - returning unverified extraction`],
       };
     }
@@ -1093,7 +1119,7 @@ Return ONLY valid JSON (no markdown code blocks) with the corrected/verified dat
     } catch {
       return {
         verified: extractedData,
-        verificationPassed: false,
+        verificationStatus: 'failed',
         corrections: ['GPT response was not valid JSON - returning unverified extraction'],
       };
     }
@@ -1109,7 +1135,7 @@ Return ONLY valid JSON (no markdown code blocks) with the corrected/verified dat
     if (!content) {
       return {
         verified: extractedData,
-        verificationPassed: false,
+        verificationStatus: 'failed',
         corrections: ['GPT returned empty content - returning unverified extraction'],
       };
     }
@@ -1128,10 +1154,14 @@ Return ONLY valid JSON (no markdown code blocks) with the corrected/verified dat
     } catch {
       return {
         verified: extractedData,
-        verificationPassed: false,
+        verificationStatus: 'failed',
         corrections: ['GPT output was not valid JSON - returning unverified extraction'],
       };
     }
+
+    // Determine verification status based on corrections
+    const corrections: string[] = verified.corrections || [];
+    const verificationStatus: VerificationStatus = corrections.length === 0 ? 'clean' : 'corrected';
 
     return {
       verified: {
@@ -1143,8 +1173,8 @@ Return ONLY valid JSON (no markdown code blocks) with the corrected/verified dat
         testDate: verified.testDate,
         biomarkers: verified.biomarkers || extractedData.biomarkers,
       },
-      verificationPassed: verified.verificationPassed ?? true,
-      corrections: verified.corrections || [],
+      verificationStatus,
+      corrections,
       rawResponse: content.slice(0, 50000), // Truncate to 50KB
       model: 'gpt-5.1',
       reasoningEffort: 'medium',
@@ -1153,7 +1183,7 @@ Return ONLY valid JSON (no markdown code blocks) with the corrected/verified dat
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
     return {
       verified: extractedData,
-      verificationPassed: false,
+      verificationStatus: 'failed',
       corrections: [`GPT verification error: ${errorMessage} - returning unverified extraction`],
     };
   }
@@ -1161,7 +1191,7 @@ Return ONLY valid JSON (no markdown code blocks) with the corrected/verified dat
 
 // Fetch all biomarker standards from database
 async function fetchBiomarkerStandards(
-  supabase: ReturnType<typeof createClient>
+  supabase: SupabaseClientAny
 ): Promise<BiomarkerStandard[]> {
   const { data, error } = await supabase
     .from('biomarker_standards')
@@ -1474,7 +1504,7 @@ async function handler(req: LoggedRequest, res: VercelResponse) {
     log.info('PDF page count', { pageCount, chunkedThreshold: CHUNK_PAGE_THRESHOLD });
 
     let finalData: ExtractedLabData;
-    let verificationPassed = false;
+    let verificationStatus: VerificationStatus = 'failed';
     let corrections: string[] = [];
     let extractionConfidence = 0.8;
 
@@ -1509,7 +1539,7 @@ async function handler(req: LoggedRequest, res: VercelResponse) {
       // Merge results from all pages
       const mergeResult = mergeBiomarkers(pageResults);
       const allCorrections = mergeCorrections(pageResults);
-      verificationPassed = calculateOverallVerification(pageResults);
+      verificationStatus = calculateOverallVerificationStatus(pageResults);
 
       // Calculate per-page stats
       const totalBiomarkersBeforeMerge = pageResults.reduce(
@@ -1521,8 +1551,9 @@ async function handler(req: LoggedRequest, res: VercelResponse) {
         ? Math.round(extractionDurations.reduce((a, b) => a + b, 0) / extractionDurations.length)
         : 0;
       const pagesVerified = pageResults.filter(pr => pr.debugInfo.verification).length;
-      const pagesPassed = pageResults.filter(pr => pr.debugInfo.verification?.verificationPassed).length;
-      const pagesFailed = pagesVerified - pagesPassed;
+      const pagesClean = pageResults.filter(pr => pr.debugInfo.verification?.verificationStatus === 'clean').length;
+      const pagesCorrected = pageResults.filter(pr => pr.debugInfo.verification?.verificationStatus === 'corrected').length;
+      const pagesFailed = pageResults.filter(pr => pr.debugInfo.verification?.verificationStatus === 'failed').length;
 
       // Calculate total verification duration
       const totalVerificationDuration = pageResults.reduce(
@@ -1565,18 +1596,21 @@ async function handler(req: LoggedRequest, res: VercelResponse) {
         corrections.push(...mergeResult.warnings);
       }
 
-      extractionConfidence = verificationPassed ? 0.95 : 0.7;
+      extractionConfidence = verificationStatus !== 'failed' ? 0.95 : 0.7;
 
       // Mark stage 2 info for chunked path
       debugInfo.stage2.skipped = upload.skip_verification;
       debugInfo.stage2.durationMs = totalVerificationDuration;
-      debugInfo.stage2.verificationPassed = verificationPassed;
+      debugInfo.stage2.verificationPassed = verificationStatus !== 'failed'; // Backwards compatibility
+      debugInfo.stage2.verificationStatus = verificationStatus;
       debugInfo.stage2.correctionsCount = allCorrections.length;
       debugInfo.stage2.corrections = allCorrections;
       debugInfo.stage2.model = 'gpt-5.1 (per-page)';
       debugInfo.stage2.reasoningEffort = 'low';
       debugInfo.stage2.pagesVerified = pagesVerified;
-      debugInfo.stage2.pagesPassed = pagesPassed;
+      debugInfo.stage2.pagesPassed = pagesClean + pagesCorrected; // Backwards compatibility
+      debugInfo.stage2.pagesClean = pagesClean;
+      debugInfo.stage2.pagesCorrected = pagesCorrected;
       debugInfo.stage2.pagesFailed = pagesFailed;
 
       // Add merge stage info
@@ -1600,7 +1634,7 @@ async function handler(req: LoggedRequest, res: VercelResponse) {
       log.info('Chunked extraction complete', {
         totalBiomarkers: mergeResult.biomarkers.length,
         duplicatesRemoved: mergeResult.duplicatesRemoved,
-        verificationPassed,
+        verificationStatus,
         correctionsCount: corrections.length,
       });
 
@@ -1644,20 +1678,21 @@ async function handler(req: LoggedRequest, res: VercelResponse) {
 
         const verificationResult = await verifyWithGPT(pdfBase64, extractedData, log);
         finalData = verificationResult.verified;
-        verificationPassed = verificationResult.verificationPassed;
+        verificationStatus = verificationResult.verificationStatus;
         corrections = verificationResult.corrections;
-        extractionConfidence = verificationPassed ? 0.95 : 0.7;
+        extractionConfidence = verificationStatus !== 'failed' ? 0.95 : 0.7;
 
         debugInfo.stage2.completedAt = new Date().toISOString();
         debugInfo.stage2.durationMs = Date.now() - stage2Start;
-        debugInfo.stage2.verificationPassed = verificationPassed;
+        debugInfo.stage2.verificationPassed = verificationStatus !== 'failed'; // Backwards compatibility
+        debugInfo.stage2.verificationStatus = verificationStatus;
         debugInfo.stage2.correctionsCount = corrections.length;
         debugInfo.stage2.corrections = corrections;
         debugInfo.stage2.rawResponse = verificationResult.rawResponse;
         debugInfo.stage2.model = verificationResult.model;
         debugInfo.stage2.reasoningEffort = verificationResult.reasoningEffort;
 
-        log.info('Stage 2 complete', { verificationPassed, correctionsCount: corrections.length });
+        log.info('Stage 2 complete', { verificationStatus, correctionsCount: corrections.length });
       } else {
         log.info('Skipping verification (user preference)');
         corrections = ['Verification skipped by user'];
@@ -1740,12 +1775,14 @@ async function handler(req: LoggedRequest, res: VercelResponse) {
     const finalStatus = postProcessingFailed ? 'partial' : 'complete';
 
     // Update with final results
+    // Note: Database column is `verification_passed` (boolean), so we convert status to boolean
+    // 'clean' or 'corrected' = true (verification succeeded), 'failed' = false
     await updateUploadStatus(supabase, uploadId, {
       status: finalStatus,
       processing_stage: null,
       extracted_data: finalData,
       extraction_confidence: extractionConfidence,
-      verification_passed: verificationPassed,
+      verification_passed: verificationStatus !== 'failed',
       corrections: corrections.length > 0 ? corrections : null,
       completed_at: new Date().toISOString(),
     });
@@ -1759,14 +1796,15 @@ async function handler(req: LoggedRequest, res: VercelResponse) {
       biomarkerCount: finalData.biomarkers.length,
       matchedBiomarkers: matchedCount,
       unmatchedBiomarkers: unmatchedCount,
-      verificationPassed,
+      verificationStatus,
     });
 
     return res.status(200).json({
       success: true,
       extractedData: finalData,
       extractionConfidence,
-      verificationPassed,
+      verificationPassed: verificationStatus !== 'failed', // Backwards compatibility for frontend
+      verificationStatus, // New field with more detail: 'clean' | 'corrected' | 'failed'
       corrections,
       matchedBiomarkers: matchedCount,
       unmatchedBiomarkers: unmatchedCount,

@@ -1,3 +1,6 @@
+// Verification status: clean = no corrections needed, corrected = corrections applied successfully, failed = couldn't verify
+export type VerificationStatus = 'clean' | 'corrected' | 'failed';
+
 // Types matching the main extraction types
 interface Biomarker {
   name: string;
@@ -13,7 +16,7 @@ interface Biomarker {
 interface PageProcessingResult {
   pageNumber: number;
   biomarkers: Biomarker[];
-  verificationPassed: boolean;
+  verificationStatus: VerificationStatus;
   corrections: string[];
 }
 
@@ -164,10 +167,18 @@ export function mergeCorrections(pageResults: PageProcessingResult[]): string[] 
 
 /**
  * Calculate overall verification status from page results
- * Returns true only if ALL pages passed verification
+ * - 'clean': All pages were clean (no corrections needed)
+ * - 'corrected': At least one page had corrections applied successfully
+ * - 'failed': At least one page failed verification
  */
-export function calculateOverallVerification(
+export function calculateOverallVerificationStatus(
   pageResults: PageProcessingResult[]
-): boolean {
-  return pageResults.every((r) => r.verificationPassed);
+): VerificationStatus {
+  const hasFailed = pageResults.some((r) => r.verificationStatus === 'failed');
+  if (hasFailed) return 'failed';
+
+  const hasCorrected = pageResults.some((r) => r.verificationStatus === 'corrected');
+  if (hasCorrected) return 'corrected';
+
+  return 'clean';
 }

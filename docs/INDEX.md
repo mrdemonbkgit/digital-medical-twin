@@ -1,6 +1,6 @@
 # Documentation Index
 
-> Last Updated: 2025-11-29 (Added Express dev server documentation for WSL2 performance)
+> Last Updated: 2025-12-02 (Updated verification status documentation)
 
 ## Summary
 
@@ -248,6 +248,8 @@ Master index for all project documentation. Search here first to find relevant d
 ### V
 
 - **vercel**: /docs/DECISION_LOG.md#2025-11-26-hosting-platform-selection
+- **verification**: /docs/features/LAB_UPLOADS.md#api-endpoints, /docs/architecture/AI_INTEGRATION.md#response-format
+- **verificationStatus**: /docs/features/LAB_UPLOADS.md#api-endpoints, /docs/architecture/AI_INTEGRATION.md#response-format
 - **version**: /docs/CHANGELOG.md
 - **vision**: /PRODUCT_DESCRIPTION.md#vision
 - **visualization**: /docs/features/INSIGHTS_DASHBOARD.md

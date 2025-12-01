@@ -1,6 +1,6 @@
 # AI Integration
 
-> Last Updated: 2025-11-28
+> Last Updated: 2025-12-02
 
 ## Summary
 
@@ -241,11 +241,22 @@ interface ExtractionResult {
   testDate?: string;
   biomarkers: Biomarker[];
   extractionConfidence: number;  // 0.7-0.95
-  verificationPassed: boolean;
+  verificationPassed: boolean;   // Backwards compatibility (true if clean or corrected)
+  verificationStatus: 'clean' | 'corrected' | 'failed';  // Detailed verification result
   corrections?: string[];  // List of corrections made
   error?: string;
 }
 ```
+
+**Verification Status Values:**
+
+| Status | Description |
+|--------|-------------|
+| `clean` | Extraction verified without corrections |
+| `corrected` | Extraction verified, corrections were applied |
+| `failed` | Verification failed (timeout, API error, etc.) |
+
+Note: `verificationPassed` is `true` when status is `clean` or `corrected`, `false` when `failed`.
 
 ### Storage
 

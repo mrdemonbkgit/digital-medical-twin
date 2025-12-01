@@ -1,6 +1,9 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { createClient } from '@supabase/supabase-js';
+import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { withLogger, LoggedRequest } from '../lib/logger/withLogger.js';
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type SupabaseClientAny = SupabaseClient<any, any, any>;
 
 // Valid values for reasoning parameters
 // Note: OpenAI gpt-5.1 does not support 'minimal' reasoning effort
@@ -26,7 +29,7 @@ function createSupabaseClient(authHeader: string | undefined) {
   });
 }
 
-async function getUserId(supabase: ReturnType<typeof createClient>, authHeader: string) {
+async function getUserId(supabase: SupabaseClientAny, authHeader: string) {
   const token = authHeader.replace('Bearer ', '');
 
   if (!token || token === 'undefined' || token === 'null') {

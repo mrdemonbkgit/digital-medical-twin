@@ -1,6 +1,6 @@
 # Decision Log
 
-> Last Updated: 2025-11-27
+> Last Updated: 2025-12-02
 
 ## Summary
 
@@ -13,6 +13,7 @@ Record of architectural and design decisions for this project. Search by date or
 ## Table of Contents
 
 - [2025](#2025)
+  - [2025-12-02: Verification status enum](#2025-12-02-verification-status-enum)
   - [2025-11-27: Two-stage PDF extraction pipeline](#2025-11-27-two-stage-pdf-extraction-pipeline)
   - [2025-11-27: Server-side AI API keys](#2025-11-27-server-side-ai-api-keys)
   - [2025-11-26: Cloud storage over local-first](#2025-11-26-cloud-storage-over-local-first)
@@ -26,6 +27,49 @@ Record of architectural and design decisions for this project. Search by date or
 ---
 
 ## 2025
+
+### 2025-12-02: Verification status enum
+
+**Context:** The GPT verification stage for lab PDF extraction returned only a boolean `verificationPassed`, which didn't distinguish between "no corrections needed" and "corrections were successfully applied."
+
+**Options Considered:**
+1. Keep boolean only — Simple but loses granularity
+2. Replace with enum — Breaking change for frontend
+3. Add enum alongside boolean — Backwards compatible, more verbose
+
+**Decision:** Add `verificationStatus` enum alongside existing `verificationPassed` boolean
+
+**Rationale:**
+- **Backwards compatibility**: Frontend components using `verificationPassed` continue to work
+- **Granular status**: New enum distinguishes `clean`, `corrected`, and `failed` states
+- **Debug info**: Added `pagesClean`, `pagesCorrected`, `pagesFailed` counts
+- **Progressive adoption**: Frontend can migrate to enum at its own pace
+
+**Implementation:**
+```typescript
+type VerificationStatus = 'clean' | 'corrected' | 'failed';
+
+// API response includes both:
+{
+  verificationPassed: boolean,      // true if clean or corrected
+  verificationStatus: VerificationStatus,
+  // Debug info also includes:
+  pagesPassed: number,              // pagesClean + pagesCorrected
+  pagesClean: number,
+  pagesCorrected: number,
+  pagesFailed: number,
+}
+```
+
+**Consequences:**
+- API responses slightly larger (additional fields)
+- Clearer distinction between "clean extraction" and "corrected extraction"
+- Better debugging with per-page breakdown
+- Database still stores boolean `verification_passed` (no schema change needed)
+
+**Keywords:** `verification` `API` `backwards compatibility` `enum`
+
+---
 
 ### 2025-11-27: Two-stage PDF extraction pipeline
 

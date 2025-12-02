@@ -22,7 +22,9 @@ Version history and release notes for Digital Medical Twin. Lists all notable ch
 
 ---
 
-## 2025-12-02
+## [1.5.0] - 2025-12-02
+
+> Major feature release: Lab uploads, user profiles, security hardening
 
 ### Security
 

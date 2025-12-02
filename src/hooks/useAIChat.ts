@@ -130,6 +130,10 @@ export function useAIChat(options: UseAIChatOptions = {}): UseAIChatReturn {
           prev.map((m) => (m.id === tempUserMessage.id ? savedUserMessage : m))
         );
 
+        // Notify that a message was sent (for sidebar refresh, etc.)
+        // Do this right after user message is saved, not after AI responds
+        options.onMessageSent?.();
+
         const token = await getAuthToken();
 
         // Build history from previous messages (exclude the one we just added)
@@ -170,9 +174,6 @@ export function useAIChat(options: UseAIChatOptions = {}): UseAIChatReturn {
         });
 
         setMessages((prev) => [...prev, savedAssistantMessage]);
-
-        // Notify that a message was sent (for sidebar refresh, etc.)
-        options.onMessageSent?.();
       } catch (err) {
         logger.error('Failed to send chat message', err instanceof Error ? err : undefined);
         const message = err instanceof Error ? err.message : 'Failed to send message';

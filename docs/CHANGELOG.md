@@ -65,6 +65,11 @@ Version history and release notes for Digital Medical Twin. Lists all notable ch
   - UI now correctly falls back to global settings when loading conversations without saved settings
   - `src/pages/AIHistorianPage.tsx`
 
+- **Changing global AI model affected all conversation displays**
+  - Conversation-specific settings were falling back to global settings via `??` operator
+  - Now uses saved settings directly without per-field global fallback
+  - `src/pages/AIHistorianPage.tsx`
+
 - **AI Chat sidebar not updating when continuing conversation**
   - Sidebar now refreshes after each message to update conversation order and timestamps
   - Added `onMessageSent` callback to `useAIChat` hook

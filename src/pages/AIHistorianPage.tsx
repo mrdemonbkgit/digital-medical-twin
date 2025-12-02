@@ -71,13 +71,15 @@ export function AIHistorianPage() {
   });
 
   // Effective settings: use override if set, otherwise use global settings
+  // When override exists, do NOT fall back to global settings for individual fields
+  // (that would cause all conversations to update when global settings change)
   const effectiveSettings = useMemo(() => {
     if (settingsOverride && conversationId) {
       return {
-        provider: settingsOverride.provider ?? settings?.provider ?? null,
-        model: settingsOverride.model ?? settings?.model ?? null,
-        openaiReasoningEffort: settingsOverride.reasoningEffort ?? settings?.openaiReasoningEffort ?? 'medium',
-        geminiThinkingLevel: settingsOverride.thinkingLevel ?? settings?.geminiThinkingLevel ?? 'high',
+        provider: settingsOverride.provider,
+        model: settingsOverride.model,
+        openaiReasoningEffort: settingsOverride.reasoningEffort ?? 'medium',
+        geminiThinkingLevel: settingsOverride.thinkingLevel ?? 'high',
       };
     }
     return settings;

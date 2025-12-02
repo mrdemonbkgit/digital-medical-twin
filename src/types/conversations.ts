@@ -1,14 +1,12 @@
 import type {
-  EventSource,
-  ReasoningTrace,
-  ToolCall,
-  WebSearchResult,
-  InlineCitation,
   AIProvider,
   AIModel,
   OpenAIReasoningEffort,
   GeminiThinkingLevel,
+  MessageMetadata,
 } from './ai';
+
+export type { MessageMetadata };
 
 // Database row types (snake_case from Supabase)
 export interface ConversationRow {
@@ -32,15 +30,7 @@ export interface MessageRow {
   created_at: string;
 }
 
-// Metadata stored in JSONB column
-export interface MessageMetadata {
-  sources?: EventSource[];
-  reasoning?: ReasoningTrace;
-  toolCalls?: ToolCall[];
-  webSearchResults?: WebSearchResult[];
-  citations?: InlineCitation[];
-  elapsedTime?: string;
-}
+// MessageMetadata is imported from './ai' and re-exported
 
 // Frontend types (camelCase)
 export interface Conversation {

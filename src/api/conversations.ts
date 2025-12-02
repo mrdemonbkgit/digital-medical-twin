@@ -58,6 +58,8 @@ function rowToMessage(row: MessageRow): ChatMessage {
     webSearchResults: metadata.webSearchResults,
     citations: metadata.citations,
     elapsedTime: metadata.elapsedTime,
+    // Include full metadata for details modal
+    metadata: row.metadata || undefined,
   };
 }
 
@@ -196,6 +198,13 @@ export async function addMessage(
   if (message.webSearchResults?.length) metadata.webSearchResults = message.webSearchResults;
   if (message.citations?.length) metadata.citations = message.citations;
   if (message.elapsedTime) metadata.elapsedTime = message.elapsedTime;
+  // Include message details for info modal (from message.metadata if provided)
+  if (message.metadata?.model) metadata.model = message.metadata.model;
+  if (message.metadata?.provider) metadata.provider = message.metadata.provider;
+  if (message.metadata?.tokensUsed) metadata.tokensUsed = message.metadata.tokensUsed;
+  if (message.metadata?.reasoningEffort) metadata.reasoningEffort = message.metadata.reasoningEffort;
+  if (message.metadata?.thinkingLevel) metadata.thinkingLevel = message.metadata.thinkingLevel;
+  if (message.metadata?.elapsedMs) metadata.elapsedMs = message.metadata.elapsedMs;
 
   const { data, error } = await supabase
     .from('ai_messages')

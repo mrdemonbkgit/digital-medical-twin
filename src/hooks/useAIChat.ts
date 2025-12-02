@@ -199,6 +199,8 @@ export function useAIChat(options: UseAIChatOptions = {}): UseAIChatReturn {
           webSearchResults: data.webSearchResults,
           citations: data.citations,
           elapsedTime: data.elapsedTime,
+          // Include metadata for details modal
+          metadata: data.metadata,
         });
 
         setMessages((prev) => [...prev, savedAssistantMessage]);

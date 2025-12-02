@@ -92,6 +92,27 @@ export interface ActivityItem {
   status?: 'pending' | 'completed' | 'failed';
 }
 
+// Message metadata stored in JSONB column (used by ChatMessage and MessageRow)
+export interface MessageMetadata {
+  sources?: EventSource[];
+  reasoning?: ReasoningTrace;
+  toolCalls?: ToolCall[];
+  webSearchResults?: WebSearchResult[];
+  citations?: InlineCitation[];
+  elapsedTime?: string;
+  // Message details for info modal
+  model?: AIModel;
+  provider?: AIProvider;
+  tokensUsed?: {
+    prompt: number;
+    completion: number;
+    total: number;
+  };
+  reasoningEffort?: OpenAIReasoningEffort;
+  thinkingLevel?: GeminiThinkingLevel;
+  elapsedMs?: number;
+}
+
 // Chat message types
 export interface ChatMessage {
   id: string;
@@ -105,6 +126,8 @@ export interface ChatMessage {
   webSearchResults?: WebSearchResult[];
   citations?: InlineCitation[];  // Inline citation mappings for grounded responses
   elapsedTime?: string; // "3m 0s" format
+  // Message metadata for details modal
+  metadata?: MessageMetadata;
 }
 
 export interface EventSource {

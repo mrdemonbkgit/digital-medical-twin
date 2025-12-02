@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Bot, User } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -9,6 +10,8 @@ import type {
   WebSearchResult,
 } from '@/types/ai';
 import { ActivityPanel } from './ActivityPanel';
+import { MessageActionsMenu } from './MessageActionsMenu';
+import { MessageDetailsModal } from './MessageDetailsModal';
 
 // Shared markdown config for GFM tables
 const remarkPlugins = [remarkGfm];
@@ -55,36 +58,38 @@ interface ChatMessageProps {
 }
 
 export function ChatMessage({ message }: ChatMessageProps) {
+  const [showDetails, setShowDetails] = useState(false);
   const isAssistant = message.role === 'assistant';
 
   // Build activity items from message metadata
   const activities = isAssistant ? buildActivityItems(message) : [];
 
   return (
-    <div
-      className={cn(
-        'flex gap-3 p-4 rounded-lg',
-        isAssistant ? 'bg-gray-50' : 'bg-white'
-      )}
-    >
+    <>
       <div
         className={cn(
-          'flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center',
-          isAssistant ? 'bg-blue-100 text-blue-600' : 'bg-gray-100 text-gray-600'
+          'group flex gap-3 p-4 rounded-lg relative',
+          isAssistant ? 'bg-gray-50' : 'bg-white'
         )}
       >
-        {isAssistant ? <Bot className="h-4 w-4" /> : <User className="h-4 w-4" />}
-      </div>
-
-      <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2 mb-1">
-          <span className="text-sm font-medium text-gray-900">
-            {isAssistant ? 'AI Historian' : 'You'}
-          </span>
-          <span className="text-xs text-gray-400">
-            {formatTime(message.timestamp)}
-          </span>
+        <div
+          className={cn(
+            'flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center',
+            isAssistant ? 'bg-blue-100 text-blue-600' : 'bg-gray-100 text-gray-600'
+          )}
+        >
+          {isAssistant ? <Bot className="h-4 w-4" /> : <User className="h-4 w-4" />}
         </div>
+
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 mb-1">
+            <span className="text-sm font-medium text-gray-900">
+              {isAssistant ? 'AI Historian' : 'You'}
+            </span>
+            <span className="text-xs text-gray-400">
+              {formatTime(message.timestamp)}
+            </span>
+          </div>
 
         {isAssistant ? (
           <div className="text-sm text-gray-700 prose prose-sm max-w-none prose-p:my-2 prose-ul:my-2 prose-ol:my-2 prose-li:my-0.5 prose-strong:text-gray-900">
@@ -117,7 +122,23 @@ export function ChatMessage({ message }: ChatMessageProps) {
           </div>
         )}
       </div>
+
+      {/* Actions menu - appears on hover */}
+      <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+        <MessageActionsMenu
+          message={message}
+          onShowDetails={() => setShowDetails(true)}
+        />
+      </div>
     </div>
+
+      {/* Details modal */}
+      <MessageDetailsModal
+        isOpen={showDetails}
+        onClose={() => setShowDetails(false)}
+        message={message}
+      />
+    </>
   );
 }
 

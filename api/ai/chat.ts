@@ -32,9 +32,15 @@ interface WebSearchResultItem {
   displayUrl?: string;
 }
 
+interface TokenUsage {
+  prompt: number;
+  completion: number;
+  total: number;
+}
+
 interface ExtendedAIResponse {
   content: string;
-  tokensUsed: number;
+  tokensUsed: TokenUsage;
   reasoning?: { id: string; steps: ReasoningStep[] };
   toolCalls?: ToolCallResult[];
   webSearchResults?: WebSearchResultItem[];
@@ -299,7 +305,11 @@ async function openaiComplete(
 
   return {
     content,
-    tokensUsed: data.usage?.total_tokens || 0,
+    tokensUsed: {
+      prompt: data.usage?.input_tokens || 0,
+      completion: data.usage?.output_tokens || 0,
+      total: data.usage?.total_tokens || 0,
+    },
     reasoning,
     toolCalls,
     webSearchResults,
@@ -495,7 +505,11 @@ async function geminiComplete(
 
   return {
     content,
-    tokensUsed: data.usageMetadata?.totalTokenCount || 0,
+    tokensUsed: {
+      prompt: data.usageMetadata?.promptTokenCount || 0,
+      completion: data.usageMetadata?.candidatesTokenCount || 0,
+      total: data.usageMetadata?.totalTokenCount || 0,
+    },
     reasoning,
     webSearchResults: groundingResult?.sources,
     citations: groundingResult?.citations,
@@ -837,6 +851,15 @@ async function handler(req: LoggedRequest, res: VercelResponse) {
       webSearchResults: result.webSearchResults,
       citations: result.citations,
       elapsedTime,
+      // Message metadata for details modal
+      metadata: {
+        model: effectiveModel,
+        provider,
+        tokensUsed: result.tokensUsed,
+        reasoningEffort: provider === 'openai' ? reasoningEffort : undefined,
+        thinkingLevel: provider === 'google' ? thinkingLevel : undefined,
+        elapsedMs,
+      },
       _timings: timings, // Include in response for frontend debugging
     });
   } catch (error) {

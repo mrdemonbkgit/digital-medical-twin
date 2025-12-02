@@ -26,6 +26,14 @@ Version history and release notes for Digital Medical Twin. Lists all notable ch
 
 ### Added
 
+- **AI Chat Message Actions Popup**
+  - Hover actions menu on assistant messages with Copy and Details options
+  - Copy message content to clipboard with visual feedback
+  - Message Details modal showing: model name, token usage (input/output/total), parameters (reasoning_effort, thinking_level), elapsed time
+  - Extended `MessageMetadata` type with detailed token breakdown
+  - API returns full metadata for new messages
+  - `src/components/ai/MessageActionsMenu.tsx`, `src/components/ai/MessageDetailsModal.tsx`
+
 - **Unit Test Coverage Expansion**
   - Added 144 new tests across 7 test files
   - API layer: `conversations.test.ts`, `events.test.ts`, `settings.test.ts`

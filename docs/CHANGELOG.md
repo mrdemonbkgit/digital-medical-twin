@@ -26,6 +26,15 @@ Version history and release notes for Digital Medical Twin. Lists all notable ch
 
 ### Added
 
+- **Agentic AI Chat with Tool-Based Data Retrieval**
+  - AI now uses tools to retrieve health data on-demand instead of dumping all context upfront
+  - 6 tools: `search_events`, `get_biomarker_history`, `get_profile`, `get_recent_labs`, `get_medications`, `get_event_details`
+  - Faster responses with reduced initial context (minimal profile only)
+  - Tool calls visible in chat UI (like web search results)
+  - Falls back to one-shot approach on error
+  - Configurable max tool iterations via `AI_MAX_TOOL_ITERATIONS` env var (default 5)
+  - `api/ai/tools/definitions.ts`, `api/ai/tools/executor.ts`
+
 - **AI Chat Message Actions Popup**
   - Hover actions menu on assistant messages with Copy and Details options
   - Copy message content to clipboard with visual feedback

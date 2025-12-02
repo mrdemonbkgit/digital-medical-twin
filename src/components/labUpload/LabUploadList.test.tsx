@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor, within } from '@testing-library/react';
 import { BrowserRouter } from 'react-router-dom';
 import type { LabUpload } from '@/types';
 
@@ -122,6 +122,28 @@ const mockUploads: LabUpload[] = [
     completedAt: null,
     eventId: null,
   },
+  {
+    id: 'partial-1',
+    userId: 'user-123',
+    filename: 'partial.pdf',
+    storagePath: 'user-123/partial-1.pdf',
+    fileSize: 880000,
+    status: 'partial',
+    processingStage: null,
+    skipVerification: false,
+    extractedData: {
+      biomarkers: [{ name: 'Glucose', value: 90, unit: 'mg/dL' }],
+      processedBiomarkers: [],
+    },
+    extractionConfidence: 0.8,
+    verificationPassed: false,
+    corrections: ['Post-processing failed'],
+    errorMessage: null,
+    createdAt: '2024-01-05T00:00:00Z',
+    startedAt: '2024-01-05T00:00:01Z',
+    completedAt: '2024-01-05T00:00:10Z',
+    eventId: null,
+  },
 ];
 
 const renderWithRouter = (component: React.ReactElement) => {
@@ -223,6 +245,7 @@ describe('LabUploadList', () => {
     const headingTexts = headings.map(h => h.textContent);
     expect(headingTexts).toContain('Processing');
     expect(headingTexts).toContain('Pending');
+    expect(headingTexts).toContain('Needs Review (Partial)');
     expect(headingTexts).toContain('Failed');
     expect(headingTexts.some(t => t?.includes('Completed'))).toBe(true);
   });
@@ -234,6 +257,7 @@ describe('LabUploadList', () => {
     expect(screen.getByText('processing.pdf')).toBeInTheDocument();
     expect(screen.getByText('pending.pdf')).toBeInTheDocument();
     expect(screen.getByText('failed.pdf')).toBeInTheDocument();
+    expect(screen.getByText('partial.pdf')).toBeInTheDocument();
   });
 
   it('calls remove when delete is clicked', async () => {
@@ -259,11 +283,11 @@ describe('LabUploadList', () => {
 
     renderWithRouter(<LabUploadList />);
 
-    // Click delete on the pending card (3rd delete button, after complete and processing)
-    const deleteButtons = screen.getAllByTitle('Delete');
-    // Find the enabled delete buttons (processing one is disabled)
-    const enabledDeleteButtons = deleteButtons.filter(btn => !btn.hasAttribute('disabled'));
-    fireEvent.click(enabledDeleteButtons[1]); // Second enabled is pending
+    // Click delete on the pending card specifically
+    const pendingCard = screen.getByText('pending.pdf').closest('div');
+    expect(pendingCard).toBeTruthy();
+    const deleteButton = within(pendingCard as HTMLElement).getByTitle('Delete');
+    fireEvent.click(deleteButton);
 
     await waitFor(() => {
       expect(mockRemove).toHaveBeenCalled();

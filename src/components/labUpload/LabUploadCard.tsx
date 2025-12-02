@@ -239,8 +239,8 @@ export function LabUploadCard({
         </div>
       )}
 
-      {/* Complete state */}
-      {upload.status === 'complete' && upload.extractedData && (
+      {/* Complete or partial state */}
+      {(upload.status === 'complete' || upload.status === 'partial') && upload.extractedData && (
         <div className="mt-3 space-y-2">
           {/* Extraction summary */}
           <div className="flex items-center justify-between text-sm">
@@ -251,6 +251,11 @@ export function LabUploadCard({
               <span className="text-green-600 flex items-center gap-1">
                 <CheckCircle className="h-3 w-3" />
                 Verified
+              </span>
+            ) : upload.status === 'partial' ? (
+              <span className="text-amber-600 flex items-center gap-1">
+                <AlertCircle className="h-3 w-3" />
+                Needs review
               </span>
             ) : (
               <span className="text-amber-600 flex items-center gap-1">

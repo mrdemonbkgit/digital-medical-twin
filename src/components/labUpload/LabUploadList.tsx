@@ -127,6 +127,7 @@ export function LabUploadList({ onRefetchRef }: LabUploadListProps) {
   const processing = uploads.filter((u) => u.status === 'processing');
   const pending = uploads.filter((u) => u.status === 'pending');
   const complete = uploads.filter((u) => u.status === 'complete');
+  const partial = uploads.filter((u) => u.status === 'partial');
   const failed = uploads.filter((u) => u.status === 'failed');
 
   return (
@@ -157,6 +158,25 @@ export function LabUploadList({ onRefetchRef }: LabUploadListProps) {
             <h3 className="text-sm font-medium text-gray-700 mb-3">Pending</h3>
             <div className="space-y-3">
               {pending.map((upload) => (
+                <LabUploadCard
+                  key={upload.id}
+                  upload={upload}
+                  onDelete={handleDelete}
+                  onRetry={handleRetry}
+                  onPreview={handlePreview}
+                  isDeleting={deletingId === upload.id && isDeleting}
+                />
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Partial (extraction succeeded but post-processing failed) */}
+        {partial.length > 0 && (
+          <div>
+            <h3 className="text-sm font-medium text-gray-700 mb-3">Needs Review (Partial)</h3>
+            <div className="space-y-3">
+              {partial.map((upload) => (
                 <LabUploadCard
                   key={upload.id}
                   upload={upload}

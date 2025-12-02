@@ -47,6 +47,16 @@ Version history and release notes for Digital Medical Twin. Lists all notable ch
 
 ### Fixed
 
+- **AI Chat sidebar not updating when continuing conversation**
+  - Sidebar now refreshes after each message to update conversation order and timestamps
+  - Added `onMessageSent` callback to `useAIChat` hook
+  - `src/hooks/useAIChat.ts`, `src/pages/AIHistorianPage.tsx`
+
+- **AI Chat stuck on invalid conversation URL**
+  - Navigating to `/ai?c=<deleted-or-invalid-id>` now properly resets state
+  - User can immediately start a new conversation instead of being stuck
+  - `src/hooks/useAIChat.ts`
+
 - **AI Chat loading spinner race condition**
   - Fixed spinner disappearing prematurely when sending first message in new conversation
   - Caused by `loadConversation` being triggered via URL change and resetting `isLoading`

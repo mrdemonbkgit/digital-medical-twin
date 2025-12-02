@@ -11,6 +11,7 @@ import type { ChatMessage } from '@/types/ai';
 interface UseAIChatOptions {
   conversationId?: string | null;
   onConversationCreated?: (id: string) => void;
+  onMessageSent?: () => void;
 }
 
 interface UseAIChatReturn {
@@ -58,12 +59,18 @@ export function useAIChat(options: UseAIChatOptions = {}): UseAIChatReturn {
         setConversationId(id);
         setMessages(result.messages);
       } else {
+        // Conversation not found or no access - reset state so user can start fresh
         setError('Conversation not found');
+        setConversationId(null);
+        setMessages([]);
       }
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to load conversation';
       logger.error('Failed to load conversation', err instanceof Error ? err : undefined);
       setError(message);
+      // Reset state on error so user can start fresh
+      setConversationId(null);
+      setMessages([]);
     } finally {
       setIsLoading(false);
     }
@@ -163,6 +170,9 @@ export function useAIChat(options: UseAIChatOptions = {}): UseAIChatReturn {
         });
 
         setMessages((prev) => [...prev, savedAssistantMessage]);
+
+        // Notify that a message was sent (for sidebar refresh, etc.)
+        options.onMessageSent?.();
       } catch (err) {
         logger.error('Failed to send chat message', err instanceof Error ? err : undefined);
         const message = err instanceof Error ? err.message : 'Failed to send message';

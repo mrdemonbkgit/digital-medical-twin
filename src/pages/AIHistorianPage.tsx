@@ -43,6 +43,10 @@ export function AIHistorianPage() {
       setSearchParams({ c: id });
       refetchConversations();
     },
+    onMessageSent: () => {
+      // Refresh sidebar to update conversation order and timestamps
+      refetchConversations();
+    },
   });
 
   const { settings, isLoading: settingsLoading, updateSettings } = useAISettings();

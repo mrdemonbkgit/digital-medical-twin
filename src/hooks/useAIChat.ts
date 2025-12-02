@@ -7,11 +7,14 @@ import {
   addMessage,
 } from '@/api/conversations';
 import type { ChatMessage } from '@/types/ai';
+import type { ConversationSettings } from '@/types/conversations';
 
 interface UseAIChatOptions {
   conversationId?: string | null;
+  currentSettings?: ConversationSettings | null;
   onConversationCreated?: (id: string) => void;
   onMessageSent?: () => void;
+  onSettingsLoaded?: (settings: ConversationSettings) => void;
 }
 
 interface UseAIChatReturn {
@@ -19,6 +22,7 @@ interface UseAIChatReturn {
   messages: ChatMessage[];
   isLoading: boolean;
   error: string | null;
+  conversationSettings: ConversationSettings | null;
   sendMessage: (content: string) => Promise<void>;
   clearChat: () => void;
   loadConversation: (id: string) => Promise<void>;
@@ -48,6 +52,7 @@ export function useAIChat(options: UseAIChatOptions = {}): UseAIChatReturn {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [conversationSettings, setConversationSettings] = useState<ConversationSettings | null>(null);
 
   // Load conversation if ID provided
   const loadConversation = useCallback(async (id: string) => {
@@ -58,11 +63,24 @@ export function useAIChat(options: UseAIChatOptions = {}): UseAIChatReturn {
       if (result) {
         setConversationId(id);
         setMessages(result.messages);
+
+        // Extract and set conversation settings
+        const settings: ConversationSettings = {
+          provider: result.conversation.provider,
+          model: result.conversation.model,
+          reasoningEffort: result.conversation.reasoningEffort,
+          thinkingLevel: result.conversation.thinkingLevel,
+        };
+        setConversationSettings(settings);
+
+        // Notify page to apply these settings
+        options.onSettingsLoaded?.(settings);
       } else {
         // Conversation not found or no access - reset state so user can start fresh
         setError('Conversation not found');
         setConversationId(null);
         setMessages([]);
+        setConversationSettings(null);
       }
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to load conversation';
@@ -71,10 +89,11 @@ export function useAIChat(options: UseAIChatOptions = {}): UseAIChatReturn {
       // Reset state on error so user can start fresh
       setConversationId(null);
       setMessages([]);
+      setConversationSettings(null);
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [options]);
 
   // Load on mount if conversationId provided in options
   // Skip if we already have this conversation loaded (e.g., we just created it)
@@ -97,9 +116,17 @@ export function useAIChat(options: UseAIChatOptions = {}): UseAIChatReturn {
         try {
           // Use first 50 chars of message as title
           const title = content.slice(0, 50) + (content.length > 50 ? '...' : '');
-          const conversation = await createConversation({ title });
+          const conversation = await createConversation({
+            title,
+            // Save current AI settings with the conversation
+            provider: options.currentSettings?.provider,
+            model: options.currentSettings?.model,
+            reasoningEffort: options.currentSettings?.reasoningEffort,
+            thinkingLevel: options.currentSettings?.thinkingLevel,
+          });
           currentConversationId = conversation.id;
           setConversationId(currentConversationId);
+          setConversationSettings(options.currentSettings || null);
           options.onConversationCreated?.(currentConversationId);
         } catch (err) {
           logger.error('Failed to create conversation', err instanceof Error ? err : undefined);
@@ -191,12 +218,14 @@ export function useAIChat(options: UseAIChatOptions = {}): UseAIChatReturn {
   const clearChat = useCallback(() => {
     setMessages([]);
     setConversationId(null);
+    setConversationSettings(null);
     setError(null);
   }, []);
 
   const startNewConversation = useCallback(() => {
     setMessages([]);
     setConversationId(null);
+    setConversationSettings(null);
     setError(null);
   }, []);
 
@@ -205,6 +234,7 @@ export function useAIChat(options: UseAIChatOptions = {}): UseAIChatReturn {
     messages,
     isLoading,
     error,
+    conversationSettings,
     sendMessage,
     clearChat,
     loadConversation,

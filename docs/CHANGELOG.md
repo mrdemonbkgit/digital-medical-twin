@@ -45,6 +45,13 @@ Version history and release notes for Digital Medical Twin. Lists all notable ch
   - Modified: `useAIChat` now persists messages
   - `src/api/conversations.ts`, `src/types/conversations.ts`
 
+- **Per-Conversation AI Settings**
+  - Model and settings (provider, model, reasoning level) are saved with each conversation
+  - Loading an old conversation restores the settings used when it was created
+  - New conversation uses current global settings
+  - Database columns: `provider`, `model`, `reasoning_effort`, `thinking_level` on `ai_conversations`
+  - `supabase/migrations/20241203000002_add_conversation_settings.sql`
+
 ### Fixed
 
 - **AI Chat sidebar not updating when continuing conversation**

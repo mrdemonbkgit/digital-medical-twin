@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Link } from 'react-router-dom';
 import { Bot, Settings, AlertCircle, Loader2, Trash2, Menu, X } from 'lucide-react';
@@ -13,6 +13,7 @@ import {
 } from '@/components/ai';
 import { useAIChat, useAISettings, useConversations } from '@/hooks';
 import type { OpenAIReasoningEffort, GeminiThinkingLevel } from '@/types/ai';
+import type { ConversationSettings } from '@/types/conversations';
 import { cn } from '@/utils/cn';
 
 export function AIHistorianPage() {
@@ -20,6 +21,8 @@ export function AIHistorianPage() {
   const conversationIdFromUrl = searchParams.get('c');
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  // Override settings when loading a conversation with saved settings
+  const [settingsOverride, setSettingsOverride] = useState<ConversationSettings | null>(null);
 
   const {
     conversations,
@@ -28,6 +31,19 @@ export function AIHistorianPage() {
     rename: renameConversation,
     refetch: refetchConversations,
   } = useConversations();
+
+  const { settings, isLoading: settingsLoading, updateSettings } = useAISettings();
+
+  // Build current settings for creating new conversations
+  const currentSettings = useMemo<ConversationSettings | null>(() => {
+    if (!settings) return null;
+    return {
+      provider: settings.provider,
+      model: settings.model,
+      reasoningEffort: settings.openaiReasoningEffort ?? null,
+      thinkingLevel: settings.geminiThinkingLevel ?? null,
+    };
+  }, [settings]);
 
   const {
     conversationId,
@@ -39,6 +55,7 @@ export function AIHistorianPage() {
     startNewConversation,
   } = useAIChat({
     conversationId: conversationIdFromUrl,
+    currentSettings,
     onConversationCreated: (id) => {
       setSearchParams({ c: id });
       refetchConversations();
@@ -47,9 +64,26 @@ export function AIHistorianPage() {
       // Refresh sidebar to update conversation order and timestamps
       refetchConversations();
     },
+    onSettingsLoaded: (loadedSettings) => {
+      // Apply loaded conversation's settings to UI
+      if (loadedSettings.provider) {
+        setSettingsOverride(loadedSettings);
+      }
+    },
   });
 
-  const { settings, isLoading: settingsLoading, updateSettings } = useAISettings();
+  // Effective settings: use override if set, otherwise use global settings
+  const effectiveSettings = useMemo(() => {
+    if (settingsOverride && conversationId) {
+      return {
+        provider: settingsOverride.provider ?? settings?.provider ?? null,
+        model: settingsOverride.model ?? settings?.model ?? null,
+        openaiReasoningEffort: settingsOverride.reasoningEffort ?? settings?.openaiReasoningEffort ?? 'medium',
+        geminiThinkingLevel: settingsOverride.thinkingLevel ?? settings?.geminiThinkingLevel ?? 'high',
+      };
+    }
+    return settings;
+  }, [settingsOverride, conversationId, settings]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const handleReasoningChange = async (value: OpenAIReasoningEffort) => {
@@ -71,6 +105,7 @@ export function AIHistorianPage() {
   const handleNewConversation = () => {
     setSearchParams({});
     startNewConversation();
+    setSettingsOverride(null); // Clear override to use global settings
     setSidebarOpen(false);
   };
 
@@ -193,16 +228,16 @@ export function AIHistorianPage() {
               <div>
                 <h2 className="font-semibold text-gray-900">AI Historian</h2>
                 <p className="text-xs text-gray-500">
-                  {settings.provider === 'google' ? 'Gemini' : 'GPT'} · {settings.model}
+                  {effectiveSettings?.provider === 'google' ? 'Gemini' : 'GPT'} · {effectiveSettings?.model}
                 </p>
               </div>
             </div>
             <div className="flex items-center gap-2">
-              {settings.provider && (
+              {effectiveSettings?.provider && (
                 <ReasoningLevelSelect
-                  provider={settings.provider}
-                  openaiReasoningEffort={settings.openaiReasoningEffort}
-                  geminiThinkingLevel={settings.geminiThinkingLevel}
+                  provider={effectiveSettings.provider}
+                  openaiReasoningEffort={effectiveSettings.openaiReasoningEffort}
+                  geminiThinkingLevel={effectiveSettings.geminiThinkingLevel}
                   onChangeOpenAI={handleReasoningChange}
                   onChangeGemini={handleThinkingChange}
                   disabled={isLoading}

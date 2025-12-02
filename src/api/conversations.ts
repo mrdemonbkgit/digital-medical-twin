@@ -8,7 +8,13 @@ import type {
   CreateConversationInput,
   UpdateConversationInput,
 } from '@/types/conversations';
-import type { ChatMessage } from '@/types/ai';
+import type {
+  ChatMessage,
+  AIProvider,
+  AIModel,
+  OpenAIReasoningEffort,
+  GeminiThinkingLevel,
+} from '@/types/ai';
 
 // Helper to get authenticated user ID
 async function getAuthenticatedUserId(): Promise<string> {
@@ -29,6 +35,10 @@ function rowToConversation(row: ConversationRow): Conversation {
     id: row.id,
     userId: row.user_id,
     title: row.title,
+    provider: row.provider as AIProvider | null,
+    model: row.model as AIModel | null,
+    reasoningEffort: row.reasoning_effort as OpenAIReasoningEffort | null,
+    thinkingLevel: row.thinking_level as GeminiThinkingLevel | null,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };
@@ -118,6 +128,10 @@ export async function createConversation(
     .insert({
       user_id: userId,
       title: input?.title || 'New Conversation',
+      provider: input?.provider ?? null,
+      model: input?.model ?? null,
+      reasoning_effort: input?.reasoningEffort ?? null,
+      thinking_level: input?.thinkingLevel ?? null,
     })
     .select()
     .single();

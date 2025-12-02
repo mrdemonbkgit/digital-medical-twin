@@ -26,6 +26,13 @@ Version history and release notes for Digital Medical Twin. Lists all notable ch
 
 ### Added
 
+- **AI Chat Markdown Table Rendering**
+  - Tables in AI responses now render as proper HTML tables (not raw markdown)
+  - Responsive horizontal scroll for wide tables on mobile
+  - Styled with zebra striping, header highlighting, and hover effects
+  - Uses `remark-gfm` plugin for GitHub Flavored Markdown support
+  - `src/components/ai/ChatMessage.tsx`
+
 - **AI Chat History Persistence**
   - Conversations are now saved to the database and can be continued later
   - ChatGPT-style sidebar showing all past conversations

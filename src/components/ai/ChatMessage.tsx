@@ -1,5 +1,6 @@
 import { Bot, User } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import { cn } from '@/utils/cn';
 import type {
   ChatMessage as ChatMessageType,
@@ -8,6 +9,38 @@ import type {
   WebSearchResult,
 } from '@/types/ai';
 import { ActivityPanel } from './ActivityPanel';
+
+// Shared markdown config for GFM tables
+const remarkPlugins = [remarkGfm];
+
+const markdownComponents = {
+  table: ({ children }: { children?: React.ReactNode }) => (
+    <div className="overflow-x-auto my-4 rounded-lg border border-gray-200">
+      <table className="min-w-full divide-y divide-gray-200">{children}</table>
+    </div>
+  ),
+  thead: ({ children }: { children?: React.ReactNode }) => (
+    <thead className="bg-gray-100">{children}</thead>
+  ),
+  tbody: ({ children }: { children?: React.ReactNode }) => (
+    <tbody className="divide-y divide-gray-100 bg-white">{children}</tbody>
+  ),
+  tr: ({ children }: { children?: React.ReactNode }) => (
+    <tr className="even:bg-gray-50 hover:bg-blue-50/50 transition-colors">
+      {children}
+    </tr>
+  ),
+  th: ({ children }: { children?: React.ReactNode }) => (
+    <th className="px-3 py-2 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider whitespace-nowrap">
+      {children}
+    </th>
+  ),
+  td: ({ children }: { children?: React.ReactNode }) => (
+    <td className="px-3 py-2 text-sm text-gray-700 whitespace-nowrap">
+      {children}
+    </td>
+  ),
+};
 
 interface ChatMessageProps {
   message: ChatMessageType;
@@ -137,7 +170,11 @@ function renderContentWithCitations(
   sources?: WebSearchResult[]
 ): React.ReactNode {
   if (!citations?.length || !sources?.length) {
-    return <ReactMarkdown>{content}</ReactMarkdown>;
+    return (
+      <ReactMarkdown remarkPlugins={remarkPlugins} components={markdownComponents}>
+        {content}
+      </ReactMarkdown>
+    );
   }
 
   // Sort citations by startIndex ascending to process in order
@@ -160,7 +197,11 @@ function renderContentWithCitations(
       const textBefore = content.slice(lastIndex, citation.endIndex);
       if (textBefore) {
         segments.push(
-          <ReactMarkdown key={`text-${idx}`} components={{ p: 'span' }}>
+          <ReactMarkdown
+            key={`text-${idx}`}
+            remarkPlugins={remarkPlugins}
+            components={{ ...markdownComponents, p: 'span' }}
+          >
             {textBefore}
           </ReactMarkdown>
         );
@@ -178,7 +219,11 @@ function renderContentWithCitations(
   // Add remaining text after last citation
   if (lastIndex < content.length) {
     segments.push(
-      <ReactMarkdown key="text-final" components={{ p: 'span' }}>
+      <ReactMarkdown
+        key="text-final"
+        remarkPlugins={remarkPlugins}
+        components={{ ...markdownComponents, p: 'span' }}
+      >
         {content.slice(lastIndex)}
       </ReactMarkdown>
     );

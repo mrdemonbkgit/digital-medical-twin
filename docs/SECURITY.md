@@ -1,6 +1,6 @@
 # Security Documentation
 
-> Last Updated: 2025-11-27 (Phase 6 Polish)
+> Last Updated: 2025-12-02 (Security hardening)
 
 ## Summary
 
@@ -152,8 +152,29 @@ USING (auth.uid() = user_id);
 ### Data Isolation
 
 - **Events**: Filtered by `user_id` in all queries
-- **Settings**: One row per user with `user_id` FK
+- **Settings**: One row per user with `user_id` FK, explicitly scoped via `.eq('user_id', user.id)`
+- **Lab Uploads**: All CRUD operations require authentication and filter by `user_id`
 - **API calls**: Token validation extracts `userId`
+
+### Defense in Depth
+
+API functions implement explicit user scoping as a defense layer beyond RLS:
+
+```typescript
+// Pattern for authenticated API functions
+async function getLabUploads(): Promise<LabUpload[]> {
+  const userId = await getAuthenticatedUserId();
+
+  const { data, error } = await supabase
+    .from('lab_uploads')
+    .select('*')
+    .eq('user_id', userId)  // Explicit scoping
+    .order('created_at', { ascending: false });
+  // ...
+}
+```
+
+This ensures data isolation even in contexts where RLS may be bypassed (service keys, admin scripts, SSR).
 
 ### Transport Security
 
@@ -259,6 +280,10 @@ if (!supabaseUrl || !supabaseAnonKey) {
 - All form inputs validated before submission
 - Server-side validation via Supabase constraints
 - Sanitized user input (no raw HTML rendering)
+- **PostgREST filter sanitization**: Search inputs sanitized via `escapePostgrestValue()` to prevent filter injection
+  - Removes syntax-breaking characters: `,`, `(`, `)`
+  - Escapes LIKE wildcards: `%` → `\%`, `_` → `\_`
+  - Prevents query manipulation attacks
 
 ### Error Handling
 

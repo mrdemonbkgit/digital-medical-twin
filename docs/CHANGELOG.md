@@ -1,6 +1,6 @@
 # Changelog
 
-> Last Updated: 2025-11-29
+> Last Updated: 2025-12-02
 
 ## Summary
 
@@ -19,6 +19,39 @@ Version history and release notes for Digital Medical Twin. Lists all notable ch
 - [Phase 2 - Core Data Entry](#phase-2---core-data-entry)
 - [Phase 1 - Foundation](#phase-1---foundation)
 - [Format](#format)
+
+---
+
+## 2025-12-02
+
+### Security
+
+- **Search Filter Injection Prevention**
+  - Added `escapePostgrestValue()` utility to sanitize search inputs
+  - Applied to `getEvents()` and `getAllEvents()` functions
+  - Prevents PostgREST filter syntax injection attacks
+  - `src/utils/validation.ts`, `src/api/events.ts`
+
+- **Explicit User Scoping for API Functions**
+  - Added auth check + `user_id` filter to `getAISettings()` in `src/api/settings.ts`
+  - Added auth + user scoping to all lab upload CRUD functions: `getLabUploads()`, `getLabUpload()`, `updateLabUpload()`, `deleteLabUpload()`, `getLabUploadPdfUrl()`
+  - Defense-in-depth layer beyond RLS policies
+  - `src/api/settings.ts`, `src/api/labUploads.ts`
+
+### Fixed
+
+- **Test Reliability**
+  - Fixed flaky test timeouts by adding fake timers to `LabUploadCard.test.tsx` and `ExtractionPreview.test.tsx`
+  - Fixed `TagInput.test.tsx` timeout by using `userEvent.setup({ delay: null })`
+  - Updated `useAISettings.test.ts` mocks for new `.eq().maybeSingle()` chain
+
+### Changed
+
+- Replaced `console.error` with `logger.error` in `LabUploadCard.tsx`, `LabUploadList.tsx`, `labUploads.ts`
+
+### Removed
+
+- Deleted unused dead code: `getNextPendingUpload()` and `hasProcessingUpload()` from `src/api/labUploads.ts`
 
 ---
 

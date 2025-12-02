@@ -4,6 +4,7 @@ import {
   isValidPassword,
   validateLoginForm,
   validateRegisterForm,
+  escapePostgrestValue,
 } from './validation';
 
 describe('validation', () => {
@@ -145,6 +146,59 @@ describe('validation', () => {
       );
       expect(result.isValid).toBe(false);
       expect(result.errors).toContain('Passwords do not match');
+    });
+  });
+
+  describe('escapePostgrestValue', () => {
+    it('returns empty string for null/undefined/empty input', () => {
+      expect(escapePostgrestValue('')).toBe('');
+      expect(escapePostgrestValue(null as unknown as string)).toBe('');
+      expect(escapePostgrestValue(undefined as unknown as string)).toBe('');
+    });
+
+    it('trims whitespace', () => {
+      expect(escapePostgrestValue('  test  ')).toBe('test');
+      expect(escapePostgrestValue('\ttest\n')).toBe('test');
+    });
+
+    it('removes commas to prevent filter syntax injection', () => {
+      expect(escapePostgrestValue('test,value')).toBe('testvalue');
+      expect(escapePostgrestValue('a,b,c')).toBe('abc');
+    });
+
+    it('removes parentheses to prevent filter syntax injection', () => {
+      expect(escapePostgrestValue('test(value)')).toBe('testvalue');
+      expect(escapePostgrestValue('(injection)')).toBe('injection');
+    });
+
+    it('escapes LIKE wildcards with backslash', () => {
+      expect(escapePostgrestValue('100%')).toBe('100\\%');
+      expect(escapePostgrestValue('test_value')).toBe('test\\_value');
+      expect(escapePostgrestValue('50%_off')).toBe('50\\%\\_off');
+    });
+
+    it('removes standalone backslashes to prevent escape injection', () => {
+      expect(escapePostgrestValue('test\\value')).toBe('testvalue');
+      expect(escapePostgrestValue('a\\b\\c')).toBe('abc');
+    });
+
+    it('preserves backslashes that escape wildcards', () => {
+      // After escaping, \% and \_ should remain
+      const result = escapePostgrestValue('test%');
+      expect(result).toBe('test\\%');
+    });
+
+    it('handles complex injection attempts', () => {
+      // Attempt to inject additional filter predicate
+      expect(escapePostgrestValue('),user_id.neq.*')).toBe('user\\_id.neq.*');
+      // Attempt to break OR syntax
+      expect(escapePostgrestValue('test%,title.gte.z')).toBe('test\\%title.gte.z');
+    });
+
+    it('passes through normal search terms unchanged', () => {
+      expect(escapePostgrestValue('headache')).toBe('headache');
+      expect(escapePostgrestValue('Dr. Smith')).toBe('Dr. Smith');
+      expect(escapePostgrestValue('blood pressure')).toBe('blood pressure');
     });
   });
 });

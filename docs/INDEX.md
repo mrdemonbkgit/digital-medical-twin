@@ -1,6 +1,6 @@
 # Documentation Index
 
-> Last Updated: 2025-12-02 (Updated verification status documentation)
+> Last Updated: 2025-12-02 (Security hardening updates)
 
 ## Summary
 

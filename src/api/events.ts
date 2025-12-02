@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabase';
+import { escapePostgrestValue } from '@/utils/validation';
 import type {
   HealthEvent,
   CreateEventInput,
@@ -284,16 +285,20 @@ export async function getEvents(
   }
 
   if (filters?.search) {
-    // Search across multiple fields for better discoverability
-    query = query.or(
-      `title.ilike.%${filters.search}%,` +
-      `notes.ilike.%${filters.search}%,` +
-      `doctor_name.ilike.%${filters.search}%,` +
-      `medication_name.ilike.%${filters.search}%,` +
-      `intervention_name.ilike.%${filters.search}%,` +
-      `metric_name.ilike.%${filters.search}%,` +
-      `lab_name.ilike.%${filters.search}%`
-    );
+    // Sanitize search input to prevent PostgREST filter injection
+    const safeSearch = escapePostgrestValue(filters.search);
+    if (safeSearch) {
+      // Search across multiple fields for better discoverability
+      query = query.or(
+        `title.ilike.%${safeSearch}%,` +
+        `notes.ilike.%${safeSearch}%,` +
+        `doctor_name.ilike.%${safeSearch}%,` +
+        `medication_name.ilike.%${safeSearch}%,` +
+        `intervention_name.ilike.%${safeSearch}%,` +
+        `metric_name.ilike.%${safeSearch}%,` +
+        `lab_name.ilike.%${safeSearch}%`
+      );
+    }
   }
 
   if (filters?.tags && filters.tags.length > 0) {
@@ -451,15 +456,19 @@ export async function getAllEvents(filters?: EventFilters): Promise<HealthEvent[
   }
 
   if (filters?.search) {
-    query = query.or(
-      `title.ilike.%${filters.search}%,` +
-      `notes.ilike.%${filters.search}%,` +
-      `doctor_name.ilike.%${filters.search}%,` +
-      `medication_name.ilike.%${filters.search}%,` +
-      `intervention_name.ilike.%${filters.search}%,` +
-      `metric_name.ilike.%${filters.search}%,` +
-      `lab_name.ilike.%${filters.search}%`
-    );
+    // Sanitize search input to prevent PostgREST filter injection
+    const safeSearch = escapePostgrestValue(filters.search);
+    if (safeSearch) {
+      query = query.or(
+        `title.ilike.%${safeSearch}%,` +
+        `notes.ilike.%${safeSearch}%,` +
+        `doctor_name.ilike.%${safeSearch}%,` +
+        `medication_name.ilike.%${safeSearch}%,` +
+        `intervention_name.ilike.%${safeSearch}%,` +
+        `metric_name.ilike.%${safeSearch}%,` +
+        `lab_name.ilike.%${safeSearch}%`
+      );
+    }
   }
 
   if (filters?.tags && filters.tags.length > 0) {

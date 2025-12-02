@@ -14,6 +14,7 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/common';
 import { getLabUploadPdfUrl } from '@/api/labUploads';
+import { logger } from '@/lib/logger';
 import type { LabUpload, ProcessingStage } from '@/types';
 
 interface LabUploadCardProps {
@@ -89,7 +90,7 @@ export function LabUploadCard({
       const url = await getLabUploadPdfUrl(upload.storagePath);
       window.open(url, '_blank');
     } catch (err) {
-      console.error('Failed to get PDF URL:', err);
+      logger.error('Failed to get PDF URL', err);
     }
   };
 

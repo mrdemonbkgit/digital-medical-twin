@@ -8,6 +8,7 @@ import { LoadingSpinner } from '@/components/common';
 import { supabase } from '@/lib/supabase';
 import { getCorrelationHeaders } from '@/lib/api';
 import { useCorrelation } from '@/context/CorrelationContext';
+import { logger } from '@/lib/logger';
 import type { LabUpload } from '@/types';
 
 interface LabUploadListProps {
@@ -67,12 +68,12 @@ export function LabUploadList({ onRefetchRef }: LabUploadListProps) {
             ...getCorrelationHeaders(sessionId, currentOperationId),
           },
           body: JSON.stringify({ uploadId: id }),
-        }).catch(console.error);
+        }).catch((err) => logger.error('Failed to trigger retry processing', err));
       }
 
       await refetch();
     } catch (err) {
-      console.error('Retry failed:', err);
+      logger.error('Retry failed', err);
     } finally {
       setRetryingId(null);
     }

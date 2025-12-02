@@ -101,7 +101,12 @@ describe('LabUploadCard', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    vi.useFakeTimers({ shouldAdvanceTime: true });
     vi.mocked(getLabUploadPdfUrl).mockResolvedValue('https://example.com/pdf');
+  });
+
+  afterEach(() => {
+    vi.useRealTimers();
   });
 
   describe('Common elements', () => {

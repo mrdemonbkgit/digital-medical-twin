@@ -9,6 +9,9 @@ describe('TagInput', () => {
     onChange: vi.fn(),
   };
 
+  // Setup userEvent with no delay to prevent test timeouts
+  const user = userEvent.setup({ delay: null });
+
   beforeEach(() => {
     vi.clearAllMocks();
   });
@@ -63,7 +66,7 @@ describe('TagInput', () => {
       render(<TagInput {...defaultProps} onChange={onChange} />);
 
       const input = screen.getByRole('textbox');
-      await userEvent.type(input, 'newtag{enter}');
+      await user.type(input, 'newtag{enter}');
 
       expect(onChange).toHaveBeenCalledWith(['newtag']);
     });
@@ -73,7 +76,7 @@ describe('TagInput', () => {
       render(<TagInput {...defaultProps} onChange={onChange} />);
 
       const input = screen.getByRole('textbox');
-      await userEvent.type(input, 'newtag,');
+      await user.type(input, 'newtag,');
 
       expect(onChange).toHaveBeenCalledWith(['newtag']);
     });
@@ -83,7 +86,7 @@ describe('TagInput', () => {
       render(<TagInput {...defaultProps} onChange={onChange} />);
 
       const input = screen.getByRole('textbox');
-      await userEvent.type(input, '  spaced  {enter}');
+      await user.type(input, '  spaced  {enter}');
 
       expect(onChange).toHaveBeenCalledWith(['spaced']);
     });
@@ -93,7 +96,7 @@ describe('TagInput', () => {
       render(<TagInput {...defaultProps} onChange={onChange} />);
 
       const input = screen.getByRole('textbox');
-      await userEvent.type(input, 'UpperCase{enter}');
+      await user.type(input, 'UpperCase{enter}');
 
       expect(onChange).toHaveBeenCalledWith(['uppercase']);
     });
@@ -103,7 +106,7 @@ describe('TagInput', () => {
       render(<TagInput {...defaultProps} onChange={onChange} />);
 
       const input = screen.getByRole('textbox');
-      await userEvent.type(input, '   {enter}');
+      await user.type(input, '   {enter}');
 
       expect(onChange).not.toHaveBeenCalled();
     });
@@ -113,7 +116,7 @@ describe('TagInput', () => {
       render(<TagInput {...defaultProps} tags={['existing']} onChange={onChange} />);
 
       const input = screen.getByRole('textbox');
-      await userEvent.type(input, 'existing{enter}');
+      await user.type(input, 'existing{enter}');
 
       expect(onChange).not.toHaveBeenCalled();
     });
@@ -123,7 +126,7 @@ describe('TagInput', () => {
       render(<TagInput {...defaultProps} onChange={onChange} />);
 
       const input = screen.getByRole('textbox') as HTMLInputElement;
-      await userEvent.type(input, 'newtag{enter}');
+      await user.type(input, 'newtag{enter}');
 
       expect(input.value).toBe('');
     });
@@ -133,7 +136,7 @@ describe('TagInput', () => {
       render(<TagInput {...defaultProps} tags={['existing']} onChange={onChange} />);
 
       const input = screen.getByRole('textbox');
-      await userEvent.type(input, 'newtag{enter}');
+      await user.type(input, 'newtag{enter}');
 
       expect(onChange).toHaveBeenCalledWith(['existing', 'newtag']);
     });
@@ -149,7 +152,7 @@ describe('TagInput', () => {
       const removeButton = tag1Element?.querySelector('button');
       expect(removeButton).toBeInTheDocument();
 
-      await userEvent.click(removeButton!);
+      await user.click(removeButton!);
 
       expect(onChange).toHaveBeenCalledWith(['tag2']);
     });
@@ -169,7 +172,7 @@ describe('TagInput', () => {
       render(<TagInput {...defaultProps} tags={['tag1']} onChange={onChange} />);
 
       const input = screen.getByRole('textbox');
-      await userEvent.type(input, 'text');
+      await user.type(input, 'text');
       fireEvent.keyDown(input, { key: 'Backspace' });
 
       expect(onChange).not.toHaveBeenCalled();
@@ -186,7 +189,7 @@ describe('TagInput', () => {
       );
 
       const input = screen.getByRole('textbox');
-      await userEvent.click(input);
+      await user.click(input);
 
       expect(screen.getByText('suggestion1')).toBeInTheDocument();
       expect(screen.getByText('suggestion2')).toBeInTheDocument();
@@ -201,7 +204,7 @@ describe('TagInput', () => {
       );
 
       const input = screen.getByRole('textbox');
-      await userEvent.type(input, 'ap');
+      await user.type(input, 'ap');
 
       expect(screen.getByText('apple')).toBeInTheDocument();
       expect(screen.getByText('apricot')).toBeInTheDocument();
@@ -218,7 +221,7 @@ describe('TagInput', () => {
       );
 
       const input = screen.getByRole('textbox');
-      await userEvent.click(input);
+      await user.click(input);
 
       expect(screen.queryByRole('button', { name: 'apple' })).not.toBeInTheDocument();
       expect(screen.getByText('banana')).toBeInTheDocument();
@@ -235,8 +238,8 @@ describe('TagInput', () => {
       );
 
       const input = screen.getByRole('textbox');
-      await userEvent.click(input);
-      await userEvent.click(screen.getByText('suggestion1'));
+      await user.click(input);
+      await user.click(screen.getByText('suggestion1'));
 
       expect(onChange).toHaveBeenCalledWith(['suggestion1']);
     });
@@ -250,7 +253,7 @@ describe('TagInput', () => {
       );
 
       const input = screen.getByRole('textbox');
-      await userEvent.click(input);
+      await user.click(input);
       expect(screen.getByText('suggestion1')).toBeInTheDocument();
 
       fireEvent.keyDown(input, { key: 'Escape' });
@@ -269,7 +272,7 @@ describe('TagInput', () => {
       );
 
       const input = screen.getByRole('textbox');
-      await userEvent.click(input);
+      await user.click(input);
       expect(screen.getByText('suggestion1')).toBeInTheDocument();
 
       fireEvent.mouseDown(screen.getByTestId('outside'));
@@ -280,7 +283,7 @@ describe('TagInput', () => {
       render(<TagInput {...defaultProps} suggestions={[]} />);
 
       const input = screen.getByRole('textbox');
-      await userEvent.click(input);
+      await user.click(input);
 
       // Should not have any suggestion dropdown
       expect(document.querySelector('.max-h-48')).not.toBeInTheDocument();
@@ -292,7 +295,7 @@ describe('TagInput', () => {
       render(<TagInput {...defaultProps} />);
 
       const container = document.querySelector('.flex.flex-wrap');
-      await userEvent.click(container!);
+      await user.click(container!);
 
       expect(screen.getByRole('textbox')).toHaveFocus();
     });
@@ -301,7 +304,7 @@ describe('TagInput', () => {
       render(<TagInput {...defaultProps} />);
 
       const input = screen.getByRole('textbox');
-      await userEvent.type(input, 'tag{enter}');
+      await user.type(input, 'tag{enter}');
 
       expect(input).toHaveFocus();
     });

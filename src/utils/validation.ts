@@ -3,6 +3,29 @@ export function isValidEmail(email: string): boolean {
   return emailRegex.test(email);
 }
 
+/**
+ * Escape special characters in a search string for safe use in PostgREST ilike filters.
+ * Prevents filter injection by removing/escaping characters that could break the query syntax.
+ *
+ * @param input - The raw user search input
+ * @returns Sanitized string safe for use in PostgREST filter expressions
+ */
+export function escapePostgrestValue(input: string): string {
+  if (!input) return '';
+
+  return (
+    input
+      .trim()
+      // Remove characters that break PostgREST filter syntax
+      .replace(/[,()]/g, '')
+      // Escape LIKE pattern wildcards (% and _) with backslash
+      .replace(/%/g, '\\%')
+      .replace(/_/g, '\\_')
+      // Remove backslashes that aren't escaping wildcards (prevent escape injection)
+      .replace(/\\(?![%_])/g, '')
+  );
+}
+
 export function isValidPassword(password: string): boolean {
   // Minimum 8 characters
   return password.length >= 8;

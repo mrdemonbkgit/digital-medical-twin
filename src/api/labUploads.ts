@@ -1,10 +1,24 @@
 import { supabase } from '@/lib/supabase';
+import { logger } from '@/lib/logger';
 import type {
   LabUpload,
   LabUploadRow,
   CreateLabUploadInput,
   UpdateLabUploadInput,
 } from '@/types';
+
+// Helper to get authenticated user ID - throws if not authenticated
+async function getAuthenticatedUserId(): Promise<string> {
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    throw new Error('User not authenticated');
+  }
+
+  return user.id;
+}
 
 // Convert database row to typed LabUpload
 function rowToLabUpload(row: LabUploadRow): LabUpload {
@@ -68,9 +82,12 @@ function updateToRow(input: UpdateLabUploadInput): Partial<LabUploadRow> {
 
 // Get all lab uploads for the current user
 export async function getLabUploads(): Promise<LabUpload[]> {
+  const userId = await getAuthenticatedUserId();
+
   const { data, error } = await supabase
     .from('lab_uploads')
     .select('*')
+    .eq('user_id', userId)
     .order('created_at', { ascending: false });
 
   if (error) {
@@ -80,17 +97,20 @@ export async function getLabUploads(): Promise<LabUpload[]> {
   return (data as LabUploadRow[]).map(rowToLabUpload);
 }
 
-// Get a single lab upload by ID
+// Get a single lab upload by ID (scoped to current user)
 export async function getLabUpload(id: string): Promise<LabUpload | null> {
+  const userId = await getAuthenticatedUserId();
+
   const { data, error } = await supabase
     .from('lab_uploads')
     .select('*')
     .eq('id', id)
+    .eq('user_id', userId)
     .single();
 
   if (error) {
     if (error.code === 'PGRST116') {
-      return null; // Not found
+      return null; // Not found or not owned by current user
     }
     throw new Error(`Failed to fetch lab upload: ${error.message}`);
   }
@@ -100,16 +120,8 @@ export async function getLabUpload(id: string): Promise<LabUpload | null> {
 
 // Create a new lab upload record
 export async function createLabUpload(input: CreateLabUploadInput): Promise<LabUpload> {
-  // Get current user
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    throw new Error('User not authenticated');
-  }
-
-  const row = inputToRow(input, user.id);
+  const userId = await getAuthenticatedUserId();
+  const row = inputToRow(input, userId);
 
   const { data, error } = await supabase
     .from('lab_uploads')
@@ -124,17 +136,19 @@ export async function createLabUpload(input: CreateLabUploadInput): Promise<LabU
   return rowToLabUpload(data as LabUploadRow);
 }
 
-// Update an existing lab upload
+// Update an existing lab upload (scoped to current user)
 export async function updateLabUpload(
   id: string,
   input: UpdateLabUploadInput
 ): Promise<LabUpload> {
+  const userId = await getAuthenticatedUserId();
   const row = updateToRow(input);
 
   const { data, error } = await supabase
     .from('lab_uploads')
     .update(row)
     .eq('id', id)
+    .eq('user_id', userId)
     .select()
     .single();
 
@@ -145,9 +159,11 @@ export async function updateLabUpload(
   return rowToLabUpload(data as LabUploadRow);
 }
 
-// Delete a lab upload (also deletes the PDF from storage)
+// Delete a lab upload (also deletes the PDF from storage, scoped to current user)
 export async function deleteLabUpload(id: string): Promise<void> {
-  // First get the upload to get the storage path
+  const userId = await getAuthenticatedUserId();
+
+  // First get the upload to get the storage path (also verifies ownership)
   const upload = await getLabUpload(id);
   if (!upload) {
     throw new Error('Lab upload not found');
@@ -159,58 +175,42 @@ export async function deleteLabUpload(id: string): Promise<void> {
     .remove([upload.storagePath]);
 
   if (storageError) {
-    console.error('Failed to delete file from storage:', storageError);
+    logger.error('Failed to delete file from storage', storageError);
     // Continue with database deletion even if storage fails
   }
 
-  // Delete from database
+  // Delete from database (explicit user_id check for defense in depth)
   const { error } = await supabase
     .from('lab_uploads')
     .delete()
-    .eq('id', id);
+    .eq('id', id)
+    .eq('user_id', userId);
 
   if (error) {
     throw new Error(`Failed to delete lab upload: ${error.message}`);
   }
 }
 
-// Get the next pending upload (for sequential processing)
-export async function getNextPendingUpload(): Promise<LabUpload | null> {
-  const { data, error } = await supabase
-    .from('lab_uploads')
-    .select('*')
-    .eq('status', 'pending')
-    .order('created_at', { ascending: true })
-    .limit(1)
-    .single();
+// Generate a signed URL for viewing the PDF (verifies ownership first)
+export async function getLabUploadPdfUrl(storagePath: string): Promise<string> {
+  const userId = await getAuthenticatedUserId();
 
-  if (error) {
-    if (error.code === 'PGRST116') {
-      return null; // No pending uploads
-    }
-    throw new Error(`Failed to fetch pending upload: ${error.message}`);
-  }
-
-  return rowToLabUpload(data as LabUploadRow);
-}
-
-// Check if any upload is currently processing
-export async function hasProcessingUpload(): Promise<boolean> {
-  const { data, error } = await supabase
+  // Verify the current user owns an upload with this storage path
+  const { data: upload, error: verifyError } = await supabase
     .from('lab_uploads')
     .select('id')
-    .eq('status', 'processing')
-    .limit(1);
+    .eq('storage_path', storagePath)
+    .eq('user_id', userId)
+    .maybeSingle();
 
-  if (error) {
-    throw new Error(`Failed to check processing status: ${error.message}`);
+  if (verifyError) {
+    throw new Error(`Failed to verify upload ownership: ${verifyError.message}`);
   }
 
-  return (data?.length ?? 0) > 0;
-}
+  if (!upload) {
+    throw new Error('Upload not found or access denied');
+  }
 
-// Generate a signed URL for viewing the PDF
-export async function getLabUploadPdfUrl(storagePath: string): Promise<string> {
   const { data, error } = await supabase.storage
     .from('lab-pdfs')
     .createSignedUrl(storagePath, 3600); // 1 hour expiry

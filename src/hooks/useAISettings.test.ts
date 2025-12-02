@@ -5,7 +5,8 @@ import { useAISettings } from './useAISettings';
 // Mock supabase with full chain support
 const mockFrom = vi.fn();
 const mockSelect = vi.fn();
-const mockSingle = vi.fn();
+const mockEq = vi.fn();
+const mockMaybeSingle = vi.fn();
 const mockUpsert = vi.fn();
 const mockGetUser = vi.fn();
 
@@ -17,7 +18,12 @@ vi.mock('@/lib/supabase', () => ({
         select: (columns: string) => {
           mockSelect(columns);
           return {
-            single: () => mockSingle(),
+            eq: (column: string, value: string) => {
+              mockEq(column, value);
+              return {
+                maybeSingle: () => mockMaybeSingle(),
+              };
+            },
           };
         },
         upsert: (data: unknown, options: unknown) => {
@@ -37,7 +43,7 @@ describe('useAISettings', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     // Default: return settings from database
-    mockSingle.mockResolvedValue({
+    mockMaybeSingle.mockResolvedValue({
       data: {
         ai_provider: 'openai',
         ai_model: 'gpt-5.1',
@@ -60,7 +66,7 @@ describe('useAISettings', () => {
   });
 
   it('returns loading state initially', () => {
-    mockSingle.mockImplementation(() => new Promise(() => {})); // Never resolves
+    mockMaybeSingle.mockImplementation(() => new Promise(() => {})); // Never resolves
     const { result } = renderHook(() => useAISettings());
     expect(result.current.isLoading).toBe(true);
     expect(result.current.settings).toBe(null);
@@ -83,10 +89,10 @@ describe('useAISettings', () => {
   });
 
   it('returns default values when no settings exist', async () => {
-    // PGRST116 = no rows found
-    mockSingle.mockResolvedValue({
+    // maybeSingle() returns null data (no error) when no row found
+    mockMaybeSingle.mockResolvedValue({
       data: null,
-      error: { code: 'PGRST116', message: 'No rows found' },
+      error: null,
     });
 
     const { result } = renderHook(() => useAISettings());
@@ -105,7 +111,7 @@ describe('useAISettings', () => {
   });
 
   it('returns default values with provider-specific reasoning params', async () => {
-    mockSingle.mockResolvedValue({
+    mockMaybeSingle.mockResolvedValue({
       data: {
         ai_provider: 'google',
         ai_model: 'gemini-3-pro-preview',
@@ -127,7 +133,7 @@ describe('useAISettings', () => {
   });
 
   it('handles database errors gracefully', async () => {
-    mockSingle.mockResolvedValue({
+    mockMaybeSingle.mockResolvedValue({
       data: null,
       error: { code: 'PGRST500', message: 'Database error' },
     });
@@ -150,7 +156,7 @@ describe('useAISettings', () => {
 
   it('updateSettings sends correct payload', async () => {
     // Initial fetch - no settings
-    mockSingle.mockResolvedValue({
+    mockMaybeSingle.mockResolvedValue({
       data: null,
       error: { code: 'PGRST116', message: 'No rows found' },
     });
@@ -188,7 +194,7 @@ describe('useAISettings', () => {
 
   it('updateSettings throws on not authenticated', async () => {
     // Initial fetch succeeds
-    mockSingle.mockResolvedValue({
+    mockMaybeSingle.mockResolvedValue({
       data: { ai_provider: null, ai_model: null },
       error: null,
     });
@@ -220,7 +226,7 @@ describe('useAISettings', () => {
 
   it('updateSettings throws on database error', async () => {
     // Initial fetch succeeds
-    mockSingle.mockResolvedValue({
+    mockMaybeSingle.mockResolvedValue({
       data: { ai_provider: null, ai_model: null },
       error: null,
     });
@@ -251,7 +257,7 @@ describe('useAISettings', () => {
 
   it('refetch reloads settings', async () => {
     // Initial fetch
-    mockSingle.mockResolvedValueOnce({
+    mockMaybeSingle.mockResolvedValueOnce({
       data: {
         ai_provider: 'openai',
         ai_model: 'gpt-5.1',
@@ -268,7 +274,7 @@ describe('useAISettings', () => {
     expect(result.current.settings?.provider).toBe('openai');
 
     // Setup refetch response with different data
-    mockSingle.mockResolvedValueOnce({
+    mockMaybeSingle.mockResolvedValueOnce({
       data: {
         ai_provider: 'google',
         ai_model: 'gemini-3-pro-preview',
@@ -282,6 +288,6 @@ describe('useAISettings', () => {
     });
 
     expect(result.current.settings?.provider).toBe('google');
-    expect(mockSingle).toHaveBeenCalledTimes(2);
+    expect(mockMaybeSingle).toHaveBeenCalledTimes(2);
   });
 });

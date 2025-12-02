@@ -8,16 +8,26 @@ import type {
 } from '@/types/ai';
 
 export async function getAISettings(): Promise<AISettings> {
+  // Require authentication and scope to current user
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    throw new Error('Not authenticated');
+  }
+
   const { data, error } = await supabase
     .from('user_settings')
     .select('ai_provider, ai_model, openai_reasoning_effort, gemini_thinking_level')
-    .single();
+    .eq('user_id', user.id)
+    .maybeSingle();
 
-  // PGRST116 = no rows found (user has no settings yet)
-  if (error && error.code !== 'PGRST116') {
+  if (error) {
     throw new Error(error.message);
   }
 
+  // data is null if user has no settings yet
   return {
     provider: (data?.ai_provider as AIProvider) || null,
     model: (data?.ai_model as AIModel) || null,

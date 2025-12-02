@@ -30,13 +30,21 @@ const markdownComponents = {
       {children}
     </tr>
   ),
-  th: ({ children }: { children?: React.ReactNode }) => (
-    <th className="px-3 py-2 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider whitespace-nowrap">
+  th: ({ children, style, ...props }: React.ThHTMLAttributes<HTMLTableCellElement>) => (
+    <th
+      className="px-3 py-2 text-xs font-semibold text-gray-700 uppercase tracking-wider whitespace-nowrap"
+      style={style}
+      {...props}
+    >
       {children}
     </th>
   ),
-  td: ({ children }: { children?: React.ReactNode }) => (
-    <td className="px-3 py-2 text-sm text-gray-700 whitespace-nowrap">
+  td: ({ children, style, ...props }: React.TdHTMLAttributes<HTMLTableCellElement>) => (
+    <td
+      className="px-3 py-2 text-sm text-gray-700 whitespace-nowrap"
+      style={style}
+      {...props}
+    >
       {children}
     </td>
   ),

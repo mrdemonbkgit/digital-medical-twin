@@ -178,6 +178,7 @@ export function useAIChat(options: UseAIChatOptions = {}): UseAIChatReturn {
           body: JSON.stringify({
             message: content.trim(),
             history,
+            conversationId: currentConversationId,
           }),
         });
 

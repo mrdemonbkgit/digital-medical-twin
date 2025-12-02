@@ -682,36 +682,63 @@ async function handler(req: LoggedRequest, res: VercelResponse) {
     timings.auth = Date.now() - t_start;
 
     // Get request body
-    const { message, history = [] } = req.body as {
+    const { message, history = [], conversationId } = req.body as {
       message: string;
       history?: Array<{ role: 'user' | 'assistant'; content: string }>;
+      conversationId?: string;
     };
 
     if (!message || typeof message !== 'string') {
       return res.status(400).json({ error: 'Message is required' });
     }
 
-    // Get user's AI settings
+    // Get user's AI settings (global defaults)
     const t_settings = Date.now();
-    const { data: settings, error: settingsError } = await supabase
+    const { data: globalSettings, error: settingsError } = await supabase
       .from('user_settings')
       .select('ai_provider, ai_model, openai_reasoning_effort, gemini_thinking_level')
       .eq('user_id', userId)
       .single();
-    timings.settings = Date.now() - t_settings;
 
     if (settingsError && settingsError.code !== 'PGRST116') {
       throw settingsError;
     }
 
-    if (!settings?.ai_provider) {
+    // If conversationId provided, fetch conversation-specific settings
+    let conversationSettings: {
+      provider: string | null;
+      model: string | null;
+      reasoning_effort: string | null;
+      thinking_level: string | null;
+    } | null = null;
+
+    if (conversationId) {
+      const { data: convData } = await supabase
+        .from('ai_conversations')
+        .select('provider, model, reasoning_effort, thinking_level')
+        .eq('id', conversationId)
+        .eq('user_id', userId)
+        .single();
+
+      if (convData?.provider) {
+        conversationSettings = convData;
+      }
+    }
+    timings.settings = Date.now() - t_settings;
+
+    // Use conversation settings if available, otherwise fall back to global
+    const provider = (conversationSettings?.provider || globalSettings?.ai_provider) as 'openai' | 'google' | null;
+    const model = conversationSettings?.model || globalSettings?.ai_model;
+    const reasoningEffort = (conversationSettings?.reasoning_effort || globalSettings?.openai_reasoning_effort || 'medium') as OpenAIReasoningEffort;
+    const thinkingLevel = (conversationSettings?.thinking_level || globalSettings?.gemini_thinking_level || 'high') as GeminiThinkingLevel;
+
+    if (!provider) {
       return res.status(400).json({
         error: 'AI not configured. Please select a provider in Settings.',
       });
     }
 
     // Use server-side API keys
-    const provider = settings.ai_provider as 'openai' | 'google';
     const apiKey = provider === 'openai' ? OPENAI_API_KEY : GOOGLE_API_KEY;
 
     if (!apiKey) {
@@ -763,17 +790,15 @@ async function handler(req: LoggedRequest, res: VercelResponse) {
     ];
 
     // Call AI provider and track elapsed time
-    const model = settings.ai_model || (provider === 'openai' ? 'gpt-5.1' : 'gemini-3-pro-preview');
+    const effectiveModel = model || (provider === 'openai' ? 'gpt-5.1' : 'gemini-3-pro-preview');
 
     const t_ai = Date.now();
     let result: ExtendedAIResponse;
 
     if (provider === 'openai') {
-      const reasoningEffort = (settings.openai_reasoning_effort || 'medium') as OpenAIReasoningEffort;
-      result = await openaiComplete(apiKey, model, messages, reasoningEffort);
+      result = await openaiComplete(apiKey, effectiveModel, messages, reasoningEffort);
     } else {
-      const thinkingLevel = (settings.gemini_thinking_level || 'high') as GeminiThinkingLevel;
-      result = await geminiComplete(apiKey, model, messages, thinkingLevel);
+      result = await geminiComplete(apiKey, effectiveModel, messages, thinkingLevel);
     }
     timings.aiProvider = Date.now() - t_ai;
 

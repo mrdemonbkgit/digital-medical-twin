@@ -48,11 +48,22 @@ Version history and release notes for Digital Medical Twin. Lists all notable ch
 - **Per-Conversation AI Settings**
   - Model and settings (provider, model, reasoning level) are saved with each conversation
   - Loading an old conversation restores the settings used when it was created
+  - Server now uses conversation-specific settings when making AI calls
   - New conversation uses current global settings
   - Database columns: `provider`, `model`, `reasoning_effort`, `thinking_level` on `ai_conversations`
   - `supabase/migrations/20241203000002_add_conversation_settings.sql`
 
 ### Fixed
+
+- **Per-conversation settings not used for AI calls**
+  - Server now fetches and uses conversation settings instead of global settings
+  - `conversationId` is sent with chat requests
+  - Falls back to global settings if conversation has no saved settings
+  - `api/ai/chat.ts`, `src/hooks/useAIChat.ts`
+
+- **Settings override not cleared for pre-migration conversations**
+  - UI now correctly falls back to global settings when loading conversations without saved settings
+  - `src/pages/AIHistorianPage.tsx`
 
 - **AI Chat sidebar not updating when continuing conversation**
   - Sidebar now refreshes after each message to update conversation order and timestamps

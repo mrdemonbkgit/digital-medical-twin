@@ -65,10 +65,8 @@ export function AIHistorianPage() {
       refetchConversations();
     },
     onSettingsLoaded: (loadedSettings) => {
-      // Apply loaded conversation's settings to UI
-      if (loadedSettings.provider) {
-        setSettingsOverride(loadedSettings);
-      }
+      // Apply loaded conversation's settings to UI, or clear if none
+      setSettingsOverride(loadedSettings.provider ? loadedSettings : null);
     },
   });
 

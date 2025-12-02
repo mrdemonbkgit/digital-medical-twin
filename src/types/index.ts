@@ -5,3 +5,4 @@ export * from './ai';
 export * from './labUploads';
 export * from './userProfile';
 export * from './biomarker';
+export * from './conversations';

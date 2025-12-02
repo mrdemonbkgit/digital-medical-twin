@@ -22,6 +22,39 @@ Version history and release notes for Digital Medical Twin. Lists all notable ch
 
 ---
 
+## [Unreleased]
+
+### Added
+
+- **AI Chat History Persistence**
+  - Conversations are now saved to the database and can be continued later
+  - ChatGPT-style sidebar showing all past conversations
+  - Auto-title from first message, with inline rename support
+  - Delete conversations with cascade to messages
+  - URL-based conversation access (`/ai?c=<uuid>`)
+  - New tables: `ai_conversations`, `ai_messages`
+  - New components: `ConversationList`
+  - New hooks: `useConversations`
+  - Modified: `useAIChat` now persists messages
+  - `src/api/conversations.ts`, `src/types/conversations.ts`
+
+### Fixed
+
+- **AI Chat loading spinner race condition**
+  - Fixed spinner disappearing prematurely when sending first message in new conversation
+  - Caused by `loadConversation` being triggered via URL change and resetting `isLoading`
+  - Fix: Skip loading if conversation is already loaded (e.g., just created)
+  - `src/hooks/useAIChat.ts`
+
+### Security
+
+- **RLS WITH CHECK clauses for AI conversations**
+  - Added `WITH CHECK` to RLS policies for `ai_conversations` and `ai_messages`
+  - Prevents authenticated users from inserting data into other users' conversations
+  - `supabase/migrations/20241203000001_fix_ai_conversations_rls.sql`
+
+---
+
 ## [1.5.0] - 2025-12-02
 
 > Major feature release: Lab uploads, user profiles, security hardening

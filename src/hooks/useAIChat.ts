@@ -1,14 +1,27 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 import { logger } from '@/lib/logger';
+import {
+  getConversation,
+  createConversation,
+  addMessage,
+} from '@/api/conversations';
 import type { ChatMessage } from '@/types/ai';
 
+interface UseAIChatOptions {
+  conversationId?: string | null;
+  onConversationCreated?: (id: string) => void;
+}
+
 interface UseAIChatReturn {
+  conversationId: string | null;
   messages: ChatMessage[];
   isLoading: boolean;
   error: string | null;
   sendMessage: (content: string) => Promise<void>;
   clearChat: () => void;
+  loadConversation: (id: string) => Promise<void>;
+  startNewConversation: () => void;
 }
 
 async function getAuthToken(): Promise<string> {
@@ -27,10 +40,42 @@ function generateId(): string {
   return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
 }
 
-export function useAIChat(): UseAIChatReturn {
+export function useAIChat(options: UseAIChatOptions = {}): UseAIChatReturn {
+  const [conversationId, setConversationId] = useState<string | null>(
+    options.conversationId || null
+  );
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Load conversation if ID provided
+  const loadConversation = useCallback(async (id: string) => {
+    setIsLoading(true);
+    setError(null);
+    try {
+      const result = await getConversation(id);
+      if (result) {
+        setConversationId(id);
+        setMessages(result.messages);
+      } else {
+        setError('Conversation not found');
+      }
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to load conversation';
+      logger.error('Failed to load conversation', err instanceof Error ? err : undefined);
+      setError(message);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  // Load on mount if conversationId provided in options
+  // Skip if we already have this conversation loaded (e.g., we just created it)
+  useEffect(() => {
+    if (options.conversationId && options.conversationId !== conversationId) {
+      loadConversation(options.conversationId);
+    }
+  }, [options.conversationId, conversationId, loadConversation]);
 
   const sendMessage = useCallback(
     async (content: string) => {
@@ -39,17 +84,45 @@ export function useAIChat(): UseAIChatReturn {
       setError(null);
       setIsLoading(true);
 
-      // Add user message immediately
-      const userMessage: ChatMessage = {
+      // Create conversation if needed
+      let currentConversationId = conversationId;
+      if (!currentConversationId) {
+        try {
+          // Use first 50 chars of message as title
+          const title = content.slice(0, 50) + (content.length > 50 ? '...' : '');
+          const conversation = await createConversation({ title });
+          currentConversationId = conversation.id;
+          setConversationId(currentConversationId);
+          options.onConversationCreated?.(currentConversationId);
+        } catch (err) {
+          logger.error('Failed to create conversation', err instanceof Error ? err : undefined);
+          setError('Failed to start conversation');
+          setIsLoading(false);
+          return;
+        }
+      }
+
+      // Add user message immediately (optimistic)
+      const tempUserMessage: ChatMessage = {
         id: generateId(),
         role: 'user',
         content: content.trim(),
         timestamp: new Date(),
       };
-
-      setMessages((prev) => [...prev, userMessage]);
+      setMessages((prev) => [...prev, tempUserMessage]);
 
       try {
+        // Save user message to database
+        const savedUserMessage = await addMessage(currentConversationId, {
+          role: 'user',
+          content: content.trim(),
+        });
+
+        // Update optimistic message with real ID
+        setMessages((prev) =>
+          prev.map((m) => (m.id === tempUserMessage.id ? savedUserMessage : m))
+        );
+
         const token = await getAuthToken();
 
         // Build history from previous messages (exclude the one we just added)
@@ -77,46 +150,53 @@ export function useAIChat(): UseAIChatReturn {
 
         const data = await response.json();
 
-        // Add assistant message with sources and activity metadata from API
-        const assistantMessage: ChatMessage = {
-          id: generateId(),
+        // Save assistant message to database
+        const savedAssistantMessage = await addMessage(currentConversationId, {
           role: 'assistant',
           content: data.content,
-          timestamp: new Date(),
           sources: data.sources?.length > 0 ? data.sources : undefined,
-          // Extended metadata for activity timeline
           reasoning: data.reasoning,
           toolCalls: data.toolCalls,
           webSearchResults: data.webSearchResults,
           citations: data.citations,
           elapsedTime: data.elapsedTime,
-        };
+        });
 
-        setMessages((prev) => [...prev, assistantMessage]);
+        setMessages((prev) => [...prev, savedAssistantMessage]);
       } catch (err) {
         logger.error('Failed to send chat message', err instanceof Error ? err : undefined);
         const message = err instanceof Error ? err.message : 'Failed to send message';
         setError(message);
 
-        // Remove the user message if the request failed
-        setMessages((prev) => prev.filter((m) => m.id !== userMessage.id));
+        // Remove the optimistic user message on failure
+        setMessages((prev) => prev.filter((m) => m.id !== tempUserMessage.id));
       } finally {
         setIsLoading(false);
       }
     },
-    [messages]
+    [messages, conversationId, options]
   );
 
   const clearChat = useCallback(() => {
     setMessages([]);
+    setConversationId(null);
+    setError(null);
+  }, []);
+
+  const startNewConversation = useCallback(() => {
+    setMessages([]);
+    setConversationId(null);
     setError(null);
   }, []);
 
   return {
+    conversationId,
     messages,
     isLoading,
     error,
     sendMessage,
     clearChat,
+    loadConversation,
+    startNewConversation,
   };
 }

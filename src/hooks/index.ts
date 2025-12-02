@@ -14,3 +14,4 @@ export { usePDFUpload } from './usePDFUpload';
 export { useUserProfile } from './useUserProfile';
 export { useRequireProfile, useProfileStatus } from './useRequireProfile';
 export { useBiomarkers } from './useBiomarkers';
+export { useConversations } from './useConversations';

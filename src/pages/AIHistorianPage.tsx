@@ -1,14 +1,50 @@
-import { useRef, useEffect } from 'react';
+import { useState, useRef, useEffect } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { Link } from 'react-router-dom';
-import { Bot, Settings, AlertCircle, Loader2, Trash2 } from 'lucide-react';
+import { Bot, Settings, AlertCircle, Loader2, Trash2, Menu, X } from 'lucide-react';
 import { PageWrapper } from '@/components/layout';
 import { Button } from '@/components/common';
-import { ChatMessage, ChatInput, SuggestedQuestions, ReasoningLevelSelect } from '@/components/ai';
-import { useAIChat, useAISettings } from '@/hooks';
+import {
+  ChatMessage,
+  ChatInput,
+  SuggestedQuestions,
+  ReasoningLevelSelect,
+  ConversationList,
+} from '@/components/ai';
+import { useAIChat, useAISettings, useConversations } from '@/hooks';
 import type { OpenAIReasoningEffort, GeminiThinkingLevel } from '@/types/ai';
+import { cn } from '@/utils/cn';
 
 export function AIHistorianPage() {
-  const { messages, isLoading, error, sendMessage, clearChat } = useAIChat();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const conversationIdFromUrl = searchParams.get('c');
+
+  const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  const {
+    conversations,
+    isLoading: conversationsLoading,
+    remove: removeConversation,
+    rename: renameConversation,
+    refetch: refetchConversations,
+  } = useConversations();
+
+  const {
+    conversationId,
+    messages,
+    isLoading,
+    error,
+    sendMessage,
+    loadConversation,
+    startNewConversation,
+  } = useAIChat({
+    conversationId: conversationIdFromUrl,
+    onConversationCreated: (id) => {
+      setSearchParams({ c: id });
+      refetchConversations();
+    },
+  });
+
   const { settings, isLoading: settingsLoading, updateSettings } = useAISettings();
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -20,12 +56,39 @@ export function AIHistorianPage() {
     await updateSettings({ geminiThinkingLevel: value });
   };
 
+  // Handle conversation selection from sidebar
+  const handleSelectConversation = (id: string) => {
+    setSearchParams({ c: id });
+    loadConversation(id);
+    setSidebarOpen(false);
+  };
+
+  // Handle new conversation
+  const handleNewConversation = () => {
+    setSearchParams({});
+    startNewConversation();
+    setSidebarOpen(false);
+  };
+
+  // Handle delete conversation
+  const handleDeleteConversation = async (id: string) => {
+    await removeConversation(id);
+    if (conversationId === id) {
+      handleNewConversation();
+    }
+  };
+
+  // Handle rename conversation
+  const handleRenameConversation = async (id: string, title: string) => {
+    await renameConversation(id, title);
+  };
+
   // Auto-scroll to bottom when new messages arrive
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
-  // AI is configured if a provider is selected (API keys are now server-side)
+  // AI is configured if a provider is selected
   const isConfigured = !!settings?.provider;
 
   // Loading state
@@ -66,91 +129,141 @@ export function AIHistorianPage() {
   }
 
   return (
-    <PageWrapper title="AI Historian">
-      <div className="flex flex-col h-[calc(100vh-12rem)] max-h-[800px]">
-        {/* Header */}
-        <div className="flex items-center justify-between pb-4 border-b">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-              <Bot className="h-5 w-5 text-blue-600" />
-            </div>
-            <div>
-              <h2 className="font-semibold text-gray-900">AI Historian</h2>
-              <p className="text-sm text-gray-500">
-                Using {settings.provider === 'google' ? 'Gemini' : 'GPT'} · {settings.model}
-              </p>
-            </div>
-          </div>
-          <div className="flex items-center gap-2">
-            {settings.provider && (
-              <ReasoningLevelSelect
-                provider={settings.provider}
-                openaiReasoningEffort={settings.openaiReasoningEffort}
-                geminiThinkingLevel={settings.geminiThinkingLevel}
-                onChangeOpenAI={handleReasoningChange}
-                onChangeGemini={handleThinkingChange}
-                disabled={isLoading}
-              />
-            )}
-            {messages.length > 0 && (
-              <Button variant="ghost" size="sm" onClick={clearChat}>
-                <Trash2 className="h-4 w-4 mr-1" />
-                Clear
-              </Button>
-            )}
-          </div>
-        </div>
-
-        {/* Messages area */}
-        <div className="flex-1 overflow-y-auto py-4 space-y-4">
-          {messages.length === 0 ? (
-            <div className="flex flex-col items-center justify-center h-full text-center px-4">
-              <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mb-4">
-                <Bot className="h-6 w-6 text-gray-400" />
-              </div>
-              <h3 className="text-lg font-medium text-gray-900 mb-2">
-                Ask about your health history
-              </h3>
-              <p className="text-sm text-gray-600 max-w-md mb-6">
-                I can help you understand trends, find specific events, and summarize
-                your health journey. Ask me anything about your recorded health data.
-              </p>
-              <SuggestedQuestions onSelect={sendMessage} />
-            </div>
-          ) : (
-            <>
-              {messages.map((message) => (
-                <ChatMessage key={message.id} message={message} />
-              ))}
-              {isLoading && (
-                <div className="flex items-center gap-2 p-4 text-sm text-gray-500">
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  Thinking...
-                </div>
-              )}
-              <div ref={messagesEndRef} />
-            </>
-          )}
-        </div>
-
-        {/* Error display */}
-        {error && (
-          <div className="flex items-center gap-2 p-3 bg-red-50 text-red-700 text-sm rounded-lg mb-4">
-            <AlertCircle className="h-4 w-4 flex-shrink-0" />
-            {error}
-          </div>
+    <PageWrapper title="AI Historian" fullWidth>
+      <div className="flex h-[calc(100vh-8rem)] max-h-[900px]">
+        {/* Mobile sidebar overlay */}
+        {sidebarOpen && (
+          <div
+            className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+            onClick={() => setSidebarOpen(false)}
+          />
         )}
 
-        {/* Input area */}
-        <div className="pt-4 border-t">
-          <ChatInput
-            onSend={sendMessage}
-            disabled={isLoading}
-            placeholder="Ask about your health history..."
-          />
-          <p className="text-xs text-gray-400 mt-2 text-center">
-            AI responses are based on your recorded health data and should not replace medical advice.
-          </p>
+        {/* Sidebar */}
+        <div
+          className={cn(
+            'fixed lg:static inset-y-0 left-0 z-50 w-64 bg-gray-50 border-r border-gray-200 transform transition-transform duration-200 ease-in-out lg:transform-none',
+            sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
+          )}
+        >
+          {/* Mobile close button */}
+          <div className="lg:hidden flex items-center justify-between p-3 border-b border-gray-200">
+            <span className="font-medium text-gray-900">Conversations</span>
+            <button
+              onClick={() => setSidebarOpen(false)}
+              className="p-1 hover:bg-gray-200 rounded"
+            >
+              <X className="h-5 w-5 text-gray-500" />
+            </button>
+          </div>
+
+          <div className="h-full lg:h-auto">
+            <ConversationList
+              conversations={conversations}
+              activeId={conversationId}
+              onSelect={handleSelectConversation}
+              onNew={handleNewConversation}
+              onDelete={handleDeleteConversation}
+              onRename={handleRenameConversation}
+              isLoading={conversationsLoading}
+            />
+          </div>
+        </div>
+
+        {/* Main chat area */}
+        <div className="flex-1 flex flex-col min-w-0">
+          {/* Header */}
+          <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 bg-white">
+            <div className="flex items-center gap-3">
+              {/* Mobile menu button */}
+              <button
+                onClick={() => setSidebarOpen(true)}
+                className="lg:hidden p-1 hover:bg-gray-100 rounded"
+              >
+                <Menu className="h-5 w-5 text-gray-500" />
+              </button>
+
+              <div className="w-9 h-9 bg-blue-100 rounded-full flex items-center justify-center">
+                <Bot className="h-5 w-5 text-blue-600" />
+              </div>
+              <div>
+                <h2 className="font-semibold text-gray-900">AI Historian</h2>
+                <p className="text-xs text-gray-500">
+                  {settings.provider === 'google' ? 'Gemini' : 'GPT'} · {settings.model}
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              {settings.provider && (
+                <ReasoningLevelSelect
+                  provider={settings.provider}
+                  openaiReasoningEffort={settings.openaiReasoningEffort}
+                  geminiThinkingLevel={settings.geminiThinkingLevel}
+                  onChangeOpenAI={handleReasoningChange}
+                  onChangeGemini={handleThinkingChange}
+                  disabled={isLoading}
+                />
+              )}
+              {messages.length > 0 && (
+                <Button variant="ghost" size="sm" onClick={handleNewConversation}>
+                  <Trash2 className="h-4 w-4 mr-1" />
+                  <span className="hidden sm:inline">Clear</span>
+                </Button>
+              )}
+            </div>
+          </div>
+
+          {/* Messages area */}
+          <div className="flex-1 overflow-y-auto py-4 px-4 space-y-4">
+            {messages.length === 0 ? (
+              <div className="flex flex-col items-center justify-center h-full text-center px-4">
+                <div className="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                  <Bot className="h-6 w-6 text-gray-400" />
+                </div>
+                <h3 className="text-lg font-medium text-gray-900 mb-2">
+                  Ask about your health history
+                </h3>
+                <p className="text-sm text-gray-600 max-w-md mb-6">
+                  I can help you understand trends, find specific events, and summarize
+                  your health journey. Ask me anything about your recorded health data.
+                </p>
+                <SuggestedQuestions onSelect={sendMessage} />
+              </div>
+            ) : (
+              <>
+                {messages.map((message) => (
+                  <ChatMessage key={message.id} message={message} />
+                ))}
+                {isLoading && (
+                  <div className="flex items-center gap-2 p-4 text-sm text-gray-500">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Thinking...
+                  </div>
+                )}
+                <div ref={messagesEndRef} />
+              </>
+            )}
+          </div>
+
+          {/* Error display */}
+          {error && (
+            <div className="mx-4 mb-4 flex items-center gap-2 p-3 bg-red-50 text-red-700 text-sm rounded-lg">
+              <AlertCircle className="h-4 w-4 flex-shrink-0" />
+              {error}
+            </div>
+          )}
+
+          {/* Input area */}
+          <div className="px-4 py-3 border-t border-gray-200 bg-white">
+            <ChatInput
+              onSend={sendMessage}
+              disabled={isLoading}
+              placeholder="Ask about your health history..."
+            />
+            <p className="text-xs text-gray-400 mt-2 text-center">
+              AI responses are based on your recorded health data and should not replace medical advice.
+            </p>
+          </div>
         </div>
       </div>
     </PageWrapper>

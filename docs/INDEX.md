@@ -97,6 +97,7 @@ Master index for all project documentation. Search here first to find relevant d
 ### C
 
 - **changelog**: /docs/CHANGELOG.md
+- **chat history**: /docs/features/AI_HISTORIAN.md#chat-history
 - **chokidar**: /docs/ONBOARDING.md#local-api-development
 - **cold start**: /docs/ONBOARDING.md#local-api-development
 - **charts**: /docs/features/INSIGHTS_DASHBOARD.md
@@ -104,6 +105,8 @@ Master index for all project documentation. Search here first to find relevant d
 - **cloud**: /docs/architecture/DATABASE_SCHEMA.md
 - **coding standards**: /docs/development/CODING_STANDARDS.md
 - **components**: /docs/development/COMPONENT_LIBRARY.md
+- **conversations**: /docs/features/AI_HISTORIAN.md#chat-history, src/api/conversations.ts
+- **ConversationList**: src/components/ai/ConversationList.tsx
 - **correlation**: /docs/development/LOGGING.md#correlation-ids
 
 ### D
@@ -240,6 +243,7 @@ Master index for all project documentation. Search here first to find relevant d
 
 - **unit conversion**: /docs/features/LAB_UPLOADS.md#biomarker-standardization
 - **user profile**: /docs/features/USER_PROFILE.md
+- **useConversations**: src/hooks/useConversations.ts
 - **useUserProfile**: src/hooks/useUserProfile.ts
 - **useRequireProfile**: src/hooks/useRequireProfile.ts
 - **useBiomarkers**: src/hooks/useBiomarkers.ts

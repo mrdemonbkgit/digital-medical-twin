@@ -1,18 +1,19 @@
 # AI Historian Feature
 
-> Last Updated: 2025-11-27
+> Last Updated: 2025-12-02
 
 ## Summary
 
-The AI Historian is a RAG-powered chat interface that answers questions about the user's health history. Users can query trends, find correlations, and generate summaries using their choice of GPT-5.1 or Gemini 3 Pro. Features include activity timeline (ChatGPT-style), web search grounding with inline citations, and multi-provider API key management.
+The AI Historian is a RAG-powered chat interface that answers questions about the user's health history. Users can query trends, find correlations, and generate summaries using their choice of GPT-5.1 or Gemini 3 Pro. Features include persistent conversation history, activity timeline (ChatGPT-style), web search grounding with inline citations, and multi-provider API key management.
 
 ## Keywords
 
-`AI` `historian` `chat` `RAG` `queries` `analysis` `GPT` `Gemini` `questions` `reasoning_effort` `thinking_level`
+`AI` `historian` `chat` `RAG` `queries` `analysis` `GPT` `Gemini` `questions` `reasoning_effort` `thinking_level` `conversations` `history`
 
 ## Table of Contents
 
 - [Feature Overview](#feature-overview)
+- [Chat History](#chat-history)
 - [Chat Interface](#chat-interface)
 - [Query Types](#query-types)
 - [Example Queries](#example-queries)
@@ -32,6 +33,49 @@ The AI Historian transforms raw health data into actionable insights. Unlike gen
 - As a user, I can generate summaries for doctor appointments
 - As a user, I can choose which AI model to use
 - As a user, I can see what data the AI used to answer
+- As a user, I can view and continue past conversations
+- As a user, I can rename and delete old conversations
+
+---
+
+## Chat History
+
+Conversations are automatically saved and can be accessed from the sidebar.
+
+### Features
+
+- **Auto-save**: Messages are saved automatically as you chat
+- **Conversation list**: ChatGPT-style sidebar showing all past conversations
+- **Continue anytime**: Click any conversation to continue where you left off
+- **Auto-title**: Conversations are titled from the first message
+- **Rename**: Edit conversation titles inline
+- **Delete**: Remove conversations you no longer need
+- **URL sharing**: Each conversation has a unique URL (`/ai?c=<id>`)
+
+### Layout
+
+```
+┌──────────────────────────────────────────────────────┐
+│ [≡] AI Historian                    [Reasoning] [+]  │
+├────────────┬─────────────────────────────────────────┤
+│ + New Chat │                                         │
+│ ─────────  │         Chat Messages Area              │
+│ ▸ Chat 1   │                                         │
+│   Chat 2   │  [Messages displayed here]              │
+│   Chat 3   │                                         │
+│            ├─────────────────────────────────────────┤
+│            │ Ask about your health history...  [↵]   │
+└────────────┴─────────────────────────────────────────┘
+```
+
+### Database Schema
+
+| Table | Purpose |
+|-------|---------|
+| `ai_conversations` | Conversation metadata (title, timestamps) |
+| `ai_messages` | Individual messages with metadata |
+
+Messages store rich metadata in JSONB including sources, reasoning traces, tool calls, web search results, and inline citations.
 
 ---
 
@@ -209,7 +253,7 @@ Find specific information.
 
 - Provide medical advice or diagnoses
 - Access data not in the timeline
-- Remember previous chat sessions (stateless)
+- Search across conversation history
 - Guarantee 100% accuracy
 
 ### Disclaimer

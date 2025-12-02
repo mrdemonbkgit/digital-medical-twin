@@ -1,10 +1,46 @@
 # Testing Strategy
 
-> Last Updated: 2025-11-26
+> Last Updated: 2025-12-02
 
 ## Summary
 
 Testing approach for Digital Medical Twin. Covers test types, tools, patterns, and coverage requirements. All new features must include tests.
+
+## Current Test Coverage
+
+**Total: 566 tests across 31 test files**
+
+### Test Files by Layer
+
+| Layer | Files | Tests |
+|-------|-------|-------|
+| API (`src/api/`) | 4 | 93 |
+| Hooks (`src/hooks/`) | 9 | 116 |
+| Context (`src/context/`) | 2 | 25 |
+| Components (`src/components/`) | 6 | ~180 |
+| Utils (`src/utils/`) | 2 | 51 |
+| Lib (`src/lib/`) | 8 | 101 |
+
+### Key Test Files
+
+**API Layer:**
+- `biomarkers.test.ts` - Biomarker CRUD and reference data
+- `conversations.test.ts` - AI conversation management
+- `events.test.ts` - Health event CRUD operations
+- `settings.test.ts` - AI settings management
+
+**Hooks:**
+- `useAIChat.test.ts` - AI chat state and messaging
+- `useAISettings.test.ts` - AI configuration
+- `useConversations.test.ts` - Conversation list management
+- `useEvents.test.ts` - Event fetching and pagination
+- `useLabUploads.test.ts` - Lab upload management
+- `useLabUploadMutation.test.ts` - Lab upload mutations
+- `useLabUploadProcessor.test.ts` - PDF processing workflow
+
+**Context:**
+- `AuthContext.test.tsx` - Authentication state management
+- `CorrelationContext.test.tsx` - Request correlation
 
 ## Keywords
 

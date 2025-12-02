@@ -26,6 +26,14 @@ Version history and release notes for Digital Medical Twin. Lists all notable ch
 
 ### Added
 
+- **Unit Test Coverage Expansion**
+  - Added 144 new tests across 7 test files
+  - API layer: `conversations.test.ts`, `events.test.ts`, `settings.test.ts`
+  - Hooks: `useAIChat.test.ts`, `useConversations.test.ts`, `useEvents.test.ts`
+  - Context: `AuthContext.test.tsx`
+  - Total: 566 tests across 31 test files
+  - Increased global test timeout to 15s in `vitest.config.ts`
+
 - **AI Chat Markdown Table Rendering**
   - Tables in AI responses now render as proper HTML tables (not raw markdown)
   - Responsive horizontal scroll for wide tables on mobile

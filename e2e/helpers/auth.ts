@@ -111,18 +111,38 @@ export async function setupTimelineMocks(page: Page) {
   // Mock events API
   await page.route('**/rest/v1/events*', async (route) => {
     const url = new URL(route.request().url());
-    const search = url.searchParams.get('title');
 
     let filteredEvents = [...mockEvents];
 
-    // Handle search filter
-    if (search) {
-      const searchLower = search.toLowerCase();
-      filteredEvents = filteredEvents.filter(
-        (e) =>
-          e.title.toLowerCase().includes(searchLower) ||
-          e.notes?.toLowerCase().includes(searchLower)
-      );
+    // Handle PostgREST 'or' filter for search
+    // Real app sends: or=(title.ilike.%term%,notes.ilike.%term%,...)
+    const orFilter = url.searchParams.get('or');
+    if (orFilter) {
+      // Extract search term from ilike pattern: title.ilike.%term%
+      const ilikeMatch = orFilter.match(/title\.ilike\.%([^%]+)%/);
+      if (ilikeMatch) {
+        const searchTerm = decodeURIComponent(ilikeMatch[1]).toLowerCase();
+        filteredEvents = filteredEvents.filter(
+          (e) =>
+            e.title.toLowerCase().includes(searchTerm) ||
+            e.notes?.toLowerCase().includes(searchTerm) ||
+            e.doctor_name?.toLowerCase().includes(searchTerm) ||
+            e.medication_name?.toLowerCase().includes(searchTerm) ||
+            e.intervention_name?.toLowerCase().includes(searchTerm) ||
+            e.metric_name?.toLowerCase().includes(searchTerm) ||
+            e.lab_name?.toLowerCase().includes(searchTerm)
+        );
+      }
+    }
+
+    // Handle type filter: type=in.(lab_result,doctor_visit)
+    const typeFilter = url.searchParams.get('type');
+    if (typeFilter) {
+      const inMatch = typeFilter.match(/^in\.\((.+)\)$/);
+      if (inMatch) {
+        const types = inMatch[1].split(',');
+        filteredEvents = filteredEvents.filter((e) => types.includes(e.type));
+      }
     }
 
     await route.fulfill({

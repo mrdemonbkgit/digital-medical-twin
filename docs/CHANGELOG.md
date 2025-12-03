@@ -24,6 +24,19 @@ Version history and release notes for Digital Medical Twin. Lists all notable ch
 
 ## [Unreleased]
 
+### Changed
+
+- **Strict TypeScript for API Code**
+  - Enabled `strict: true`, `noImplicitAny: true`, `strictNullChecks: true`, `strictFunctionTypes: true` in `tsconfig.api.json`
+  - Fixed 11 type errors in `api/ai/chat.ts` (timings type, closure variable assignment)
+  - API code now has same type safety as frontend code
+
+- **Centralized Supabase Client Creation**
+  - Extracted duplicated Supabase client creation into `api/lib/supabase.ts`
+  - Exports `createSupabaseClient()`, `getUserId()`, and `SupabaseClientAny` type
+  - Reduced ~112 lines of duplicated code across 4 files
+  - Affected files: `api/ai/chat.ts`, `api/ai/extract-lab-results.ts`, `api/ai/process-lab-upload.ts`, `api/settings/ai.ts`
+
 ### Added
 
 - **Agentic Mode Toggle**

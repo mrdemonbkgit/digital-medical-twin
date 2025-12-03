@@ -1,10 +1,11 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { Agent } from 'undici';
 import { withLogger, LoggedRequest } from '../lib/logger/withLogger.js';
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type SupabaseClientAny = SupabaseClient<any, any, any>;
+import {
+  createSupabaseClient,
+  getUserId,
+  SupabaseClientAny,
+} from '../lib/supabase.js';
 
 // Verification status: clean = no corrections needed, corrected = corrections applied successfully, failed = couldn't verify
 type VerificationStatus = 'clean' | 'corrected' | 'failed';
@@ -49,32 +50,6 @@ const longTimeoutAgent = new Agent({
   bodyTimeout: AI_REQUEST_TIMEOUT_MS,
   headersTimeout: AI_REQUEST_TIMEOUT_MS,
 });
-
-// Supabase client
-function createSupabaseClient(authHeader: string | undefined) {
-  const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
-  const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-
-  if (!supabaseUrl || !supabaseServiceKey) {
-    throw new Error('Missing Supabase configuration');
-  }
-
-  return createClient(supabaseUrl, supabaseServiceKey, {
-    auth: { autoRefreshToken: false, persistSession: false },
-    global: { headers: authHeader ? { Authorization: authHeader } : {} },
-  });
-}
-
-async function getUserId(supabase: SupabaseClientAny, authHeader: string) {
-  const token = authHeader.replace('Bearer ', '');
-  const {
-    data: { user },
-    error,
-  } = await supabase.auth.getUser(token);
-
-  if (error || !user) throw new Error('Unauthorized');
-  return user.id;
-}
 
 // Get allowed origin for CORS
 function getAllowedOrigin(req: VercelRequest): string {

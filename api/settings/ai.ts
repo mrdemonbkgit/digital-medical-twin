@@ -1,52 +1,15 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { withLogger, LoggedRequest } from '../lib/logger/withLogger.js';
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type SupabaseClientAny = SupabaseClient<any, any, any>;
+import {
+  createSupabaseClient,
+  getUserId,
+  SupabaseClientAny,
+} from '../lib/supabase.js';
 
 // Valid values for reasoning parameters
 // Note: OpenAI gpt-5.1 does not support 'minimal' reasoning effort
 const VALID_OPENAI_REASONING_EFFORTS = ['none', 'low', 'medium', 'high'];
 const VALID_GEMINI_THINKING_LEVELS = ['low', 'high'];
-
-function createSupabaseClient(authHeader: string | undefined) {
-  const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
-  const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-
-  if (!supabaseUrl || !supabaseServiceKey) {
-    throw new Error('Missing Supabase configuration');
-  }
-
-  return createClient(supabaseUrl, supabaseServiceKey, {
-    auth: {
-      autoRefreshToken: false,
-      persistSession: false,
-    },
-    global: {
-      headers: authHeader ? { Authorization: authHeader } : {},
-    },
-  });
-}
-
-async function getUserId(supabase: SupabaseClientAny, authHeader: string) {
-  const token = authHeader.replace('Bearer ', '');
-
-  if (!token || token === 'undefined' || token === 'null') {
-    throw new Error('Unauthorized');
-  }
-
-  const {
-    data: { user },
-    error,
-  } = await supabase.auth.getUser(token);
-
-  if (error || !user) {
-    throw new Error('Unauthorized');
-  }
-
-  return user.id;
-}
 
 // Get allowed origin for CORS
 function getAllowedOrigin(req: VercelRequest): string {

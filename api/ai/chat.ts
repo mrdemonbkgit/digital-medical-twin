@@ -1,15 +1,16 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
-import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { withLogger, LoggedRequest } from '../lib/logger/withLogger.js';
 import { logger } from '../lib/logger/index.js';
 import { toOpenAITools, toGeminiTools } from './tools/definitions.js';
 import { executeToolCall } from './tools/executor.js';
+import {
+  createSupabaseClient,
+  getUserId,
+  SupabaseClientAny,
+} from '../lib/supabase.js';
 
 // Create a child logger for this module
 const log = logger.child('Chat');
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type SupabaseClientAny = SupabaseClient<any, any, any>;
 
 // Types
 interface ProviderMessage {
@@ -111,32 +112,6 @@ const GOOGLE_API_KEY = process.env.GOOGLE_API_KEY || '';
 // Note: OpenAI gpt-5.1 only supports none, low, medium, high (not 'minimal')
 type OpenAIReasoningEffort = 'none' | 'low' | 'medium' | 'high';
 type GeminiThinkingLevel = 'low' | 'high';
-
-// Supabase client
-function createSupabaseClient(authHeader: string | undefined) {
-  const supabaseUrl = process.env.SUPABASE_URL || process.env.VITE_SUPABASE_URL;
-  const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-
-  if (!supabaseUrl || !supabaseServiceKey) {
-    throw new Error('Missing Supabase configuration');
-  }
-
-  return createClient(supabaseUrl, supabaseServiceKey, {
-    auth: { autoRefreshToken: false, persistSession: false },
-    global: { headers: authHeader ? { Authorization: authHeader } : {} },
-  });
-}
-
-async function getUserId(supabase: SupabaseClientAny, authHeader: string) {
-  const token = authHeader.replace('Bearer ', '');
-  const {
-    data: { user },
-    error,
-  } = await supabase.auth.getUser(token);
-
-  if (error || !user) throw new Error('Unauthorized');
-  return user.id;
-}
 
 // System prompt for AI Historian
 const SYSTEM_PROMPT = `You are a personal health historian assistant. Your role is to help users understand and analyze their health data over time.
@@ -1326,7 +1301,7 @@ async function handler(req: LoggedRequest, res: VercelResponse) {
 
   try {
     // === TIMING DEBUG ===
-    const timings: Record<string, number> = {};
+    const timings: Record<string, number | string> = {};
     const t_start = Date.now();
 
     const supabase = createSupabaseClient(authHeader);
@@ -1491,18 +1466,18 @@ async function handler(req: LoggedRequest, res: VercelResponse) {
         timings.mode = 'fallback';
 
         // Fetch all data for one-shot fallback (inline below)
-        await oneShotFallback();
+        result = await oneShotFallback();
       }
     } else {
       // Agentic mode disabled - use one-shot approach directly
       log.info('Using one-shot approach (agentic mode disabled)', { agenticMode, provider });
       usedFallback = true;
       timings.mode = 'one-shot';
-      await oneShotFallback();
+      result = await oneShotFallback();
     }
 
     // Helper function for one-shot fallback
-    async function oneShotFallback() {
+    async function oneShotFallback(): Promise<ExtendedAIResponse> {
       // Fetch all data for one-shot fallback
       const t_events = Date.now();
       const { data: events, error: eventsError } = await supabase
@@ -1540,9 +1515,9 @@ async function handler(req: LoggedRequest, res: VercelResponse) {
       ];
 
       if (provider === 'openai') {
-        result = await openaiComplete(apiKey, effectiveModel, messages, reasoningEffort);
+        return await openaiComplete(apiKey, effectiveModel, messages, reasoningEffort);
       } else {
-        result = await geminiComplete(apiKey, effectiveModel, messages, thinkingLevel);
+        return await geminiComplete(apiKey, effectiveModel, messages, thinkingLevel);
       }
     }
     // End of oneShotFallback helper

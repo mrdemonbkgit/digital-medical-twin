@@ -1,6 +1,6 @@
 # Documentation Index
 
-> Last Updated: 2025-12-03 (Agentic mode and SSE streaming)
+> Last Updated: 2025-12-03 (Strict TypeScript for API, Supabase client centralization)
 
 ## Summary
 
@@ -230,7 +230,7 @@ Master index for all project documentation. Search here first to find relevant d
 - **slow API**: /docs/ONBOARDING.md#local-api-development
 - **state**: /docs/development/STATE_MANAGEMENT.md
 - **storage**: /docs/architecture/DATABASE_SCHEMA.md
-- **supabase**: /docs/DECISION_LOG.md#2025-11-26-database-provider-selection, supabase/migrations/
+- **supabase**: /docs/DECISION_LOG.md#2025-11-26-database-provider-selection, supabase/migrations/, api/lib/supabase.ts
 
 ### T
 
@@ -242,7 +242,7 @@ Master index for all project documentation. Search here first to find relevant d
 - **tools**: /docs/architecture/AI_INTEGRATION.md#tool-definitions, api/ai/tools/
 - **timeline**: /docs/features/TIMELINE.md, src/pages/TimelinePage.tsx
 - **trends**: /docs/features/INSIGHTS_DASHBOARD.md
-- **TypeScript**: /docs/ONBOARDING.md#tech-stack
+- **TypeScript**: /docs/ONBOARDING.md#tech-stack, tsconfig.api.json (strict mode)
 
 ### U
 

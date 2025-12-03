@@ -24,6 +24,14 @@ Version history and release notes for Digital Medical Twin. Lists all notable ch
 
 ## [Unreleased]
 
+### Added
+
+- **API Unit Tests for biomarkerMerger**
+  - First unit tests for backend API code (`api/lib/biomarkerMerger.test.ts`)
+  - 20 tests covering `mergeBiomarkers`, `mergeCorrections`, `calculateOverallVerificationStatus`
+  - Updated `vitest.config.ts` to include `api/**/*.test.ts`
+  - Total tests: 587 (was 567)
+
 ### Changed
 
 - **Strict TypeScript for API Code**

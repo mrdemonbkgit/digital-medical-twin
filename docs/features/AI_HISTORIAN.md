@@ -1,6 +1,6 @@
 # AI Historian Feature
 
-> Last Updated: 2025-12-02
+> Last Updated: 2025-12-03
 
 ## Summary
 
@@ -8,13 +8,14 @@ The AI Historian is a RAG-powered chat interface that answers questions about th
 
 ## Keywords
 
-`AI` `historian` `chat` `RAG` `queries` `analysis` `GPT` `Gemini` `questions` `reasoning_effort` `thinking_level` `conversations` `history`
+`AI` `historian` `chat` `RAG` `queries` `analysis` `GPT` `Gemini` `questions` `reasoning_effort` `thinking_level` `conversations` `history` `agentic` `one-shot` `streaming`
 
 ## Table of Contents
 
 - [Feature Overview](#feature-overview)
 - [Chat History](#chat-history)
 - [Chat Interface](#chat-interface)
+- [Agentic vs One-Shot Mode](#agentic-vs-one-shot-mode)
 - [Query Types](#query-types)
 - [Example Queries](#example-queries)
 - [Configuration](#configuration)
@@ -131,6 +132,79 @@ Messages store rich metadata in JSONB including sources, reasoning traces, tool 
 
 ---
 
+## Agentic vs One-Shot Mode
+
+The AI Historian supports two modes for retrieving health data:
+
+### Agentic Mode (Default for OpenAI)
+
+AI uses tools to retrieve data on-demand as it processes your question.
+
+**How it works:**
+1. AI receives your question with minimal context (just profile info)
+2. AI calls tools like `search_events`, `get_medications`, `get_biomarker_history`
+3. Real-time feedback shows which tools are running
+4. AI synthesizes data from multiple tool calls into a response
+
+**Benefits:**
+- More focused retrieval — only fetches relevant data
+- Reduced context size — faster initial processing
+- Visible reasoning — see what data the AI accessed
+
+**Limitations:**
+- Not available for Gemini (API limitation)
+- May require multiple tool calls for complex queries
+
+### One-Shot Mode (Default for Gemini)
+
+All health data is provided upfront in the initial context.
+
+**How it works:**
+1. AI receives your question with full health context
+2. AI processes everything in a single request
+3. Response generated from pre-loaded data
+
+**Benefits:**
+- Works with Gemini (no function calling required)
+- Single request — no back-and-forth
+- May be faster for simple queries
+
+**Limitations:**
+- Larger context size — more tokens used
+- May hit context limits with extensive history
+
+### Switching Modes
+
+| Location | Scope | When Editable |
+|----------|-------|---------------|
+| Settings page | Global default | Always |
+| Chat header | Per-conversation | Before first message |
+
+**Notes:**
+- Mode locks after first message (prevents mid-conversation context changes)
+- Gemini always uses One-Shot mode (toggle disabled)
+- Chat header shows current mode ("Agentic" or "One-Shot")
+
+### Streaming Feedback
+
+During agentic mode processing, the UI shows real-time tool execution:
+
+```
+┌─────────────────────────────────────────────────┐
+│ 🔄 Checking medications... (3 tools used)       │
+└─────────────────────────────────────────────────┘
+```
+
+Tool labels:
+- "Loading your profile..."
+- "Checking medications..."
+- "Retrieving lab results..."
+- "Analyzing biomarker trends..."
+- "Searching health timeline..."
+- "Getting event details..."
+
+---
+
 ## Query Types
 
 ### Trend Analysis
@@ -229,6 +303,7 @@ Find specific information.
 | Model | GPT-5.1 (OpenAI), Gemini 3 Pro (Google) | Auto-selected by provider |
 | Reasoning Effort (OpenAI) | None, Minimal, Low, Medium, High | Medium |
 | Thinking Level (Google) | Low, High | High |
+| Agentic Mode | On, Off | On (OpenAI), Off (Gemini) |
 
 ### How It Works
 

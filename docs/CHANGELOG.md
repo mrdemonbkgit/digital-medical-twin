@@ -26,13 +26,28 @@ Version history and release notes for Digital Medical Twin. Lists all notable ch
 
 ### Added
 
+- **Agentic Mode Toggle**
+  - New setting to switch between Agentic Mode (tool-based) and One-Shot Mode (all data upfront)
+  - Toggle available in Settings page (global default) and chat header (per-conversation)
+  - Mode locks per-conversation after first message (prevents context inconsistency)
+  - Agentic mode disabled for Gemini (API limitation: can't combine Google Search + function calling)
+  - Database: `agentic_mode` column added to `user_settings` and `ai_conversations`
+  - `supabase/migrations/20241203000003_add_agentic_mode.sql`
+
+- **SSE Streaming for AI Chat**
+  - Real-time feedback during AI processing via Server-Sent Events
+  - Shows current tool being executed (e.g., "Checking medications...", "Searching health timeline...")
+  - Tool call counter shows total tools used
+  - New `StreamingIndicator` component replaces generic loading spinner
+  - `src/components/ai/StreamingIndicator.tsx`
+
 - **Agentic AI Chat with Tool-Based Data Retrieval**
   - AI now uses tools to retrieve health data on-demand instead of dumping all context upfront
   - 6 tools: `search_events`, `get_biomarker_history`, `get_profile`, `get_recent_labs`, `get_medications`, `get_event_details`
   - Faster responses with reduced initial context (minimal profile only)
   - Tool calls visible in chat UI (like web search results)
   - Falls back to one-shot approach on error
-  - Configurable max tool iterations via `AI_MAX_TOOL_ITERATIONS` env var (default 5)
+  - Configurable max tool iterations via `AI_MAX_TOOL_ITERATIONS` env var (default 10)
   - `api/ai/tools/definitions.ts`, `api/ai/tools/executor.ts`
 
 - **AI Chat Message Actions Popup**

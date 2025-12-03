@@ -17,6 +17,7 @@ export interface ConversationRow {
   model: string | null;
   reasoning_effort: string | null;
   thinking_level: string | null;
+  agentic_mode: boolean | null;
   created_at: string;
   updated_at: string;
 }
@@ -41,6 +42,7 @@ export interface Conversation {
   model: AIModel | null;
   reasoningEffort: OpenAIReasoningEffort | null;
   thinkingLevel: GeminiThinkingLevel | null;
+  agenticMode: boolean | null;
   createdAt: string;
   updatedAt: string;
 }
@@ -51,6 +53,7 @@ export interface ConversationSettings {
   model: AIModel | null;
   reasoningEffort: OpenAIReasoningEffort | null;
   thinkingLevel: GeminiThinkingLevel | null;
+  agenticMode?: boolean;
 }
 
 // API input types
@@ -60,6 +63,7 @@ export interface CreateConversationInput {
   model?: AIModel | null;
   reasoningEffort?: OpenAIReasoningEffort | null;
   thinkingLevel?: GeminiThinkingLevel | null;
+  agenticMode?: boolean;
 }
 
 export interface UpdateConversationInput {

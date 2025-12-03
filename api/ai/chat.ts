@@ -1,8 +1,12 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { withLogger, LoggedRequest } from '../lib/logger/withLogger.js';
+import { logger } from '../lib/logger/index.js';
 import { toOpenAITools, toGeminiTools } from './tools/definitions.js';
 import { executeToolCall } from './tools/executor.js';
+
+// Create a child logger for this module
+const log = logger.child('Chat');
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type SupabaseClientAny = SupabaseClient<any, any, any>;
@@ -53,6 +57,24 @@ interface ExtendedAIResponse {
     sourceIndices: number[];
     confidence: number;
   }>;
+}
+
+// SSE Streaming types
+interface StreamEvent {
+  type: 'tool_call_start' | 'tool_call_result' | 'content_chunk' | 'complete' | 'error';
+  data: unknown;
+}
+
+// SSE helper functions
+function sendSSE(res: VercelResponse, event: StreamEvent) {
+  res.write(`data: ${JSON.stringify(event)}\n\n`);
+}
+
+function initSSE(res: VercelResponse) {
+  res.setHeader('Content-Type', 'text/event-stream');
+  res.setHeader('Cache-Control', 'no-cache');
+  res.setHeader('Connection', 'keep-alive');
+  res.setHeader('X-Accel-Buffering', 'no'); // Disable proxy buffering
 }
 
 interface HealthEvent {
@@ -162,7 +184,7 @@ You have access to these tools to query the user's health data:
 10. Suggest consulting healthcare providers for medical decisions`;
 
 // Agentic mode configuration
-const AGENTIC_MAX_ITERATIONS = Number(process.env.AI_MAX_TOOL_ITERATIONS) || 5;
+const AGENTIC_MAX_ITERATIONS = Number(process.env.AI_MAX_TOOL_ITERATIONS) || 10;
 
 // Format events for context
 function formatEventsForContext(events: HealthEvent[]): string {
@@ -503,11 +525,15 @@ function extractOpenAIPendingToolCalls(output: unknown[]): PendingToolCall[] {
 
 // Build OpenAI input with tool results appended
 function appendOpenAIToolResults(
-  currentInput: Array<{ role: string; content: string }>,
-  toolCalls: PendingToolCall[],
+  currentInput: unknown[],
+  previousOutput: unknown[],
   results: Array<{ id: string; output: string }>
-): Array<{ role: string; content: string } | { type: string; call_id: string; output: string }> {
-  const newInput: Array<{ role: string; content: string } | { type: string; call_id: string; output: string }> = [...currentInput];
+): unknown[] {
+  // For OpenAI Responses API, we need to include:
+  // 1. Previous input (conversation so far)
+  // 2. Previous response output (contains function_call items that we're responding to)
+  // 3. Our function_call_output items
+  const newInput: unknown[] = [...currentInput, ...previousOutput];
 
   // Add function call outputs
   for (const result of results) {
@@ -532,10 +558,28 @@ async function openaiAgenticComplete(
   userId: string,
   supabase: SupabaseClientAny,
   reasoningEffort: OpenAIReasoningEffort = 'medium',
-  maxIterations: number = AGENTIC_MAX_ITERATIONS
+  maxIterations: number = AGENTIC_MAX_ITERATIONS,
+  sseResponse?: VercelResponse
 ): Promise<ExtendedAIResponse & { healthToolCalls?: ToolCallResult[] }> {
+  log.info('OpenAI agentic completion starting', {
+    model,
+    reasoningEffort,
+    maxIterations,
+    historyLength: history.length,
+    messageLength: message.length,
+    sseEnabled: !!sseResponse,
+  });
+
   const instructions = `${systemPrompt}\n\n${userContext}`;
   const tools = toOpenAITools(true); // Include web search
+
+  log.debug('Tools configured', {
+    toolCount: tools.length,
+    toolNames: tools.map((t: unknown) => {
+      const tool = t as { type: string; name?: string };
+      return tool.type === 'function' ? tool.name : tool.type;
+    }),
+  });
 
   // Build initial input
   let input: unknown[] = [
@@ -550,6 +594,7 @@ async function openaiAgenticComplete(
 
   while (iteration < maxIterations) {
     iteration++;
+    log.info(`Agentic iteration ${iteration}/${maxIterations}`, { inputItems: input.length });
 
     const requestBody: Record<string, unknown> = {
       model,
@@ -563,6 +608,12 @@ async function openaiAgenticComplete(
       },
     };
 
+    log.debug('Sending OpenAI request', {
+      model,
+      inputItemCount: (requestBody.input as unknown[]).length,
+      instructionsLength: (requestBody.instructions as string).length,
+    });
+
     const response = await fetch('https://api.openai.com/v1/responses', {
       method: 'POST',
       headers: {
@@ -574,6 +625,7 @@ async function openaiAgenticComplete(
 
     if (!response.ok) {
       const error = await response.json();
+      log.error('OpenAI request failed', { status: response.status, error });
       throw new Error(error.error?.message || `OpenAI request failed: ${response.status}`);
     }
 
@@ -585,8 +637,21 @@ async function openaiAgenticComplete(
     totalTokens.completion += data.usage?.output_tokens || 0;
     totalTokens.total += data.usage?.total_tokens || 0;
 
+    log.debug('OpenAI response received', {
+      outputItems: Array.isArray(data.output) ? data.output.length : 0,
+      outputTypes: Array.isArray(data.output)
+        ? data.output.map((o: { type?: string }) => o.type).filter(Boolean)
+        : [],
+      tokens: totalTokens,
+    });
+
     // Check for function calls
     const pendingCalls = extractOpenAIPendingToolCalls(data.output);
+
+    log.debug('Extracted pending tool calls', {
+      totalPending: pendingCalls.length,
+      pendingNames: pendingCalls.map((c) => c.name),
+    });
 
     // Filter to only our health tools (not web_search)
     const healthToolCalls = pendingCalls.filter((c) =>
@@ -594,20 +659,72 @@ async function openaiAgenticComplete(
     );
 
     if (healthToolCalls.length === 0) {
-      // No more tool calls - we have the final response
+      log.info('No health tool calls - completing agentic loop', {
+        totalIterations: iteration,
+        totalToolCalls: allToolCalls.length,
+      });
       break;
     }
+
+    log.info(`Executing ${healthToolCalls.length} health tool call(s)`, {
+      tools: healthToolCalls.map((c) => ({ name: c.name, id: c.id })),
+    });
 
     // Execute each tool call
     const results: Array<{ id: string; output: string }> = [];
 
     for (const call of healthToolCalls) {
+      log.debug(`Executing tool: ${call.name}`, { callId: call.id, args: call.arguments });
+
+      // Emit SSE event: tool call starting
+      if (sseResponse) {
+        sendSSE(sseResponse, {
+          type: 'tool_call_start',
+          data: { id: call.id, name: call.name, args: call.arguments },
+        });
+      }
+
       const result = await executeToolCall(call.name, call.arguments, userId, supabase);
 
-      // Truncate result if too large
-      let output = JSON.stringify(result.data);
-      if (output.length > 8000) {
-        output = output.substring(0, 8000) + '... (truncated)';
+      // Safely serialize result - handle undefined/null data and errors
+      let output: string;
+      let originalLength = 0;
+
+      if (!result.success) {
+        // Tool failed - return error message to model
+        output = JSON.stringify({ error: result.error || 'Tool execution failed' });
+        originalLength = output.length;
+      } else if (result.data === undefined || result.data === null) {
+        // No data returned
+        output = JSON.stringify({ data: null, message: 'No data found' });
+        originalLength = output.length;
+      } else {
+        // Normal case - serialize and truncate if needed
+        output = JSON.stringify(result.data);
+        originalLength = output.length;
+        if (output.length > 8000) {
+          output = output.substring(0, 8000) + '... (truncated)';
+        }
+      }
+
+      log.debug(`Tool ${call.name} completed`, {
+        callId: call.id,
+        success: result.success,
+        resultLength: originalLength,
+        truncated: originalLength > 8000,
+      });
+
+      // Emit SSE event: tool call result
+      if (sseResponse) {
+        sendSSE(sseResponse, {
+          type: 'tool_call_result',
+          data: {
+            id: call.id,
+            name: call.name,
+            status: result.success ? 'completed' : 'failed',
+            resultLength: originalLength,
+          },
+        });
       }
 
       results.push({ id: call.id, output });
@@ -623,21 +740,48 @@ async function openaiAgenticComplete(
     }
 
     // Append tool results to input for next iteration
+    // Include previous output (with function_call items) so OpenAI can match our function_call_output
     input = appendOpenAIToolResults(
-      input as Array<{ role: string; content: string }>,
-      healthToolCalls,
+      input,
+      data.output as unknown[],
       results
     );
+
+    log.debug('Input updated for next iteration', { newInputItems: input.length });
   }
 
   if (!lastResponse) {
     throw new Error('No response from OpenAI');
   }
 
+  // Check if we hit iteration limit while still having pending tool calls
+  if (iteration >= maxIterations) {
+    const pendingCalls = extractOpenAIPendingToolCalls(lastResponse.output as unknown[]);
+    const stillPending = pendingCalls.filter((c) =>
+      ['search_events', 'get_biomarker_history', 'get_profile', 'get_recent_labs', 'get_medications', 'get_event_details'].includes(c.name)
+    );
+    if (stillPending.length > 0) {
+      log.warn('Agentic loop hit iteration limit with pending tool calls', {
+        maxIterations,
+        pendingCalls: stillPending.map((c) => c.name),
+      });
+      throw new Error(`Agentic loop exceeded ${maxIterations} iterations with ${stillPending.length} pending tool calls`);
+    }
+  }
+
   // Extract final content
   const content = extractOpenAIOutputText(lastResponse.output as unknown[]);
   const reasoning = extractOpenAIReasoning(lastResponse);
   const webSearchResults = extractOpenAIWebSearch(lastResponse.output as unknown[]);
+
+  log.info('OpenAI agentic completion finished', {
+    contentLength: content.length,
+    totalIterations: iteration,
+    totalToolCalls: allToolCalls.length,
+    hasReasoning: !!reasoning,
+    hasWebSearch: !!webSearchResults,
+    tokens: totalTokens,
+  });
 
   return {
     content,
@@ -687,10 +831,25 @@ async function geminiAgenticComplete(
   userId: string,
   supabase: SupabaseClientAny,
   thinkingLevel: GeminiThinkingLevel = 'high',
-  maxIterations: number = AGENTIC_MAX_ITERATIONS
+  maxIterations: number = AGENTIC_MAX_ITERATIONS,
+  sseResponse?: VercelResponse
 ): Promise<ExtendedAIResponse & { healthToolCalls?: ToolCallResult[] }> {
+  log.info('Gemini agentic completion starting', {
+    model,
+    thinkingLevel,
+    maxIterations,
+    historyLength: history.length,
+    messageLength: message.length,
+    sseEnabled: !!sseResponse,
+  });
+
   const systemInstruction = `${systemPrompt}\n\n${userContext}`;
   const tools = toGeminiTools(true); // Include Google search
+
+  log.debug('Gemini tools configured', {
+    toolCount: tools.length,
+    tools: JSON.stringify(tools).slice(0, 300),
+  });
 
   // Build initial contents
   let contents: Array<{ role: string; parts: Array<unknown> }> = [
@@ -708,6 +867,13 @@ async function geminiAgenticComplete(
 
   while (iteration < maxIterations) {
     iteration++;
+    log.info(`Gemini agentic iteration ${iteration}/${maxIterations}`, { contentsLength: contents.length });
+
+    log.debug('Sending Gemini request', {
+      model,
+      contentsCount: contents.length,
+      systemInstructionLength: systemInstruction.length,
+    });
 
     const response = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
@@ -728,6 +894,7 @@ async function geminiAgenticComplete(
 
     if (!response.ok) {
       const error = await response.json();
+      log.error('Gemini request failed', { status: response.status, error });
       throw new Error(error.error?.message || `Gemini request failed: ${response.status}`);
     }
 
@@ -739,8 +906,18 @@ async function geminiAgenticComplete(
     totalTokens.completion += data.usageMetadata?.candidatesTokenCount || 0;
     totalTokens.total += data.usageMetadata?.totalTokenCount || 0;
 
+    log.debug('Gemini response received', {
+      candidatesCount: data.candidates?.length || 0,
+      tokens: totalTokens,
+    });
+
     // Check for function calls
     const pendingCalls = extractGeminiPendingToolCalls(data);
+
+    log.debug('Extracted pending Gemini tool calls', {
+      totalPending: pendingCalls.length,
+      pendingNames: pendingCalls.map((c) => c.name),
+    });
 
     // Filter to only our health tools
     const healthToolCalls = pendingCalls.filter((c) =>
@@ -748,9 +925,16 @@ async function geminiAgenticComplete(
     );
 
     if (healthToolCalls.length === 0) {
-      // No more tool calls - we have the final response
+      log.info('No health tool calls - completing Gemini agentic loop', {
+        totalIterations: iteration,
+        totalToolCalls: allToolCalls.length,
+      });
       break;
     }
+
+    log.info(`Executing ${healthToolCalls.length} Gemini health tool call(s)`, {
+      tools: healthToolCalls.map((c) => ({ name: c.name, id: c.id })),
+    });
 
     // Add model's function call to contents
     const modelParts: Array<unknown> = [];
@@ -765,13 +949,59 @@ async function geminiAgenticComplete(
     const functionResponseParts: Array<unknown> = [];
 
     for (const call of healthToolCalls) {
+      log.debug(`Executing Gemini tool: ${call.name}`, { callId: call.id, args: call.arguments });
+
+      // Emit SSE event: tool call starting
+      if (sseResponse) {
+        sendSSE(sseResponse, {
+          type: 'tool_call_start',
+          data: { id: call.id, name: call.name, args: call.arguments },
+        });
+      }
+
       const result = await executeToolCall(call.name, call.arguments, userId, supabase);
 
-      // Truncate result if too large
-      let output = result.data;
-      const outputStr = JSON.stringify(output);
-      if (outputStr.length > 8000) {
-        output = { truncated: true, message: 'Result too large', preview: outputStr.substring(0, 1000) };
+      // Safely handle result - handle undefined/null data and errors
+      let output: unknown;
+      let originalLength = 0;
+
+      if (!result.success) {
+        // Tool failed - return error message to model
+        output = { error: result.error || 'Tool execution failed' };
+        originalLength = JSON.stringify(output).length;
+      } else if (result.data === undefined || result.data === null) {
+        // No data returned
+        output = { data: null, message: 'No data found' };
+        originalLength = JSON.stringify(output).length;
+      } else {
+        // Normal case - truncate if needed
+        const outputStr = JSON.stringify(result.data);
+        originalLength = outputStr.length;
+        if (outputStr.length > 8000) {
+          output = { truncated: true, message: 'Result too large', preview: outputStr.substring(0, 1000) };
+        } else {
+          output = result.data;
+        }
+      }
+
+      log.debug(`Gemini tool ${call.name} completed`, {
+        callId: call.id,
+        success: result.success,
+        resultLength: originalLength,
+        truncated: originalLength > 8000,
+      });
+
+      // Emit SSE event: tool call result
+      if (sseResponse) {
+        sendSSE(sseResponse, {
+          type: 'tool_call_result',
+          data: {
+            id: call.id,
+            name: call.name,
+            status: result.success ? 'completed' : 'failed',
+            resultLength: originalLength,
+          },
+        });
       }
 
       functionResponseParts.push({
@@ -793,16 +1023,42 @@ async function geminiAgenticComplete(
 
     // Add function responses to contents
     contents.push({ role: 'user', parts: functionResponseParts });
+
+    log.debug('Gemini contents updated for next iteration', { newContentsLength: contents.length });
   }
 
   if (!lastResponse) {
     throw new Error('No response from Gemini');
   }
 
+  // Check if we hit iteration limit while still having pending tool calls
+  if (iteration >= maxIterations) {
+    const pendingCalls = extractGeminiPendingToolCalls(lastResponse);
+    const stillPending = pendingCalls.filter((c) =>
+      ['search_events', 'get_biomarker_history', 'get_profile', 'get_recent_labs', 'get_medications', 'get_event_details'].includes(c.name)
+    );
+    if (stillPending.length > 0) {
+      log.warn('Gemini agentic loop hit iteration limit with pending tool calls', {
+        maxIterations,
+        pendingCalls: stillPending.map((c) => c.name),
+      });
+      throw new Error(`Gemini agentic loop exceeded ${maxIterations} iterations with ${stillPending.length} pending tool calls`);
+    }
+  }
+
   // Extract final content
   const content = extractGeminiContent(lastResponse);
   const reasoning = extractGeminiThinking(lastResponse);
   const groundingResult = extractGeminiGrounding(lastResponse);
+
+  log.info('Gemini agentic completion finished', {
+    contentLength: content.length,
+    totalIterations: iteration,
+    totalToolCalls: allToolCalls.length,
+    hasReasoning: !!reasoning,
+    hasGrounding: !!groundingResult,
+    tokens: totalTokens,
+  });
 
   return {
     content,
@@ -1061,6 +1317,13 @@ async function handler(req: LoggedRequest, res: VercelResponse) {
     return res.status(401).json({ error: 'Authorization required' });
   }
 
+  // Detect SSE streaming mode via Accept header
+  const useSSE = req.headers.accept?.includes('text/event-stream') ?? false;
+
+  if (useSSE) {
+    initSSE(res);
+  }
+
   try {
     // === TIMING DEBUG ===
     const timings: Record<string, number> = {};
@@ -1085,7 +1348,7 @@ async function handler(req: LoggedRequest, res: VercelResponse) {
     const t_settings = Date.now();
     const { data: globalSettings, error: settingsError } = await supabase
       .from('user_settings')
-      .select('ai_provider, ai_model, openai_reasoning_effort, gemini_thinking_level')
+      .select('ai_provider, ai_model, openai_reasoning_effort, gemini_thinking_level, agentic_mode')
       .eq('user_id', userId)
       .single();
 
@@ -1099,12 +1362,13 @@ async function handler(req: LoggedRequest, res: VercelResponse) {
       model: string | null;
       reasoning_effort: string | null;
       thinking_level: string | null;
+      agentic_mode: boolean | null;
     } | null = null;
 
     if (conversationId) {
       const { data: convData } = await supabase
         .from('ai_conversations')
-        .select('provider, model, reasoning_effort, thinking_level')
+        .select('provider, model, reasoning_effort, thinking_level, agentic_mode')
         .eq('id', conversationId)
         .eq('user_id', userId)
         .single();
@@ -1120,6 +1384,12 @@ async function handler(req: LoggedRequest, res: VercelResponse) {
     const model = conversationSettings?.model || globalSettings?.ai_model;
     const reasoningEffort = (conversationSettings?.reasoning_effort || globalSettings?.openai_reasoning_effort || 'medium') as OpenAIReasoningEffort;
     const thinkingLevel = (conversationSettings?.thinking_level || globalSettings?.gemini_thinking_level || 'high') as GeminiThinkingLevel;
+
+    // Determine agentic mode: Force OFF for Gemini (API limitation - can't combine Google Search + function calling)
+    // Otherwise use conversation setting, then global setting, then default to true
+    const agenticMode = provider === 'google'
+      ? false
+      : (conversationSettings?.agentic_mode ?? globalSettings?.agentic_mode ?? true);
 
     if (!provider) {
       return res.status(400).json({
@@ -1173,12 +1443,13 @@ async function handler(req: LoggedRequest, res: VercelResponse) {
     let result: ExtendedAIResponse & { healthToolCalls?: ToolCallResult[] };
     let usedFallback = false;
 
-    // Try agentic approach first, fall back to one-shot on error
-    try {
-      log.info('Using agentic approach with tool-based retrieval');
-      timings.mode = 'agentic';
+    // Use agentic mode if enabled, otherwise go straight to one-shot
+    if (agenticMode) {
+      try {
+        log.info('Using agentic approach with tool-based retrieval', { useSSE, agenticMode });
+        timings.mode = 'agentic';
 
-      if (provider === 'openai') {
+        if (provider === 'openai') {
         result = await openaiAgenticComplete(
           apiKey,
           effectiveModel,
@@ -1188,7 +1459,9 @@ async function handler(req: LoggedRequest, res: VercelResponse) {
           message,
           userId,
           supabase,
-          reasoningEffort
+          reasoningEffort,
+          AGENTIC_MAX_ITERATIONS,
+          useSSE ? res : undefined
         );
       } else {
         result = await geminiAgenticComplete(
@@ -1200,15 +1473,36 @@ async function handler(req: LoggedRequest, res: VercelResponse) {
           message,
           userId,
           supabase,
-          thinkingLevel
+          thinkingLevel,
+          AGENTIC_MAX_ITERATIONS,
+          useSSE ? res : undefined
         );
       }
-    } catch (agenticError) {
-      // Fall back to one-shot approach
-      log.warn('Agentic approach failed, falling back to one-shot', agenticError);
-      usedFallback = true;
-      timings.mode = 'fallback';
+      } catch (agenticError) {
+        // Fall back to one-shot approach
+        const errorMessage = agenticError instanceof Error ? agenticError.message : String(agenticError);
+        const errorStack = agenticError instanceof Error ? agenticError.stack : undefined;
+        log.warn('Agentic approach failed, falling back to one-shot', {
+          error: errorMessage,
+          stack: errorStack,
+          provider
+        });
+        usedFallback = true;
+        timings.mode = 'fallback';
 
+        // Fetch all data for one-shot fallback (inline below)
+        await oneShotFallback();
+      }
+    } else {
+      // Agentic mode disabled - use one-shot approach directly
+      log.info('Using one-shot approach (agentic mode disabled)', { agenticMode, provider });
+      usedFallback = true;
+      timings.mode = 'one-shot';
+      await oneShotFallback();
+    }
+
+    // Helper function for one-shot fallback
+    async function oneShotFallback() {
       // Fetch all data for one-shot fallback
       const t_events = Date.now();
       const { data: events, error: eventsError } = await supabase
@@ -1251,6 +1545,7 @@ async function handler(req: LoggedRequest, res: VercelResponse) {
         result = await geminiComplete(apiKey, effectiveModel, messages, thinkingLevel);
       }
     }
+    // End of oneShotFallback helper
 
     timings.aiProvider = Date.now() - t_ai;
     const elapsedMs = Date.now() - t_ai;
@@ -1258,7 +1553,7 @@ async function handler(req: LoggedRequest, res: VercelResponse) {
 
     timings.total = Date.now() - t_start;
 
-    return res.status(200).json({
+    const responseData = {
       content: result.content,
       tokensUsed: result.tokensUsed,
       sources: [], // Agentic mode doesn't use source extraction (tools provide data)
@@ -1279,9 +1574,25 @@ async function handler(req: LoggedRequest, res: VercelResponse) {
         toolCallCount: result.healthToolCalls?.length || 0,
       },
       _timings: timings, // Include in response for frontend debugging
-    });
+    };
+
+    if (useSSE) {
+      // Send complete event and end stream
+      sendSSE(res, { type: 'complete', data: responseData });
+      return res.end();
+    }
+
+    return res.status(200).json(responseData);
   } catch (error) {
     log.error('Chat request failed', error);
+
+    const errorMessage = error instanceof Error ? error.message : 'Internal server error';
+
+    if (useSSE) {
+      // Send error event and end stream
+      sendSSE(res, { type: 'error', data: { message: errorMessage } });
+      return res.end();
+    }
 
     if (error instanceof Error) {
       if (error.message === 'Unauthorized') {

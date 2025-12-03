@@ -19,7 +19,7 @@ export async function getAISettings(): Promise<AISettings> {
 
   const { data, error } = await supabase
     .from('user_settings')
-    .select('ai_provider, ai_model, openai_reasoning_effort, gemini_thinking_level')
+    .select('ai_provider, ai_model, openai_reasoning_effort, gemini_thinking_level, agentic_mode')
     .eq('user_id', user.id)
     .maybeSingle();
 
@@ -33,6 +33,7 @@ export async function getAISettings(): Promise<AISettings> {
     model: (data?.ai_model as AIModel) || null,
     openaiReasoningEffort: (data?.openai_reasoning_effort as OpenAIReasoningEffort) || 'medium',
     geminiThinkingLevel: (data?.gemini_thinking_level as GeminiThinkingLevel) || 'high',
+    agenticMode: data?.agentic_mode ?? true, // Default to true (agentic mode on)
   };
 }
 
@@ -41,6 +42,7 @@ export async function updateAISettings(updates: {
   model?: AIModel | null;
   openaiReasoningEffort?: OpenAIReasoningEffort;
   geminiThinkingLevel?: GeminiThinkingLevel;
+  agenticMode?: boolean;
 }): Promise<Partial<AISettings>> {
   const {
     data: { user },
@@ -62,6 +64,7 @@ export async function updateAISettings(updates: {
     dbUpdates.openai_reasoning_effort = updates.openaiReasoningEffort;
   if (updates.geminiThinkingLevel !== undefined)
     dbUpdates.gemini_thinking_level = updates.geminiThinkingLevel;
+  if (updates.agenticMode !== undefined) dbUpdates.agentic_mode = updates.agenticMode;
 
   const { error } = await supabase.from('user_settings').upsert(dbUpdates, {
     onConflict: 'user_id',
@@ -77,5 +80,6 @@ export async function updateAISettings(updates: {
     model: updates.model !== undefined ? updates.model : undefined,
     openaiReasoningEffort: updates.openaiReasoningEffort,
     geminiThinkingLevel: updates.geminiThinkingLevel,
+    agenticMode: updates.agenticMode,
   };
 }

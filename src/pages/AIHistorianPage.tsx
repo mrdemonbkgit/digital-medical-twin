@@ -10,6 +10,7 @@ import {
   SuggestedQuestions,
   ReasoningLevelSelect,
   ConversationList,
+  StreamingIndicator,
 } from '@/components/ai';
 import { useAIChat, useAISettings, useConversations } from '@/hooks';
 import type { OpenAIReasoningEffort, GeminiThinkingLevel } from '@/types/ai';
@@ -23,6 +24,8 @@ export function AIHistorianPage() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   // Override settings when loading a conversation with saved settings
   const [settingsOverride, setSettingsOverride] = useState<ConversationSettings | null>(null);
+  // Local agentic mode state for new conversations (before first message)
+  const [localAgenticMode, setLocalAgenticMode] = useState<boolean | null>(null);
 
   const {
     conversations,
@@ -37,19 +40,26 @@ export function AIHistorianPage() {
   // Build current settings for creating new conversations
   const currentSettings = useMemo<ConversationSettings | null>(() => {
     if (!settings) return null;
+    // For agentic mode: use local override if set, otherwise use global setting
+    // Force OFF for Gemini
+    const agenticMode = settings.provider === 'google'
+      ? false
+      : (localAgenticMode ?? settings.agenticMode ?? true);
     return {
       provider: settings.provider,
       model: settings.model,
       reasoningEffort: settings.openaiReasoningEffort ?? null,
       thinkingLevel: settings.geminiThinkingLevel ?? null,
+      agenticMode,
     };
-  }, [settings]);
+  }, [settings, localAgenticMode]);
 
   const {
     conversationId,
     messages,
     isLoading,
     error,
+    streamingStatus,
     sendMessage,
     loadConversation,
     startNewConversation,
@@ -80,10 +90,16 @@ export function AIHistorianPage() {
         model: settingsOverride.model,
         openaiReasoningEffort: settingsOverride.reasoningEffort ?? 'medium',
         geminiThinkingLevel: settingsOverride.thinkingLevel ?? 'high',
+        agenticMode: settingsOverride.agenticMode ?? true,
       };
     }
-    return settings;
-  }, [settingsOverride, conversationId, settings]);
+    // For new conversations, use localAgenticMode or global setting
+    // Force OFF for Gemini
+    const agenticMode = settings?.provider === 'google'
+      ? false
+      : (localAgenticMode ?? settings?.agenticMode ?? true);
+    return settings ? { ...settings, agenticMode } : null;
+  }, [settingsOverride, conversationId, settings, localAgenticMode]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const handleReasoningChange = async (value: OpenAIReasoningEffort) => {
@@ -102,10 +118,13 @@ export function AIHistorianPage() {
   };
 
   // Handle new conversation
+  // Note: startNewConversation must be called BEFORE setSearchParams to avoid race condition
+  // where the useEffect in useAIChat sees stale URL and reloads the old conversation
   const handleNewConversation = () => {
-    setSearchParams({});
     startNewConversation();
+    setSearchParams({});
     setSettingsOverride(null); // Clear override to use global settings
+    setLocalAgenticMode(null); // Reset to use global agentic mode setting
     setSidebarOpen(false);
   };
 
@@ -233,6 +252,44 @@ export function AIHistorianPage() {
               </div>
             </div>
             <div className="flex items-center gap-2">
+              {/* Agentic Mode Toggle - disabled for Gemini or after first message */}
+              {effectiveSettings?.provider && (
+                <div className="relative">
+                  <button
+                    onClick={() => {
+                      if (messages.length === 0 && effectiveSettings.provider !== 'google') {
+                        setLocalAgenticMode(!(effectiveSettings.agenticMode ?? true));
+                      }
+                    }}
+                    disabled={messages.length > 0 || effectiveSettings.provider === 'google' || isLoading}
+                    className={cn(
+                      'px-2 py-1 text-xs font-medium rounded-md transition-colors',
+                      effectiveSettings.provider === 'google'
+                        ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                        : messages.length > 0
+                          ? 'bg-gray-100 text-gray-500 cursor-not-allowed'
+                          : effectiveSettings.agenticMode
+                            ? 'bg-blue-100 text-blue-700 hover:bg-blue-200'
+                            : 'bg-amber-100 text-amber-700 hover:bg-amber-200'
+                    )}
+                    title={
+                      effectiveSettings.provider === 'google'
+                        ? 'Agentic mode not available for Gemini'
+                        : messages.length > 0
+                          ? 'Mode locked for this conversation'
+                          : effectiveSettings.agenticMode
+                            ? 'Click to switch to One-Shot mode'
+                            : 'Click to switch to Agentic mode'
+                    }
+                  >
+                    {effectiveSettings.provider === 'google'
+                      ? 'One-Shot'
+                      : effectiveSettings.agenticMode
+                        ? 'Agentic'
+                        : 'One-Shot'}
+                  </button>
+                </div>
+              )}
               {effectiveSettings?.provider && (
                 <ReasoningLevelSelect
                   provider={effectiveSettings.provider}
@@ -273,12 +330,7 @@ export function AIHistorianPage() {
                 {messages.map((message) => (
                   <ChatMessage key={message.id} message={message} />
                 ))}
-                {isLoading && (
-                  <div className="flex items-center gap-2 p-4 text-sm text-gray-500">
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                    Thinking...
-                  </div>
-                )}
+                {isLoading && <StreamingIndicator status={streamingStatus} />}
                 <div ref={messagesEndRef} />
               </>
             )}

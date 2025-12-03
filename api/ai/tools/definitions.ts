@@ -143,6 +143,7 @@ export const TOOL_DEFINITIONS: Record<string, ToolDefinition> = {
 
 /**
  * Convert tool definitions to OpenAI Responses API format
+ * Note: Responses API uses flat structure, not nested 'function' object like Chat Completions API
  */
 export function toOpenAITools(includeWebSearch: boolean = true): unknown[] {
   const tools: unknown[] = [];
@@ -152,15 +153,13 @@ export function toOpenAITools(includeWebSearch: boolean = true): unknown[] {
     tools.push({ type: 'web_search_preview' });
   }
 
-  // Add function tools
+  // Add function tools - Responses API format (flat structure)
   for (const def of Object.values(TOOL_DEFINITIONS)) {
     tools.push({
       type: 'function',
-      function: {
-        name: def.name,
-        description: def.description,
-        parameters: def.parameters,
-      },
+      name: def.name,
+      description: def.description,
+      parameters: def.parameters,
     });
   }
 

@@ -1,6 +1,6 @@
 # AI Integration
 
-> Last Updated: 2025-12-02
+> Last Updated: 2025-12-03
 
 ## Summary
 
@@ -8,13 +8,15 @@ Architecture for the AI Historian feature. Covers RAG implementation, AI provide
 
 ## Keywords
 
-`AI` `RAG` `GPT` `Gemini` `historian` `chat` `integration` `API` `prompts` `grounding` `citations` `reasoning_effort` `thinking_level` `server-side API keys`
+`AI` `RAG` `GPT` `Gemini` `historian` `chat` `integration` `API` `prompts` `grounding` `citations` `reasoning_effort` `thinking_level` `server-side API keys` `agentic` `SSE` `streaming` `tools`
 
 ## Table of Contents
 
 - [RAG Architecture](#rag-architecture)
 - [Supported Models](#supported-models)
 - [API Configuration](#api-configuration)
+- [Agentic Mode](#agentic-mode)
+- [SSE Streaming](#sse-streaming)
 - [Lab Result PDF Extraction](#lab-result-pdf-extraction)
 - [Gemini Grounding & Citations](#gemini-grounding--citations)
 - [Activity Timeline](#activity-timeline)
@@ -121,9 +123,10 @@ interface AISettings {
   model: AIModel | null;
   openaiReasoningEffort: 'none' | 'minimal' | 'low' | 'medium' | 'high';
   geminiThinkingLevel: 'low' | 'high';
+  agenticMode: boolean;
 }
 
-// Database columns: ai_provider, ai_model, openai_reasoning_effort, gemini_thinking_level
+// Database columns: ai_provider, ai_model, openai_reasoning_effort, gemini_thinking_level, agentic_mode
 ```
 
 ### Provider Adapter
@@ -150,6 +153,143 @@ interface AIResponse {
   tokensUsed: number;
   model: string;
 }
+```
+
+---
+
+## Agentic Mode
+
+Agentic mode enables tool-based data retrieval where the AI calls functions to fetch specific health data on-demand.
+
+### Architecture
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                    Agentic Mode Flow                         │
+├─────────────────────────────────────────────────────────────┤
+│  1. User Question + Minimal Context (profile only)          │
+│       ↓                                                      │
+│  2. AI decides which tools to call                          │
+│       ↓                                                      │
+│  3. Tool Execution Loop (max 10 iterations)                 │
+│       ├─▶ search_events(query, type?, date_range?)          │
+│       ├─▶ get_biomarker_history(name, limit?)               │
+│       ├─▶ get_profile()                                     │
+│       ├─▶ get_recent_labs(limit?)                           │
+│       ├─▶ get_medications(active_only?)                     │
+│       └─▶ get_event_details(event_id)                       │
+│       ↓                                                      │
+│  4. AI synthesizes tool results into response               │
+│       ↓                                                      │
+│  5. Stream response back to client                          │
+└─────────────────────────────────────────────────────────────┘
+```
+
+### Tool Definitions
+
+| Tool | Description |
+|------|-------------|
+| `search_events` | Full-text search across all health events |
+| `get_biomarker_history` | Time series data for a specific biomarker |
+| `get_profile` | User's basic health profile |
+| `get_recent_labs` | Recent lab result summaries |
+| `get_medications` | Current or historical medications |
+| `get_event_details` | Full details of a specific event |
+
+### One-Shot Fallback
+
+When agentic mode is disabled or fails, the system falls back to one-shot mode:
+
+1. Fetch all user events, profile, medications, and recent labs
+2. Include everything in a single context string
+3. Send to AI provider for processing
+
+**Fallback triggers:**
+- `agenticMode: false` in settings
+- Provider is Gemini (API limitation)
+- Tool execution error
+- Max iterations exceeded
+
+### Configuration
+
+| Setting | Default | Description |
+|---------|---------|-------------|
+| `agentic_mode` | `true` | Enable tool-based retrieval |
+| `AI_MAX_TOOL_ITERATIONS` | `10` | Max tool calls per request |
+
+---
+
+## SSE Streaming
+
+Server-Sent Events (SSE) enable real-time feedback during AI processing.
+
+### Event Types
+
+```typescript
+interface StreamEvent {
+  type: 'tool_call_start' | 'tool_call_result' | 'content_chunk' | 'complete' | 'error';
+  data: unknown;
+}
+
+// Tool call start
+{ type: 'tool_call_start', data: { id: string, name: string, args?: object } }
+
+// Tool call result
+{ type: 'tool_call_result', data: { id: string, name: string, status: 'completed' | 'failed' } }
+
+// Final response
+{ type: 'complete', data: { content: string, sources: Source[], metadata: Metadata } }
+
+// Error
+{ type: 'error', data: { message: string } }
+```
+
+### Client Implementation
+
+```typescript
+// Read SSE stream
+async function* readSSEStream(response: Response): AsyncGenerator<SSEEvent> {
+  const reader = response.body?.getReader();
+  const decoder = new TextDecoder();
+  let buffer = '';
+
+  while (true) {
+    const { done, value } = await reader.read();
+    if (done) break;
+
+    buffer += decoder.decode(value, { stream: true });
+    const events = buffer.split('\n\n');
+    buffer = events.pop() || '';
+
+    for (const eventStr of events) {
+      const dataMatch = eventStr.match(/^data:\s*(.+)$/m);
+      if (dataMatch) {
+        yield JSON.parse(dataMatch[1]);
+      }
+    }
+  }
+}
+```
+
+### Streaming Status
+
+The frontend tracks streaming status for UI feedback:
+
+```typescript
+interface StreamingStatus {
+  active: boolean;
+  currentTool: string | null;  // Currently executing tool
+  toolCallCount: number;       // Total tools used
+}
+```
+
+### SSE Headers
+
+```http
+Content-Type: text/event-stream
+Cache-Control: no-cache
+Connection: keep-alive
+X-Accel-Buffering: no
 ```
 
 ---

@@ -1,6 +1,6 @@
 # Documentation Index
 
-> Last Updated: 2025-12-02 (Security hardening updates)
+> Last Updated: 2025-12-03 (Agentic mode and SSE streaming)
 
 ## Summary
 
@@ -81,6 +81,7 @@ Master index for all project documentation. Search here first to find relevant d
 ### A
 
 - **agent**: /docs/AGENT_PROTOCOL.md
+- **agentic**: /docs/architecture/AI_INTEGRATION.md#agentic-mode, /docs/features/AI_HISTORIAN.md#agentic-vs-one-shot-mode
 - **AI**: /docs/architecture/AI_INTEGRATION.md, /docs/features/AI_HISTORIAN.md
 - **allergies**: /docs/ideas/gpt-5.1-feature-ideas.md#allergies-immunizations-procedures
 - **API**: /docs/development/API_CONTRACTS.md
@@ -187,6 +188,7 @@ Master index for all project documentation. Search here first to find relevant d
 - **observations**: /docs/ideas/gpt-5.1-feature-ideas.md#observations-of-daily-living
 - **offline**: /docs/DECISION_LOG.md#2025-11-26-offline-support-deferral
 - **onboarding**: /docs/ONBOARDING.md
+- **one-shot**: /docs/features/AI_HISTORIAN.md#agentic-vs-one-shot-mode, /docs/architecture/AI_INTEGRATION.md#one-shot-fallback
 
 ### P
 
@@ -223,6 +225,8 @@ Master index for all project documentation. Search here first to find relevant d
 - **serverless**: /docs/DECISION_LOG.md#2025-11-26-ai-api-architecture
 - **session**: /docs/SECURITY.md#authentication-flow
 - **setup**: /docs/ONBOARDING.md#setup-instructions
+- **SSE**: /docs/architecture/AI_INTEGRATION.md#sse-streaming
+- **streaming**: /docs/architecture/AI_INTEGRATION.md#sse-streaming, src/components/ai/StreamingIndicator.tsx
 - **slow API**: /docs/ONBOARDING.md#local-api-development
 - **state**: /docs/development/STATE_MANAGEMENT.md
 - **storage**: /docs/architecture/DATABASE_SCHEMA.md
@@ -235,6 +239,7 @@ Master index for all project documentation. Search here first to find relevant d
 - **tech stack**: /docs/ONBOARDING.md#tech-stack
 - **testing**: /docs/development/TESTING_STRATEGY.md
 - **thinking_level**: /docs/architecture/AI_INTEGRATION.md#google-gemini-3-pro
+- **tools**: /docs/architecture/AI_INTEGRATION.md#tool-definitions, api/ai/tools/
 - **timeline**: /docs/features/TIMELINE.md, src/pages/TimelinePage.tsx
 - **trends**: /docs/features/INSIGHTS_DASHBOARD.md
 - **TypeScript**: /docs/ONBOARDING.md#tech-stack

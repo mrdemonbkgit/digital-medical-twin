@@ -17,6 +17,7 @@ interface UseAISettingsReturn {
     model?: AIModel | null;
     openaiReasoningEffort?: OpenAIReasoningEffort;
     geminiThinkingLevel?: GeminiThinkingLevel;
+    agenticMode?: boolean;
   }) => Promise<void>;
   refetch: () => Promise<void>;
 }
@@ -40,6 +41,7 @@ export function useAISettings(): UseAISettingsReturn {
         model: null,
         openaiReasoningEffort: 'medium',
         geminiThinkingLevel: 'high',
+        agenticMode: true,
       });
       setError(err instanceof Error ? err.message : 'Failed to load settings');
     } finally {
@@ -53,6 +55,7 @@ export function useAISettings(): UseAISettingsReturn {
       model?: AIModel | null;
       openaiReasoningEffort?: OpenAIReasoningEffort;
       geminiThinkingLevel?: GeminiThinkingLevel;
+      agenticMode?: boolean;
     }) => {
       setError(null);
 
@@ -63,6 +66,7 @@ export function useAISettings(): UseAISettingsReturn {
           model: updated.model ?? prev?.model ?? null,
           openaiReasoningEffort: updated.openaiReasoningEffort ?? prev?.openaiReasoningEffort ?? 'medium',
           geminiThinkingLevel: updated.geminiThinkingLevel ?? prev?.geminiThinkingLevel ?? 'high',
+          agenticMode: updated.agenticMode ?? prev?.agenticMode ?? true,
         }));
       } catch (err) {
         const message = err instanceof Error ? err.message : 'Failed to update settings';

@@ -25,6 +25,7 @@ export function AISettingsForm() {
   const [model, setModel] = useState<AIModel | ''>('');
   const [openaiReasoningEffort, setOpenaiReasoningEffort] = useState<OpenAIReasoningEffort>('medium');
   const [geminiThinkingLevel, setGeminiThinkingLevel] = useState<GeminiThinkingLevel>('high');
+  const [agenticMode, setAgenticMode] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
   const [saveSuccess, setSaveSuccess] = useState(false);
@@ -36,6 +37,7 @@ export function AISettingsForm() {
       setModel(settings.model || '');
       setOpenaiReasoningEffort(settings.openaiReasoningEffort || 'medium');
       setGeminiThinkingLevel(settings.geminiThinkingLevel || 'high');
+      setAgenticMode(settings.agenticMode ?? true);
     }
   }, [settings]);
 
@@ -60,6 +62,7 @@ export function AISettingsForm() {
         model: (model as AIModel) || null,
         openaiReasoningEffort,
         geminiThinkingLevel,
+        agenticMode,
       });
       setSaveSuccess(true);
       setTimeout(() => setSaveSuccess(false), 3000);
@@ -152,6 +155,44 @@ export function AISettingsForm() {
           </p>
         </div>
       )}
+
+      {/* Agentic Mode Toggle */}
+      <div className="pt-4 border-t">
+        <div className="flex items-center justify-between">
+          <div className="flex-1">
+            <label className="text-sm font-medium text-gray-700">Agentic Mode</label>
+            <p className="text-xs text-gray-500 mt-1">
+              {provider === 'google' ? (
+                <span className="text-amber-600">
+                  Not available for Gemini (API limitation)
+                </span>
+              ) : (
+                'When enabled, AI uses tools to search your health data on-demand. When disabled, all data is provided upfront.'
+              )}
+            </p>
+          </div>
+          <button
+            type="button"
+            role="switch"
+            aria-checked={provider === 'google' ? false : agenticMode}
+            disabled={provider === 'google'}
+            onClick={() => setAgenticMode(!agenticMode)}
+            className={`relative inline-flex h-6 w-11 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 ${
+              provider === 'google'
+                ? 'bg-gray-200 cursor-not-allowed'
+                : agenticMode
+                  ? 'bg-blue-600'
+                  : 'bg-gray-200'
+            }`}
+          >
+            <span
+              className={`pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out ${
+                provider === 'google' ? 'translate-x-0' : agenticMode ? 'translate-x-5' : 'translate-x-0'
+              }`}
+            />
+          </button>
+        </div>
+      </div>
 
       <div className="pt-4 border-t">
         <Button onClick={handleSave} isLoading={isSaving} disabled={!provider}>

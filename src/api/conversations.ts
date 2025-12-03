@@ -39,6 +39,7 @@ function rowToConversation(row: ConversationRow): Conversation {
     model: row.model as AIModel | null,
     reasoningEffort: row.reasoning_effort as OpenAIReasoningEffort | null,
     thinkingLevel: row.thinking_level as GeminiThinkingLevel | null,
+    agenticMode: row.agentic_mode,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };
@@ -134,6 +135,7 @@ export async function createConversation(
       model: input?.model ?? null,
       reasoning_effort: input?.reasoningEffort ?? null,
       thinking_level: input?.thinkingLevel ?? null,
+      agentic_mode: input?.agenticMode ?? null,
     })
     .select()
     .single();

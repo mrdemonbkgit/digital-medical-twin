@@ -46,6 +46,7 @@ const mockConversation: Conversation = {
   model: 'gpt-4o',
   reasoningEffort: 'medium',
   thinkingLevel: null,
+  agenticMode: true,
   createdAt: '2024-01-01T00:00:00Z',
   updatedAt: '2024-01-01T01:00:00Z',
 };
@@ -89,15 +90,26 @@ describe('useAIChat', () => {
       timestamp: new Date(),
     }));
 
-    // Default fetch response for AI chat
-    mockFetch.mockResolvedValue({
+    // Default fetch response for AI chat (SSE format)
+    const mockSSEResponse = {
       ok: true,
-      json: () =>
-        Promise.resolve({
-          content: 'AI response',
-          sources: [],
-        }),
-    });
+      body: {
+        getReader: () => {
+          let done = false;
+          return {
+            read: () => {
+              if (done) return Promise.resolve({ done: true, value: undefined });
+              done = true;
+              const encoder = new TextEncoder();
+              const sseData = 'data: {"type":"complete","data":{"content":"AI response","sources":[]}}\n\n';
+              return Promise.resolve({ done: false, value: encoder.encode(sseData) });
+            },
+            releaseLock: () => {},
+          };
+        },
+      },
+    };
+    mockFetch.mockResolvedValue(mockSSEResponse);
   });
 
   afterEach(() => {
@@ -141,6 +153,7 @@ describe('useAIChat', () => {
         model: 'gpt-4o',
         reasoningEffort: 'medium',
         thinkingLevel: null,
+        agenticMode: true,
       });
     });
 
@@ -481,6 +494,7 @@ describe('useAIChat', () => {
         model: 'gpt-4o',
         reasoningEffort: 'medium',
         thinkingLevel: null,
+        agenticMode: true,
       });
     });
 

@@ -49,6 +49,7 @@ describe('useAISettings', () => {
         ai_model: 'gpt-5.1',
         openai_reasoning_effort: 'high',
         gemini_thinking_level: 'high',
+        agentic_mode: true,
       },
       error: null,
     });
@@ -84,6 +85,7 @@ describe('useAISettings', () => {
       model: 'gpt-5.1',
       openaiReasoningEffort: 'high',
       geminiThinkingLevel: 'high',
+      agenticMode: true,
     });
     expect(mockFrom).toHaveBeenCalledWith('user_settings');
   });
@@ -106,6 +108,7 @@ describe('useAISettings', () => {
       model: null,
       openaiReasoningEffort: 'medium',
       geminiThinkingLevel: 'high',
+      agenticMode: true,
     });
     expect(result.current.error).toBe(null);
   });
@@ -151,6 +154,7 @@ describe('useAISettings', () => {
       model: null,
       openaiReasoningEffort: 'medium',
       geminiThinkingLevel: 'high',
+      agenticMode: true,
     });
   });
 

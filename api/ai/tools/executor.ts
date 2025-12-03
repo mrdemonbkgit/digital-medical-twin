@@ -149,12 +149,44 @@ async function executeGetBiomarkerHistory(
   userId: string,
   supabase: SupabaseClientAny
 ): Promise<ToolResult> {
-  const biomarkerName = String(args.biomarker_name || '').toLowerCase();
+  const biomarkerName = String(args.biomarker_name || '').toLowerCase().trim();
 
   if (!biomarkerName) {
     return { success: false, error: 'biomarker_name is required' };
   }
 
+  // First, look up biomarker_standards to get all matching names/aliases
+  // This allows searching by common abbreviations like "Lp(a)" -> matches "Lipoprotein(a)"
+  const { data: standards } = await supabase
+    .from('biomarker_standards')
+    .select('code, name, aliases');
+
+  // Build a set of all terms to match against (lowercase)
+  const matchTerms = new Set<string>([biomarkerName]);
+
+  // Find standards where the search term matches code, name, or any alias
+  for (const std of standards || []) {
+    const code = (std.code || '').toLowerCase();
+    const name = (std.name || '').toLowerCase();
+    const aliases = (std.aliases || []) as string[];
+
+    // Check if search term matches this standard
+    const allTerms = [code, name, ...aliases.map((a: string) => a.toLowerCase())];
+    const matches = allTerms.some(
+      (term) => term.includes(biomarkerName) || biomarkerName.includes(term)
+    );
+
+    if (matches) {
+      // Add all related terms for this biomarker
+      matchTerms.add(code);
+      matchTerms.add(name);
+      for (const alias of aliases) {
+        matchTerms.add(alias.toLowerCase());
+      }
+    }
+  }
+
+  // Query lab results
   let query = supabase
     .from('events')
     .select('id, date, lab_name, biomarkers')
@@ -188,12 +220,21 @@ async function executeGetBiomarkerHistory(
     refMax?: number;
   }> = [];
 
+  // Convert matchTerms to array for iteration
+  const matchTermsArray = Array.from(matchTerms);
+
   for (const event of data || []) {
     const biomarkers = event.biomarkers as BiomarkerValue[] | null;
     if (!biomarkers) continue;
 
     for (const b of biomarkers) {
-      if (b.name.toLowerCase().includes(biomarkerName)) {
+      const bName = b.name.toLowerCase();
+      // Check if biomarker name matches any of the terms (either contains or is contained by)
+      const isMatch = matchTermsArray.some(
+        (term) => bName.includes(term) || term.includes(bName)
+      );
+
+      if (isMatch) {
         history.push({
           date: event.date,
           labName: event.lab_name,

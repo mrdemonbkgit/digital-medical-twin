@@ -15,6 +15,7 @@ describe('AISettingsForm', () => {
     model: null as string | null,
     openaiReasoningEffort: 'medium' as const,
     geminiThinkingLevel: 'high' as const,
+    agenticMode: true,
   };
 
   beforeEach(() => {
@@ -128,6 +129,7 @@ describe('AISettingsForm', () => {
         model: 'gpt-5.1',
         openaiReasoningEffort: 'medium',
         geminiThinkingLevel: 'high',
+        agenticMode: true,
       });
     });
   });

@@ -40,6 +40,7 @@ export interface AISettings {
   model: AIModel | null;
   openaiReasoningEffort: OpenAIReasoningEffort;
   geminiThinkingLevel: GeminiThinkingLevel;
+  agenticMode: boolean;
 }
 
 // Reasoning trace types (ChatGPT-style activity timeline)
@@ -163,6 +164,7 @@ export interface AISettingsUpdate {
   model?: AIModel;
   openaiReasoningEffort?: OpenAIReasoningEffort;
   geminiThinkingLevel?: GeminiThinkingLevel;
+  agenticMode?: boolean;
 }
 
 // Query intent types for RAG

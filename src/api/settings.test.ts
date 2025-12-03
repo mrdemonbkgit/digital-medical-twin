@@ -25,6 +25,7 @@ const mockSettingsRow = {
   ai_model: 'gpt-4o',
   openai_reasoning_effort: 'high',
   gemini_thinking_level: null,
+  agentic_mode: true,
 };
 
 describe('settings API', () => {
@@ -67,7 +68,7 @@ describe('settings API', () => {
 
       expect(mockFrom).toHaveBeenCalledWith('user_settings');
       expect(mockSelect).toHaveBeenCalledWith(
-        'ai_provider, ai_model, openai_reasoning_effort, gemini_thinking_level'
+        'ai_provider, ai_model, openai_reasoning_effort, gemini_thinking_level, agentic_mode'
       );
       expect(mockEq).toHaveBeenCalledWith('user_id', mockUserId);
       expect(result.provider).toBe('openai');
@@ -82,6 +83,7 @@ describe('settings API', () => {
         model: 'gpt-4o',
         openaiReasoningEffort: 'high',
         geminiThinkingLevel: 'high', // Default when null
+        agenticMode: true,
       });
     });
 
@@ -95,6 +97,7 @@ describe('settings API', () => {
         model: null,
         openaiReasoningEffort: 'medium',
         geminiThinkingLevel: 'high',
+        agenticMode: true,
       });
     });
 
@@ -163,6 +166,18 @@ describe('settings API', () => {
         expect.any(Object)
       );
       expect(result.geminiThinkingLevel).toBe('low');
+    });
+
+    it('updates agentic mode setting', async () => {
+      const result = await updateAISettings({ agenticMode: false });
+
+      expect(mockUpsert).toHaveBeenCalledWith(
+        expect.objectContaining({
+          agentic_mode: false,
+        }),
+        expect.any(Object)
+      );
+      expect(result.agenticMode).toBe(false);
     });
 
     it('updates multiple settings at once', async () => {

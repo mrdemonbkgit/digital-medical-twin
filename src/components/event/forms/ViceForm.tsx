@@ -14,7 +14,7 @@ interface ViceFormProps {
 
 const categoryOptions: SelectOption[] = [
   { value: 'alcohol', label: 'Alcohol' },
-  { value: 'pornography', label: 'Pornography' },
+  { value: 'masturbation', label: 'Masturbation' },
   { value: 'smoking', label: 'Smoking/Vaping' },
   { value: 'drugs', label: 'Recreational Drugs' },
 ];
@@ -26,7 +26,7 @@ const unitOptions: Record<ViceCategory, SelectOption[]> = {
     { value: 'ml', label: 'ml' },
     { value: 'oz', label: 'oz' },
   ],
-  pornography: [
+  masturbation: [
     { value: 'minutes', label: 'Minutes' },
     { value: 'sessions', label: 'Sessions' },
   ],

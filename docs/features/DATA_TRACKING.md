@@ -296,7 +296,7 @@ Track privacy-sensitive behaviors that users want to monitor but keep private by
 | Category | Description | Common Units |
 |----------|-------------|--------------|
 | alcohol | Alcoholic beverages | drinks, units |
-| pornography | Adult content consumption | minutes |
+| masturbation | Masturbation | minutes, sessions |
 | smoking | Cigarettes, vaping, tobacco | cigarettes, puffs |
 | drugs | Recreational drug use | mg, hits, uses |
 
@@ -305,7 +305,7 @@ Track privacy-sensitive behaviors that users want to monitor but keep private by
 | Category | Quantity | Unit | Context Examples |
 |----------|----------|------|------------------|
 | alcohol | 3 | drinks | social, dinner, stress |
-| pornography | 45 | minutes | boredom, stress |
+| masturbation | 1 | sessions | boredom, stress |
 | smoking | 5 | cigarettes | break, stress |
 | drugs | 10 | mg | recreational, pain |
 

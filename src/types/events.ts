@@ -103,7 +103,7 @@ export interface Metric extends BaseEvent {
   unit: string;
 }
 
-export type ViceCategory = 'alcohol' | 'pornography' | 'smoking' | 'drugs';
+export type ViceCategory = 'alcohol' | 'masturbation' | 'smoking' | 'drugs';
 
 export interface Vice extends BaseEvent {
   type: 'vice';

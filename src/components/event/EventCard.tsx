@@ -245,7 +245,7 @@ function MetricDetails({ event }: { event: Metric }) {
 function ViceDetails({ event }: { event: Vice }) {
   const categoryLabels: Record<Vice['viceCategory'], string> = {
     alcohol: 'Alcohol',
-    pornography: 'Pornography',
+    masturbation: 'Masturbation',
     smoking: 'Smoking/Vaping',
     drugs: 'Recreational Drugs',
   };

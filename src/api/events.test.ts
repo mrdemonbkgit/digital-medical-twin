@@ -246,9 +246,10 @@ describe('events API', () => {
     it('filters by search term', async () => {
       await getEvents({ search: 'lipid' });
 
-      // First .or() is for privacy filter, second is for search
-      expect(mockOr).toHaveBeenCalledTimes(2);
-      const searchOrArg = mockOr.mock.calls[1][0];
+      // Privacy filter uses .not(), search uses .or()
+      expect(mockNot).toHaveBeenCalledWith('is_private', 'eq', true);
+      expect(mockOr).toHaveBeenCalledTimes(1);
+      const searchOrArg = mockOr.mock.calls[0][0];
       expect(searchOrArg).toContain('title.ilike.%lipid%');
     });
 
@@ -571,7 +572,7 @@ describe('events API', () => {
 
   describe('getAllEvents', () => {
     beforeEach(() => {
-      // getAllEvents chains two order() calls, then privacy filter .or(), then may apply other filters
+      // getAllEvents chains two order() calls, then privacy filter .not(), then may apply other filters
       // Need to track call count to return data on final call
       let orderCallCount = 0;
       mockOrder.mockImplementation(() => {
@@ -580,6 +581,7 @@ describe('events API', () => {
           // First order() returns chainable
           return {
             order: mockOrder,
+            not: mockNot,
             in: mockIn,
             gte: mockGte,
             lte: mockLte,
@@ -587,10 +589,11 @@ describe('events API', () => {
             overlaps: mockOverlaps,
           };
         }
-        // Second order() returns chainable for filters (privacy .or() is called next)
+        // Second order() returns chainable for filters (privacy .not() is called next)
         return {
           data: mockEventRows,
           error: null,
+          not: mockNot,
           in: mockIn,
           gte: mockGte,
           lte: mockLte,
@@ -599,12 +602,12 @@ describe('events API', () => {
         };
       });
 
-      // Privacy filter .or() is called first, then other filters may follow
-      mockOr.mockReturnValue({
+      // Privacy filter .not() is called first, then other filters may follow
+      mockNot.mockReturnValue({
         in: mockIn,
         gte: mockGte,
         lte: mockLte,
-        or: mockOr, // For search filter
+        or: mockOr,
         overlaps: mockOverlaps,
         data: mockEventRows,
         error: null,
@@ -612,6 +615,7 @@ describe('events API', () => {
 
       // After filters applied, the final call returns data
       mockIn.mockReturnValue({
+        not: mockNot,
         gte: mockGte,
         lte: mockLte,
         or: mockOr,
@@ -620,6 +624,7 @@ describe('events API', () => {
         error: null,
       });
       mockGte.mockReturnValue({
+        not: mockNot,
         lte: mockLte,
         or: mockOr,
         overlaps: mockOverlaps,
@@ -627,6 +632,7 @@ describe('events API', () => {
         error: null,
       });
       mockLte.mockReturnValue({
+        not: mockNot,
         or: mockOr,
         overlaps: mockOverlaps,
         data: mockEventRows,
@@ -667,9 +673,9 @@ describe('events API', () => {
         if (orderCallCount === 1) {
           return { order: mockOrder };
         }
-        // Second order() returns chainable with .or() for privacy filter
+        // Second order() returns chainable with .not() for privacy filter
         return {
-          or: () => ({ data: null, error: { message: 'Database error' } }),
+          not: () => ({ data: null, error: { message: 'Database error' } }),
         };
       });
 

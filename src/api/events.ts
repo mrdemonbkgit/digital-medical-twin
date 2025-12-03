@@ -321,8 +321,9 @@ export async function getEvents(
   }
 
   // Filter out private events unless explicitly requested
+  // Use .not() instead of .or() to avoid conflict with search .or() clause
   if (!filters?.includePrivate) {
-    query = query.or('is_private.is.null,is_private.eq.false');
+    query = query.not('is_private', 'eq', true);
   }
 
   if (filters?.startDate) {
@@ -497,8 +498,9 @@ export async function getAllEvents(filters?: EventFilters): Promise<HealthEvent[
   }
 
   // Filter out private events unless explicitly requested
+  // Use .not() instead of .or() to avoid conflict with search .or() clause
   if (!filters?.includePrivate) {
-    query = query.or('is_private.is.null,is_private.eq.false');
+    query = query.not('is_private', 'eq', true);
   }
 
   if (filters?.startDate) {

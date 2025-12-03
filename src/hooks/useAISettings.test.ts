@@ -86,6 +86,8 @@ describe('useAISettings', () => {
       openaiReasoningEffort: 'high',
       geminiThinkingLevel: 'high',
       agenticMode: true,
+      viceTrackingEnabled: false,
+      includeViceInAI: true,
     });
     expect(mockFrom).toHaveBeenCalledWith('user_settings');
   });
@@ -109,6 +111,8 @@ describe('useAISettings', () => {
       openaiReasoningEffort: 'medium',
       geminiThinkingLevel: 'high',
       agenticMode: true,
+      viceTrackingEnabled: false,
+      includeViceInAI: true,
     });
     expect(result.current.error).toBe(null);
   });
@@ -155,6 +159,8 @@ describe('useAISettings', () => {
       openaiReasoningEffort: 'medium',
       geminiThinkingLevel: 'high',
       agenticMode: true,
+      viceTrackingEnabled: false,
+      includeViceInAI: true,
     });
   });
 

@@ -26,6 +26,17 @@ Version history and release notes for Digital Medical Twin. Lists all notable ch
 
 ### Added
 
+- **Vice Event Type for Privacy-Sensitive Tracking**
+  - 6th event type for tracking harmful behaviors (alcohol, pornography, smoking, drugs)
+  - Data-level privacy enforcement via `is_private` column (always true for vice)
+  - Timeline filter toggle to show/hide private events
+  - Slate color scheme (`#64748b`) for non-attention-grabbing display
+  - Categories: alcohol, pornography, smoking, drugs with category-specific units
+  - Fields: viceCategory, quantity, unit, context, trigger
+  - Full AI context integration (agentic and one-shot modes)
+  - Database migration: `20241204000000_add_vice_event_type.sql`
+  - `src/components/event/forms/ViceForm.tsx`
+
 - **API Unit Tests for biomarkerMerger**
   - First unit tests for backend API code (`api/lib/biomarkerMerger.test.ts`)
   - 20 tests covering `mergeBiomarkers`, `mergeCorrections`, `calculateOverallVerificationStatus`

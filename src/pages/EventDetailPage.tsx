@@ -10,6 +10,7 @@ import {
   InterventionForm,
   MedicationForm,
   LabResultForm,
+  ViceForm,
 } from '@/components/event';
 import { useEvent, useEventMutation } from '@/hooks';
 import type {
@@ -20,6 +21,7 @@ import type {
   CreateInterventionInput,
   CreateMedicationInput,
   CreateLabResultInput,
+  CreateViceInput,
 } from '@/types';
 
 function validateForm(data: CreateEventInput): Record<string, string> {
@@ -72,6 +74,11 @@ function validateForm(data: CreateEventInput): Record<string, string> {
     const lab = data as CreateLabResultInput;
     if (!lab.biomarkers || lab.biomarkers.length === 0) {
       errors.biomarkers = 'At least one biomarker is required';
+    }
+  } else if (data.type === 'vice') {
+    const vice = data as CreateViceInput;
+    if (!vice.viceCategory) {
+      errors.viceCategory = 'Category is required';
     }
   }
 
@@ -202,6 +209,14 @@ export function EventDetailPage() {
         return (
           <LabResultForm
             data={formData as CreateLabResultInput}
+            onChange={(data) => setFormData(data)}
+            errors={errors}
+          />
+        );
+      case 'vice':
+        return (
+          <ViceForm
+            data={formData as CreateViceInput}
             onChange={(data) => setFormData(data)}
             errors={errors}
           />

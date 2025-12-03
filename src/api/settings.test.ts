@@ -68,7 +68,7 @@ describe('settings API', () => {
 
       expect(mockFrom).toHaveBeenCalledWith('user_settings');
       expect(mockSelect).toHaveBeenCalledWith(
-        'ai_provider, ai_model, openai_reasoning_effort, gemini_thinking_level, agentic_mode'
+        'ai_provider, ai_model, openai_reasoning_effort, gemini_thinking_level, agentic_mode, vice_tracking_enabled, include_vice_in_ai'
       );
       expect(mockEq).toHaveBeenCalledWith('user_id', mockUserId);
       expect(result.provider).toBe('openai');
@@ -84,6 +84,8 @@ describe('settings API', () => {
         openaiReasoningEffort: 'high',
         geminiThinkingLevel: 'high', // Default when null
         agenticMode: true,
+        viceTrackingEnabled: false, // Default when not in mock data
+        includeViceInAI: true, // Default when not in mock data
       });
     });
 
@@ -98,6 +100,8 @@ describe('settings API', () => {
         openaiReasoningEffort: 'medium',
         geminiThinkingLevel: 'high',
         agenticMode: true,
+        viceTrackingEnabled: false,
+        includeViceInAI: true,
       });
     });
 

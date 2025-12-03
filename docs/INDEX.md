@@ -1,6 +1,6 @@
 # Documentation Index
 
-> Last Updated: 2025-12-03 (Strict TypeScript for API, Supabase client centralization)
+> Last Updated: 2025-12-03 (Vice event type)
 
 ## Summary
 
@@ -193,6 +193,7 @@ Master index for all project documentation. Search here first to find relevant d
 ### P
 
 - **password**: /docs/architecture/AUTH_SYSTEM.md
+- **private events**: /docs/features/DATA_TRACKING.md#vice-private, src/hooks/useTimelineFilters.ts
 - **PDF upload**: /docs/features/DATA_TRACKING.md#pdf-upload--ai-extraction, /docs/architecture/AI_INTEGRATION.md#lab-result-pdf-extraction
 - **PDF extraction**: /docs/architecture/AI_INTEGRATION.md#lab-result-pdf-extraction
 - **post-processing**: /docs/features/LAB_UPLOADS.md#biomarker-standardization
@@ -260,6 +261,8 @@ Master index for all project documentation. Search here first to find relevant d
 - **verification**: /docs/features/LAB_UPLOADS.md#api-endpoints, /docs/architecture/AI_INTEGRATION.md#response-format
 - **verificationStatus**: /docs/features/LAB_UPLOADS.md#api-endpoints, /docs/architecture/AI_INTEGRATION.md#response-format
 - **version**: /docs/CHANGELOG.md
+- **vice**: /docs/features/DATA_TRACKING.md#vice-private, src/components/event/forms/ViceForm.tsx, src/types/events.ts
+- **ViceForm**: src/components/event/forms/ViceForm.tsx
 - **vision**: /PRODUCT_DESCRIPTION.md#vision
 - **visualization**: /docs/features/INSIGHTS_DASHBOARD.md
 

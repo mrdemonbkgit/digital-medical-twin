@@ -88,7 +88,7 @@ async function executeSearchEvents(
 
   let query = supabase
     .from('events')
-    .select('id, type, date, title, notes, tags, doctor_name, medication_name, lab_name, biomarkers, diagnosis, dosage, frequency, is_active')
+    .select('id, type, date, title, notes, tags, doctor_name, medication_name, lab_name, biomarkers, diagnosis, dosage, frequency, is_active, vice_category, vice_quantity, vice_unit, vice_context, vice_trigger')
     .eq('user_id', userId)
     .order('date', { ascending: false })
     .limit(limit);
@@ -569,6 +569,16 @@ function formatEventForTool(event: Record<string, unknown>): Record<string, unkn
         value: event.value,
         unit: event.unit,
         source: event.source,
+      };
+
+    case 'vice':
+      return {
+        ...base,
+        category: event.vice_category,
+        amount: event.vice_quantity,
+        unit: event.vice_unit,
+        context: event.vice_context,
+        trigger: event.vice_trigger,
       };
 
     default:

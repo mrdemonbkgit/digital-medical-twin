@@ -1,6 +1,6 @@
 import { useState, useMemo, useCallback, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Plus, Calendar, Search, Database, Trash2, Download } from 'lucide-react';
+import { Plus, Calendar, Search, Database, Trash2, Download, EyeOff } from 'lucide-react';
 import { PageWrapper } from '@/components/layout';
 import { Button } from '@/components/common';
 import { EventCard, EventCardSkeletonList } from '@/components/event';
@@ -38,6 +38,7 @@ export function TimelinePage() {
     clearEventTypes,
     toggleTag,
     clearTags,
+    togglePrivate,
   } = useTimelineFilters();
 
   // Fetch available tags for filtering
@@ -273,9 +274,23 @@ export function TimelinePage() {
       {!isLoading && events.length > 0 && (
         <div className="mb-4">
           <div className="flex items-center justify-between">
-            <span className="text-sm text-gray-500">
-              Showing {events.length} of {total} events
-            </span>
+            <div className="flex items-center gap-3">
+              <span className="text-sm text-gray-500">
+                Showing {events.length} of {total} events
+              </span>
+              <button
+                onClick={togglePrivate}
+                className={`flex items-center gap-1.5 px-2 py-1 text-xs rounded-md transition-colors ${
+                  filters.includePrivate
+                    ? 'bg-slate-100 text-slate-700 border border-slate-300'
+                    : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'
+                }`}
+                title={filters.includePrivate ? 'Hide private events' : 'Show private events'}
+              >
+                <EyeOff className="w-3 h-3" />
+                {filters.includePrivate ? 'Private visible' : 'Show private'}
+              </button>
+            </div>
             <div className="flex items-center gap-2">
               <span className="text-xs text-gray-400">Export:</span>
               <Button

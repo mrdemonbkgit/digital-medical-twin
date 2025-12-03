@@ -1,14 +1,14 @@
 # Data Tracking Feature
 
-> Last Updated: 2025-11-28
+> Last Updated: 2025-12-03
 
 ## Summary
 
-Comprehensive data tracking for all health event types. Covers the five event categories (lab results, doctor visits, medications, interventions, metrics), their fields, validation rules, and entry forms.
+Comprehensive data tracking for all health event types. Covers the six event categories (lab results, doctor visits, medications, interventions, metrics, vice), their fields, validation rules, and entry forms.
 
 ## Keywords
 
-`events` `tracking` `biomarkers` `bloodwork` `medications` `interventions` `metrics` `forms` `validation` `tags` `presets`
+`events` `tracking` `biomarkers` `bloodwork` `medications` `interventions` `metrics` `vice` `privacy` `forms` `validation` `tags` `presets`
 
 ## Table of Contents
 
@@ -18,6 +18,7 @@ Comprehensive data tracking for all health event types. Covers the five event ca
 - [Medications](#medications)
 - [Interventions](#interventions)
 - [Metrics](#metrics)
+- [Vice (Private)](#vice-private)
 - [Tags System](#tags-system)
 - [Biomarker Presets](#biomarker-presets)
 - [Event Forms](#event-forms)
@@ -34,6 +35,7 @@ Comprehensive data tracking for all health event types. Covers the five event ca
 | Medication | Drugs, supplements, dosages | Green |
 | Intervention | Lifestyle changes, biohacks | Amber |
 | Metric | Wearable data, manual measurements | Purple |
+| Vice | Privacy-sensitive behaviors | Slate |
 
 ---
 
@@ -259,6 +261,63 @@ Import or manually log data from wearables and measurements.
 
 ---
 
+## Vice (Private)
+
+### Purpose
+
+Track privacy-sensitive behaviors that users want to monitor but keep private by default. Data-level privacy enforcement ensures these events are never exposed unless explicitly requested.
+
+### Privacy Model
+
+| Layer | Behavior |
+|-------|----------|
+| Database | `is_private = true` always for vice events |
+| API | Excluded from `getEvents()` unless `includePrivate: true` |
+| Timeline | Hidden by default; toggle to show private events |
+| Export | Excluded by default |
+| AI Context | Included in AI chat for correlation analysis |
+
+### Fields
+
+| Field | Required | Description |
+|-------|----------|-------------|
+| date | Yes | Date of event |
+| title | Yes | Auto-generated from category |
+| viceCategory | Yes | Type of vice (see categories below) |
+| quantity | No | Numeric amount |
+| unit | No | Unit of measurement |
+| context | No | Situational context (social, stress, etc.) |
+| trigger | No | What prompted the behavior |
+| notes | No | Additional notes |
+| tags | No | Custom tags |
+
+### Categories
+
+| Category | Description | Common Units |
+|----------|-------------|--------------|
+| alcohol | Alcoholic beverages | drinks, units |
+| pornography | Adult content consumption | minutes |
+| smoking | Cigarettes, vaping, tobacco | cigarettes, puffs |
+| drugs | Recreational drug use | mg, hits, uses |
+
+### Category-Specific Examples
+
+| Category | Quantity | Unit | Context Examples |
+|----------|----------|------|------------------|
+| alcohol | 3 | drinks | social, dinner, stress |
+| pornography | 45 | minutes | boredom, stress |
+| smoking | 5 | cigarettes | break, stress |
+| drugs | 10 | mg | recreational, pain |
+
+### Timeline Visibility
+
+Users can toggle private event visibility on the Timeline page:
+- **Default:** Private events hidden
+- **Toggle:** "Show private" button reveals vice events
+- **URL:** `?private=true` parameter for direct links
+
+---
+
 ## Tags System
 
 ### Purpose
@@ -391,6 +450,14 @@ For lab results, support two entry modes:
 |-------|------|
 | startDate | Must be before or equal to endDate |
 | endDate | Must be after startDate |
+
+### Vice
+
+| Field | Rule |
+|-------|------|
+| viceCategory | Required, must be one of: alcohol, pornography, smoking, drugs |
+| quantity | Optional, positive number |
+| unit | Optional, 1-50 characters |
 
 ---
 

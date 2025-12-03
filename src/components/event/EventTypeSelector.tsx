@@ -5,6 +5,7 @@ import {
   Pill,
   Sparkles,
   Activity,
+  EyeOff,
 } from 'lucide-react';
 import type { EventType } from '@/types';
 import { cn } from '@/utils/cn';
@@ -81,6 +82,18 @@ const eventTypes: EventTypeOption[] = [
       border: 'border-purple-200',
       hover: 'hover:border-purple-400 hover:bg-purple-100',
       icon: 'text-purple-600',
+    },
+  },
+  {
+    type: 'vice',
+    label: 'Vice',
+    description: 'Private tracking of alcohol, smoking, and other habits',
+    icon: EyeOff,
+    colors: {
+      bg: 'bg-slate-50',
+      border: 'border-slate-200',
+      hover: 'hover:border-slate-400 hover:bg-slate-100',
+      icon: 'text-slate-600',
     },
   },
 ];

@@ -12,12 +12,14 @@ import type {
   Medication,
   Intervention,
   Metric,
+  Vice,
   Biomarker,
   CreateLabResultInput,
   CreateDoctorVisitInput,
   CreateMedicationInput,
   CreateInterventionInput,
   CreateMetricInput,
+  CreateViceInput,
 } from '@/types';
 
 // Database row type (snake_case)
@@ -29,6 +31,7 @@ interface EventRow {
   title: string;
   notes: string | null;
   tags: string[] | null;
+  is_private: boolean | null;
   created_at: string;
   updated_at: string;
   // Lab Result
@@ -60,6 +63,12 @@ interface EventRow {
   metric_name: string | null;
   value: number | null;
   unit: string | null;
+  // Vice
+  vice_category: string | null;
+  vice_quantity: number | null;
+  vice_unit: string | null;
+  vice_context: string | null;
+  vice_trigger: string | null;
 }
 
 // Convert database row to typed HealthEvent
@@ -71,6 +80,7 @@ function rowToEvent(row: EventRow): HealthEvent {
     title: row.title,
     notes: row.notes || undefined,
     tags: row.tags || undefined,
+    isPrivate: row.is_private || undefined,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };
@@ -133,6 +143,18 @@ function rowToEvent(row: EventRow): HealthEvent {
         unit: row.unit || '',
       } as Metric;
 
+    case 'vice':
+      return {
+        ...base,
+        type: 'vice',
+        viceCategory: (row.vice_category || 'alcohol') as Vice['viceCategory'],
+        quantity: row.vice_quantity || undefined,
+        unit: row.vice_unit || undefined,
+        context: row.vice_context || undefined,
+        trigger: row.vice_trigger || undefined,
+        isPrivate: true, // Vice events are always private
+      } as Vice;
+
     default:
       throw new Error(`Unknown event type: ${row.type}`);
   }
@@ -159,6 +181,10 @@ function isMetric(input: CreateEventInput): input is CreateMetricInput {
   return input.type === 'metric';
 }
 
+function isVice(input: CreateEventInput): input is CreateViceInput {
+  return input.type === 'vice';
+}
+
 // Convert CreateEventInput to database row format
 function eventToRow(
   input: CreateEventInput,
@@ -171,6 +197,7 @@ function eventToRow(
     title: input.title,
     notes: input.notes || null,
     tags: input.tags || null,
+    is_private: input.isPrivate || null,
     // Initialize all type-specific fields to null
     lab_name: null as string | null,
     ordering_doctor: null as string | null,
@@ -196,6 +223,11 @@ function eventToRow(
     metric_name: null as string | null,
     value: null as number | null,
     unit: null as string | null,
+    vice_category: null as string | null,
+    vice_quantity: null as number | null,
+    vice_unit: null as string | null,
+    vice_context: null as string | null,
+    vice_trigger: null as string | null,
   };
 
   if (isLabResult(input)) {
@@ -254,6 +286,18 @@ function eventToRow(
     };
   }
 
+  if (isVice(input)) {
+    return {
+      ...base,
+      is_private: true, // Vice events are always private
+      vice_category: input.viceCategory,
+      vice_quantity: input.quantity || null,
+      vice_unit: input.unit || null,
+      vice_context: input.context || null,
+      vice_trigger: input.trigger || null,
+    };
+  }
+
   return base;
 }
 
@@ -274,6 +318,11 @@ export async function getEvents(
   // Apply filters
   if (filters?.eventTypes && filters.eventTypes.length > 0) {
     query = query.in('type', filters.eventTypes);
+  }
+
+  // Filter out private events unless explicitly requested
+  if (!filters?.includePrivate) {
+    query = query.or('is_private.is.null,is_private.eq.false');
   }
 
   if (filters?.startDate) {
@@ -445,6 +494,11 @@ export async function getAllEvents(filters?: EventFilters): Promise<HealthEvent[
   // Apply filters
   if (filters?.eventTypes && filters.eventTypes.length > 0) {
     query = query.in('type', filters.eventTypes);
+  }
+
+  // Filter out private events unless explicitly requested
+  if (!filters?.includePrivate) {
+    query = query.or('is_private.is.null,is_private.eq.false');
   }
 
   if (filters?.startDate) {

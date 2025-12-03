@@ -41,6 +41,9 @@ export interface AISettings {
   openaiReasoningEffort: OpenAIReasoningEffort;
   geminiThinkingLevel: GeminiThinkingLevel;
   agenticMode: boolean;
+  // Vice tracking settings
+  viceTrackingEnabled: boolean;
+  includeViceInAI: boolean;
 }
 
 // Reasoning trace types (ChatGPT-style activity timeline)
@@ -165,6 +168,8 @@ export interface AISettingsUpdate {
   openaiReasoningEffort?: OpenAIReasoningEffort;
   geminiThinkingLevel?: GeminiThinkingLevel;
   agenticMode?: boolean;
+  viceTrackingEnabled?: boolean;
+  includeViceInAI?: boolean;
 }
 
 // Query intent types for RAG

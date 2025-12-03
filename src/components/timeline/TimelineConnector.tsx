@@ -9,6 +9,7 @@ const eventTypeColors: Record<EventType, string> = {
   medication: 'bg-green-500',
   intervention: 'bg-amber-500',
   metric: 'bg-purple-500',
+  vice: 'bg-slate-500',
 };
 
 interface TimelineGroupProps {

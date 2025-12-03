@@ -11,11 +11,13 @@ import {
   InterventionForm,
   MedicationForm,
   LabResultForm,
+  ViceForm,
   createEmptyMetric,
   createEmptyDoctorVisit,
   createEmptyIntervention,
   createEmptyMedication,
   createEmptyLabResult,
+  createEmptyVice,
 } from '@/components/event';
 import { useEventMutation } from '@/hooks';
 import { getLabUpload, updateLabUpload } from '@/api/labUploads';
@@ -28,6 +30,7 @@ import type {
   CreateInterventionInput,
   CreateMedicationInput,
   CreateLabResultInput,
+  CreateViceInput,
   LabUpload,
   Biomarker,
   ProcessedBiomarker,
@@ -39,6 +42,7 @@ const VALID_EVENT_TYPES: EventType[] = [
   'medication',
   'intervention',
   'metric',
+  'vice',
 ];
 
 // Convert processed biomarkers (from PDF extraction) to standard Biomarker format
@@ -72,6 +76,8 @@ function getInitialFormData(type: EventType): CreateEventInput {
       return createEmptyMedication();
     case 'lab_result':
       return createEmptyLabResult();
+    case 'vice':
+      return createEmptyVice();
     default:
       throw new Error(`Unknown event type: ${type}`);
   }
@@ -127,6 +133,11 @@ function validateForm(data: CreateEventInput): Record<string, string> {
     const lab = data as CreateLabResultInput;
     if (!lab.biomarkers || lab.biomarkers.length === 0) {
       errors.biomarkers = 'At least one biomarker is required';
+    }
+  } else if (data.type === 'vice') {
+    const vice = data as CreateViceInput;
+    if (!vice.viceCategory) {
+      errors.viceCategory = 'Category is required';
     }
   }
 
@@ -282,6 +293,14 @@ export function EventNewPage() {
         return (
           <LabResultForm
             data={formData as CreateLabResultInput}
+            onChange={(data) => setFormData(data)}
+            errors={errors}
+          />
+        );
+      case 'vice':
+        return (
+          <ViceForm
+            data={formData as CreateViceInput}
             onChange={(data) => setFormData(data)}
             errors={errors}
           />

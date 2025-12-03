@@ -18,6 +18,8 @@ interface UseAISettingsReturn {
     openaiReasoningEffort?: OpenAIReasoningEffort;
     geminiThinkingLevel?: GeminiThinkingLevel;
     agenticMode?: boolean;
+    viceTrackingEnabled?: boolean;
+    includeViceInAI?: boolean;
   }) => Promise<void>;
   refetch: () => Promise<void>;
 }
@@ -42,6 +44,8 @@ export function useAISettings(): UseAISettingsReturn {
         openaiReasoningEffort: 'medium',
         geminiThinkingLevel: 'high',
         agenticMode: true,
+        viceTrackingEnabled: false,
+        includeViceInAI: true,
       });
       setError(err instanceof Error ? err.message : 'Failed to load settings');
     } finally {
@@ -56,6 +60,8 @@ export function useAISettings(): UseAISettingsReturn {
       openaiReasoningEffort?: OpenAIReasoningEffort;
       geminiThinkingLevel?: GeminiThinkingLevel;
       agenticMode?: boolean;
+      viceTrackingEnabled?: boolean;
+      includeViceInAI?: boolean;
     }) => {
       setError(null);
 
@@ -67,6 +73,8 @@ export function useAISettings(): UseAISettingsReturn {
           openaiReasoningEffort: updated.openaiReasoningEffort ?? prev?.openaiReasoningEffort ?? 'medium',
           geminiThinkingLevel: updated.geminiThinkingLevel ?? prev?.geminiThinkingLevel ?? 'high',
           agenticMode: updated.agenticMode ?? prev?.agenticMode ?? true,
+          viceTrackingEnabled: updated.viceTrackingEnabled ?? prev?.viceTrackingEnabled ?? false,
+          includeViceInAI: updated.includeViceInAI ?? prev?.includeViceInAI ?? true,
         }));
       } catch (err) {
         const message = err instanceof Error ? err.message : 'Failed to update settings';

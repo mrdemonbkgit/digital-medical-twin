@@ -210,6 +210,14 @@ function formatEventsForContext(events: HealthEvent[]): string {
           if (event.metricName) lines.push(`Metric: ${event.metricName}`);
           if (event.value !== undefined) lines.push(`Value: ${event.value} ${event.unit || ''}`);
           break;
+        case 'vice':
+          if (event.vice_category) lines.push(`Category: ${event.vice_category}`);
+          if (event.vice_quantity !== undefined && event.vice_quantity !== null) {
+            lines.push(`Amount: ${event.vice_quantity} ${event.vice_unit || ''}`);
+          }
+          if (event.vice_context) lines.push(`Context: ${event.vice_context}`);
+          if (event.vice_trigger) lines.push(`Trigger: ${event.vice_trigger}`);
+          break;
       }
 
       return lines.join('\n');

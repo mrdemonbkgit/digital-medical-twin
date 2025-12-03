@@ -19,7 +19,7 @@ export async function getAISettings(): Promise<AISettings> {
 
   const { data, error } = await supabase
     .from('user_settings')
-    .select('ai_provider, ai_model, openai_reasoning_effort, gemini_thinking_level, agentic_mode')
+    .select('ai_provider, ai_model, openai_reasoning_effort, gemini_thinking_level, agentic_mode, vice_tracking_enabled, include_vice_in_ai')
     .eq('user_id', user.id)
     .maybeSingle();
 
@@ -34,6 +34,8 @@ export async function getAISettings(): Promise<AISettings> {
     openaiReasoningEffort: (data?.openai_reasoning_effort as OpenAIReasoningEffort) || 'medium',
     geminiThinkingLevel: (data?.gemini_thinking_level as GeminiThinkingLevel) || 'high',
     agenticMode: data?.agentic_mode ?? true, // Default to true (agentic mode on)
+    viceTrackingEnabled: data?.vice_tracking_enabled ?? false, // Default to false (must be manually enabled)
+    includeViceInAI: data?.include_vice_in_ai ?? true, // Default to true when vice is enabled
   };
 }
 
@@ -43,6 +45,8 @@ export async function updateAISettings(updates: {
   openaiReasoningEffort?: OpenAIReasoningEffort;
   geminiThinkingLevel?: GeminiThinkingLevel;
   agenticMode?: boolean;
+  viceTrackingEnabled?: boolean;
+  includeViceInAI?: boolean;
 }): Promise<Partial<AISettings>> {
   const {
     data: { user },
@@ -65,6 +69,10 @@ export async function updateAISettings(updates: {
   if (updates.geminiThinkingLevel !== undefined)
     dbUpdates.gemini_thinking_level = updates.geminiThinkingLevel;
   if (updates.agenticMode !== undefined) dbUpdates.agentic_mode = updates.agenticMode;
+  if (updates.viceTrackingEnabled !== undefined)
+    dbUpdates.vice_tracking_enabled = updates.viceTrackingEnabled;
+  if (updates.includeViceInAI !== undefined)
+    dbUpdates.include_vice_in_ai = updates.includeViceInAI;
 
   const { error } = await supabase.from('user_settings').upsert(dbUpdates, {
     onConflict: 'user_id',
@@ -81,5 +89,7 @@ export async function updateAISettings(updates: {
     openaiReasoningEffort: updates.openaiReasoningEffort,
     geminiThinkingLevel: updates.geminiThinkingLevel,
     agenticMode: updates.agenticMode,
+    viceTrackingEnabled: updates.viceTrackingEnabled,
+    includeViceInAI: updates.includeViceInAI,
   };
 }

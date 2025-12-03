@@ -3,7 +3,8 @@ export type EventType =
   | 'doctor_visit'
   | 'medication'
   | 'intervention'
-  | 'metric';
+  | 'metric'
+  | 'vice';
 
 export interface BaseEvent {
   id: string;
@@ -13,6 +14,7 @@ export interface BaseEvent {
   title: string;
   notes?: string;
   tags?: string[];
+  isPrivate?: boolean;
   createdAt: string;
   updatedAt: string;
 }
@@ -101,12 +103,25 @@ export interface Metric extends BaseEvent {
   unit: string;
 }
 
+export type ViceCategory = 'alcohol' | 'pornography' | 'smoking' | 'drugs';
+
+export interface Vice extends BaseEvent {
+  type: 'vice';
+  viceCategory: ViceCategory;
+  quantity?: number;
+  unit?: string;
+  context?: string;
+  trigger?: string;
+  isPrivate: true; // Vice events are always private
+}
+
 export type HealthEvent =
   | LabResult
   | DoctorVisit
   | Medication
   | Intervention
-  | Metric;
+  | Metric
+  | Vice;
 
 // Specific input types for each event
 export type CreateLabResultInput = Omit<LabResult, 'id' | 'userId' | 'createdAt' | 'updatedAt'>;
@@ -114,13 +129,15 @@ export type CreateDoctorVisitInput = Omit<DoctorVisit, 'id' | 'userId' | 'create
 export type CreateMedicationInput = Omit<Medication, 'id' | 'userId' | 'createdAt' | 'updatedAt'>;
 export type CreateInterventionInput = Omit<Intervention, 'id' | 'userId' | 'createdAt' | 'updatedAt'>;
 export type CreateMetricInput = Omit<Metric, 'id' | 'userId' | 'createdAt' | 'updatedAt'>;
+export type CreateViceInput = Omit<Vice, 'id' | 'userId' | 'createdAt' | 'updatedAt'>;
 
 export type CreateEventInput =
   | CreateLabResultInput
   | CreateDoctorVisitInput
   | CreateMedicationInput
   | CreateInterventionInput
-  | CreateMetricInput;
+  | CreateMetricInput
+  | CreateViceInput;
 
 export type UpdateEventInput = Partial<CreateEventInput>;
 
@@ -131,6 +148,7 @@ export interface EventFilters {
   endDate?: string;
   search?: string;
   tags?: string[];
+  includePrivate?: boolean; // Include private events (e.g., vice entries)
 }
 
 // Pagination types

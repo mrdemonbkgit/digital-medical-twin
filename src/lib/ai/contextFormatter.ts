@@ -67,6 +67,13 @@ function formatEventDetails(event: HealthEvent): string {
       lines.push(`Value: ${event.value} ${event.unit}`);
       lines.push(`Source: ${event.source}`);
       break;
+
+    case 'vice':
+      lines.push(`Category: ${event.viceCategory}`);
+      if (event.quantity !== undefined) lines.push(`Amount: ${event.quantity} ${event.unit || ''}`);
+      if (event.context) lines.push(`Context: ${event.context}`);
+      if (event.trigger) lines.push(`Trigger: ${event.trigger}`);
+      break;
   }
 
   return lines.join('\n');

@@ -11,6 +11,7 @@ import {
   Pill,
   Sparkles,
   Activity,
+  EyeOff,
 } from 'lucide-react';
 import type {
   HealthEvent,
@@ -19,6 +20,7 @@ import type {
   Medication,
   Intervention,
   Metric,
+  Vice,
 } from '@/types';
 import { cn, highlightText } from '@/utils';
 import { Button } from '@/components/common';
@@ -65,6 +67,13 @@ const typeConfig = {
     border: 'border-l-purple-500',
     iconColor: 'text-purple-600',
     label: 'Metric',
+  },
+  vice: {
+    icon: EyeOff,
+    bg: 'bg-slate-50',
+    border: 'border-l-slate-500',
+    iconColor: 'text-slate-600',
+    label: 'Vice',
   },
 };
 
@@ -233,6 +242,41 @@ function MetricDetails({ event }: { event: Metric }) {
   );
 }
 
+function ViceDetails({ event }: { event: Vice }) {
+  const categoryLabels: Record<Vice['viceCategory'], string> = {
+    alcohol: 'Alcohol',
+    pornography: 'Pornography',
+    smoking: 'Smoking/Vaping',
+    drugs: 'Recreational Drugs',
+  };
+
+  return (
+    <div className="space-y-2 text-sm text-gray-600">
+      <p>
+        <span className="font-medium">Category:</span> {categoryLabels[event.viceCategory]}
+      </p>
+      {event.quantity !== undefined && (
+        <p>
+          <span className="font-medium">Amount:</span> {event.quantity} {event.unit || ''}
+        </p>
+      )}
+      {event.context && (
+        <p>
+          <span className="font-medium">Context:</span> {event.context}
+        </p>
+      )}
+      {event.trigger && (
+        <p>
+          <span className="font-medium">Trigger:</span> {event.trigger}
+        </p>
+      )}
+      <p className="text-xs text-slate-500 italic flex items-center gap-1">
+        <EyeOff className="w-3 h-3" /> Private entry
+      </p>
+    </div>
+  );
+}
+
 function EventDetails({ event }: { event: HealthEvent }) {
   switch (event.type) {
     case 'lab_result':
@@ -245,6 +289,8 @@ function EventDetails({ event }: { event: HealthEvent }) {
       return <InterventionDetails event={event} />;
     case 'metric':
       return <MetricDetails event={event} />;
+    case 'vice':
+      return <ViceDetails event={event} />;
     default:
       return null;
   }

@@ -136,6 +136,12 @@ function buildSearchableText(event: HealthEvent): string {
       parts.push(event.metricName);
       parts.push(event.source);
       break;
+
+    case 'vice':
+      parts.push(event.viceCategory);
+      if (event.context) parts.push(event.context);
+      if (event.trigger) parts.push(event.trigger);
+      break;
   }
 
   return parts.join(' ');

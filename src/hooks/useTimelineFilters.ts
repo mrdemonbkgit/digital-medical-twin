@@ -8,6 +8,7 @@ const EVENT_TYPES: EventType[] = [
   'medication',
   'intervention',
   'metric',
+  'vice',
 ];
 
 /**
@@ -34,6 +35,7 @@ export function useTimelineFilters() {
       endDate: searchParams.get('to') || undefined,
       search: searchParams.get('q') || undefined,
       tags: tagParams.length > 0 ? tagParams : undefined,
+      includePrivate: searchParams.get('private') === 'true',
     };
   }, [searchParams]);
 
@@ -180,6 +182,21 @@ export function useTimelineFilters() {
     );
   }, [setSearchParams]);
 
+  // Toggle private events visibility
+  const togglePrivate = useCallback(() => {
+    setSearchParams(
+      (prev) => {
+        if (prev.get('private') === 'true') {
+          prev.delete('private');
+        } else {
+          prev.set('private', 'true');
+        }
+        return prev;
+      },
+      { replace: true }
+    );
+  }, [setSearchParams]);
+
   return {
     filters,
     hasActiveFilters,
@@ -191,5 +208,6 @@ export function useTimelineFilters() {
     clearEventTypes,
     toggleTag,
     clearTags,
+    togglePrivate,
   };
 }

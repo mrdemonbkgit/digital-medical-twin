@@ -246,9 +246,10 @@ describe('events API', () => {
     it('filters by search term', async () => {
       await getEvents({ search: 'lipid' });
 
-      expect(mockOr).toHaveBeenCalled();
-      const orArg = mockOr.mock.calls[0][0];
-      expect(orArg).toContain('title.ilike.%lipid%');
+      // First .or() is for privacy filter, second is for search
+      expect(mockOr).toHaveBeenCalledTimes(2);
+      const searchOrArg = mockOr.mock.calls[1][0];
+      expect(searchOrArg).toContain('title.ilike.%lipid%');
     });
 
     it('filters by tags', async () => {
@@ -570,7 +571,7 @@ describe('events API', () => {
 
   describe('getAllEvents', () => {
     beforeEach(() => {
-      // getAllEvents chains two order() calls, then may apply filters
+      // getAllEvents chains two order() calls, then privacy filter .or(), then may apply other filters
       // Need to track call count to return data on final call
       let orderCallCount = 0;
       mockOrder.mockImplementation(() => {
@@ -586,7 +587,7 @@ describe('events API', () => {
             overlaps: mockOverlaps,
           };
         }
-        // Second order() returns data (or chainable for filters)
+        // Second order() returns chainable for filters (privacy .or() is called next)
         return {
           data: mockEventRows,
           error: null,
@@ -596,6 +597,17 @@ describe('events API', () => {
           or: mockOr,
           overlaps: mockOverlaps,
         };
+      });
+
+      // Privacy filter .or() is called first, then other filters may follow
+      mockOr.mockReturnValue({
+        in: mockIn,
+        gte: mockGte,
+        lte: mockLte,
+        or: mockOr, // For search filter
+        overlaps: mockOverlaps,
+        data: mockEventRows,
+        error: null,
       });
 
       // After filters applied, the final call returns data
@@ -616,11 +628,6 @@ describe('events API', () => {
       });
       mockLte.mockReturnValue({
         or: mockOr,
-        overlaps: mockOverlaps,
-        data: mockEventRows,
-        error: null,
-      });
-      mockOr.mockReturnValue({
         overlaps: mockOverlaps,
         data: mockEventRows,
         error: null,
@@ -660,7 +667,10 @@ describe('events API', () => {
         if (orderCallCount === 1) {
           return { order: mockOrder };
         }
-        return { data: null, error: { message: 'Database error' } };
+        // Second order() returns chainable with .or() for privacy filter
+        return {
+          or: () => ({ data: null, error: { message: 'Database error' } }),
+        };
       });
 
       await expect(getAllEvents()).rejects.toThrow('Failed to fetch events');

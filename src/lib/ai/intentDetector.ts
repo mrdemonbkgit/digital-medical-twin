@@ -134,6 +134,20 @@ const EVENT_TYPE_KEYWORDS: Record<EventType, string[]> = {
     'whoop',
     'oura',
   ],
+  vice: [
+    'vice',
+    'alcohol',
+    'drinking',
+    'drinks',
+    'pornography',
+    'porn',
+    'smoking',
+    'cigarette',
+    'vaping',
+    'drugs',
+    'cannabis',
+    'marijuana',
+  ],
 };
 
 /**

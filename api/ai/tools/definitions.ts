@@ -19,7 +19,7 @@ export interface ToolDefinition {
 }
 
 // Event types available in the database
-const EVENT_TYPES = ['lab_result', 'doctor_visit', 'medication', 'intervention', 'metric'] as const;
+const EVENT_TYPES = ['lab_result', 'doctor_visit', 'medication', 'intervention', 'metric', 'vice'] as const;
 
 // Profile sections available
 const PROFILE_SECTIONS = ['demographics', 'medical_history', 'medications', 'allergies', 'family_history', 'lifestyle', 'all'] as const;

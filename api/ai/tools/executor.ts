@@ -114,7 +114,12 @@ async function executeSearchEvents(
       `notes.ilike.%${searchTerm}%,` +
       `doctor_name.ilike.%${searchTerm}%,` +
       `medication_name.ilike.%${searchTerm}%,` +
-      `lab_name.ilike.%${searchTerm}%`
+      `lab_name.ilike.%${searchTerm}%,` +
+      `intervention_name.ilike.%${searchTerm}%,` +
+      `metric_name.ilike.%${searchTerm}%,` +
+      `vice_category.ilike.%${searchTerm}%,` +
+      `vice_context.ilike.%${searchTerm}%,` +
+      `vice_trigger.ilike.%${searchTerm}%`
     );
   }
 

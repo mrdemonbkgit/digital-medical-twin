@@ -80,7 +80,7 @@ function rowToEvent(row: EventRow): HealthEvent {
     title: row.title,
     notes: row.notes || undefined,
     tags: row.tags || undefined,
-    isPrivate: row.is_private || undefined,
+    isPrivate: row.is_private ?? false,
     createdAt: row.created_at,
     updatedAt: row.updated_at,
   };
@@ -197,7 +197,8 @@ function eventToRow(
     title: input.title,
     notes: input.notes || null,
     tags: input.tags || null,
-    is_private: input.isPrivate || null,
+    // Persist explicit privacy; default to false for non-private events
+    is_private: input.isPrivate ?? false,
     // Initialize all type-specific fields to null
     lab_name: null as string | null,
     ordering_doctor: null as string | null,

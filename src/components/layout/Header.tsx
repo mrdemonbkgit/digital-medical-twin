@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
-import { LogOut, Settings, Activity, Calendar, LayoutDashboard, Bot, User, FileUp } from 'lucide-react';
+import { LogOut, Settings, Activity, Calendar, LayoutDashboard, Bot, User, FileUp, TrendingUp } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { Button } from '@/components/common';
@@ -80,6 +80,18 @@ export function Header() {
             >
               <FileUp className="h-4 w-4" />
               <span className="hidden sm:inline">Labs</span>
+            </Link>
+            <Link
+              to={ROUTES.INSIGHTS}
+              className={cn(
+                'flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors',
+                isActive(ROUTES.INSIGHTS)
+                  ? 'bg-blue-50 text-blue-700'
+                  : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+              )}
+            >
+              <TrendingUp className="h-4 w-4" />
+              <span className="hidden sm:inline">Insights</span>
             </Link>
           </nav>
         </div>

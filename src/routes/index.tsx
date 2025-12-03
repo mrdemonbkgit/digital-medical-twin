@@ -19,6 +19,8 @@ const LabUploadsPage = lazy(() => import('@/pages/LabUploadsPage').then((m) => (
 const ProfilePage = lazy(() => import('@/pages/ProfilePage').then((m) => ({ default: m.ProfilePage })));
 const ProfileSetupPage = lazy(() => import('@/pages/ProfileSetupPage').then((m) => ({ default: m.ProfileSetupPage })));
 const BiomarkersPage = lazy(() => import('@/pages/BiomarkersPage').then((m) => ({ default: m.BiomarkersPage })));
+const InsightsPage = lazy(() => import('@/pages/InsightsPage').then((m) => ({ default: m.InsightsPage })));
+const InsightsDetailPage = lazy(() => import('@/pages/InsightsDetailPage').then((m) => ({ default: m.InsightsDetailPage })));
 const NotFoundPage = lazy(() => import('@/pages/NotFoundPage').then((m) => ({ default: m.NotFoundPage })));
 
 export function AppRoutes() {
@@ -44,6 +46,8 @@ export function AppRoutes() {
             <Route path={ROUTES.PROFILE} element={<ProfilePage />} />
             <Route path={ROUTES.PROFILE_SETUP} element={<ProfileSetupPage />} />
             <Route path={ROUTES.BIOMARKERS} element={<BiomarkersPage />} />
+            <Route path={ROUTES.INSIGHTS} element={<InsightsPage />} />
+            <Route path={ROUTES.INSIGHTS_DETAIL} element={<InsightsDetailPage />} />
           </Route>
         </Route>
 

@@ -1,6 +1,6 @@
 # Documentation Index
 
-> Last Updated: 2025-12-03 (Vice event type)
+> Last Updated: 2025-12-03 (Insights Dashboard implementation)
 
 ## Summary
 
@@ -160,7 +160,8 @@ Master index for all project documentation. Search here first to find relevant d
 
 - **ideas**: /docs/ideas/gpt-5.1-feature-ideas.md
 - **immunizations**: /docs/ideas/gpt-5.1-feature-ideas.md#allergies-immunizations-procedures
-- **insights**: /docs/features/INSIGHTS_DASHBOARD.md
+- **insights**: /docs/features/INSIGHTS_DASHBOARD.md, src/pages/InsightsPage.tsx, src/pages/InsightsDetailPage.tsx
+- **InsightsPage**: src/pages/InsightsPage.tsx
 - **import**: /docs/features/TIMELINE.md#data-import, src/lib/importData.ts, src/hooks/useImportEvents.ts
 - **interventions**: /docs/features/DATA_TRACKING.md
 - **IPv6**: /docs/DATABASE_MIGRATIONS.md
@@ -212,7 +213,7 @@ Master index for all project documentation. Search here first to find relevant d
 - **RAG**: /docs/features/AI_HISTORIAN.md
 - **React**: /docs/ONBOARDING.md#tech-stack, /docs/development/COMPONENT_LIBRARY.md
 - **reasoning_effort**: /docs/architecture/AI_INTEGRATION.md#openai-gpt-51
-- **recharts**: /docs/features/INSIGHTS_DASHBOARD.md#6-technical-architecture
+- **recharts**: /docs/features/INSIGHTS_DASHBOARD.md#6-technical-architecture, src/components/insights/TrendChart.tsx, src/components/insights/SparklineCard.tsx
 - **roadmap**: /docs/ROADMAP.md
 
 ### S
@@ -226,6 +227,7 @@ Master index for all project documentation. Search here first to find relevant d
 - **serverless**: /docs/DECISION_LOG.md#2025-11-26-ai-api-architecture
 - **session**: /docs/SECURITY.md#authentication-flow
 - **setup**: /docs/ONBOARDING.md#setup-instructions
+- **sparkline**: src/components/insights/SparklineCard.tsx
 - **SSE**: /docs/architecture/AI_INTEGRATION.md#sse-streaming
 - **streaming**: /docs/architecture/AI_INTEGRATION.md#sse-streaming, src/components/ai/StreamingIndicator.tsx
 - **slow API**: /docs/ONBOARDING.md#local-api-development
@@ -242,7 +244,7 @@ Master index for all project documentation. Search here first to find relevant d
 - **thinking_level**: /docs/architecture/AI_INTEGRATION.md#google-gemini-3-pro
 - **tools**: /docs/architecture/AI_INTEGRATION.md#tool-definitions, api/ai/tools/
 - **timeline**: /docs/features/TIMELINE.md, src/pages/TimelinePage.tsx
-- **trends**: /docs/features/INSIGHTS_DASHBOARD.md
+- **trends**: /docs/features/INSIGHTS_DASHBOARD.md, src/hooks/useBiomarkerTrends.ts, src/lib/insights/dataProcessing.ts
 - **TypeScript**: /docs/ONBOARDING.md#tech-stack, tsconfig.api.json (strict mode)
 
 ### U
@@ -253,6 +255,8 @@ Master index for all project documentation. Search here first to find relevant d
 - **useUserProfile**: src/hooks/useUserProfile.ts
 - **useRequireProfile**: src/hooks/useRequireProfile.ts
 - **useBiomarkers**: src/hooks/useBiomarkers.ts
+- **useBiomarkerTrends**: src/hooks/useBiomarkerTrends.ts
+- **useBiomarkerDetail**: src/hooks/useBiomarkerDetail.ts
 - **users**: /PRODUCT_DESCRIPTION.md#target-users
 
 ### V

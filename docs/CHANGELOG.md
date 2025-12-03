@@ -1,6 +1,6 @@
 # Changelog
 
-> Last Updated: 2025-12-02
+> Last Updated: 2025-12-03
 
 ## Summary
 
@@ -25,6 +25,22 @@ Version history and release notes for Digital Medical Twin. Lists all notable ch
 ## [Unreleased]
 
 ### Added
+
+- **Insights Dashboard with Biomarker Trends**
+  - New `/insights` page with dashboard overview of all biomarkers
+  - Sparkline cards grouped by category showing trend and latest value
+  - Flags banner showing count of high/low biomarkers
+  - Time range filter (3M, 6M, 1Y, All)
+  - Category filter with localStorage persistence
+  - Detail page (`/insights/:code`) with full trend chart
+  - Reference range bands (green shaded area) on charts
+  - Stats panel: current, average, min, max, trend direction
+  - Mobile responsive layout
+  - New dependencies: `recharts`, `date-fns`
+  - Files: `src/pages/InsightsPage.tsx`, `src/pages/InsightsDetailPage.tsx`
+  - Components: `src/components/insights/` (7 components)
+  - Hooks: `useBiomarkerTrends.ts`, `useBiomarkerDetail.ts`
+  - Data processing: `src/lib/insights/dataProcessing.ts`
 
 - **Vice Event Type for Privacy-Sensitive Tracking**
   - 6th event type for tracking harmful behaviors (alcohol, pornography, smoking, drugs)

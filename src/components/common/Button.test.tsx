@@ -43,13 +43,13 @@ describe('Button', () => {
   it('applies medium size by default', () => {
     render(<Button>Medium</Button>);
     const button = screen.getByRole('button');
-    expect(button).toHaveClass('h-10');
+    expect(button).toHaveClass('h-11'); // 44px for touch target
   });
 
   it('applies small size styles', () => {
     render(<Button size="sm">Small</Button>);
     const button = screen.getByRole('button');
-    expect(button).toHaveClass('h-8');
+    expect(button).toHaveClass('h-9'); // 36px for touch target
   });
 
   it('applies large size styles', () => {

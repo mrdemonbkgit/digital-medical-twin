@@ -20,8 +20,8 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     };
 
     const sizes = {
-      sm: 'h-8 px-3 text-sm',
-      md: 'h-10 px-4 text-sm',
+      sm: 'h-9 px-3 text-sm',   // 36px - improved touch target
+      md: 'h-11 px-4 text-sm',  // 44px - meets minimum touch target
       lg: 'h-12 px-6 text-base',
     };
 

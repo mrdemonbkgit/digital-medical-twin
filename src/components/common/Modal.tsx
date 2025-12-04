@@ -80,7 +80,7 @@ export function Modal({
             </h2>
             <button
               onClick={onClose}
-              className="p-1 text-gray-400 hover:text-gray-600 rounded-full hover:bg-gray-100"
+              className="p-2.5 min-w-[44px] min-h-[44px] text-gray-400 hover:text-gray-600 rounded-full hover:bg-gray-100 flex items-center justify-center"
               aria-label="Close modal"
             >
               <X className="w-5 h-5" />
@@ -93,7 +93,7 @@ export function Modal({
           {!title && (
             <button
               onClick={onClose}
-              className="absolute top-4 right-4 p-1 text-gray-400 hover:text-gray-600 rounded-full hover:bg-gray-100"
+              className="absolute top-4 right-4 p-2.5 min-w-[44px] min-h-[44px] text-gray-400 hover:text-gray-600 rounded-full hover:bg-gray-100 flex items-center justify-center"
               aria-label="Close modal"
             >
               <X className="w-5 h-5" />

@@ -58,7 +58,7 @@ export function FilterBar({
         <button
           type="button"
           onClick={() => setIsExpanded(!isExpanded)}
-          className="flex w-full items-center justify-between rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm font-medium text-gray-700"
+          className="flex w-full items-center justify-between rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 text-sm font-medium text-gray-700 min-h-[44px]"
         >
           <span className="flex items-center gap-2">
             <Filter className="h-4 w-4" />

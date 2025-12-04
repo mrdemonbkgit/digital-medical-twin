@@ -345,12 +345,12 @@ export function EventCard({ event, onDelete, isDeleting, searchQuery }: EventCar
             </div>
           </div>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1">
           <Button
             variant="ghost"
             size="sm"
             onClick={handleEdit}
-            className="p-1.5"
+            className="p-2.5 min-w-[44px] min-h-[44px]"
           >
             <Edit className="w-4 h-4" />
           </Button>
@@ -359,7 +359,7 @@ export function EventCard({ event, onDelete, isDeleting, searchQuery }: EventCar
             size="sm"
             onClick={handleDelete}
             disabled={isDeleting}
-            className="p-1.5 text-red-600 hover:text-red-700 hover:bg-red-50"
+            className="p-2.5 min-w-[44px] min-h-[44px] text-red-600 hover:text-red-700 hover:bg-red-50"
           >
             <Trash2 className="w-4 h-4" />
           </Button>

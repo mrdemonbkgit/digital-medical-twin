@@ -1,6 +1,6 @@
 # Changelog
 
-> Last Updated: 2025-12-03
+> Last Updated: 2025-12-04
 
 ## Summary
 
@@ -25,6 +25,18 @@ Version history and release notes for Digital Medical Twin. Lists all notable ch
 ## [Unreleased]
 
 ### Added
+
+- **Mobile Navigation Drawer**
+  - New hamburger menu on mobile for full navigation access
+  - Slide-out drawer with all nav items, user info, and logout
+  - Replaces hidden desktop nav on small screens
+  - `src/components/layout/MobileNav.tsx`
+
+- **Touch-Friendly Message Actions**
+  - Chat message actions now accessible on mobile via tap
+  - Visible "more" button on mobile, hover on desktop
+  - Click-outside to close menu behavior
+  - All action buttons meet 44px minimum touch target
 
 - **Insights Dashboard with Biomarker Trends**
   - New `/insights` page with dashboard overview of all biomarkers
@@ -142,6 +154,13 @@ Version history and release notes for Digital Medical Twin. Lists all notable ch
   - `supabase/migrations/20241203000002_add_conversation_settings.sql`
 
 ### Fixed
+
+- **Mobile Touch Targets Too Small**
+  - Increased Button component sizes (sm: h-8→h-9, md: h-10→h-11)
+  - EventCard action buttons now 44x44px minimum
+  - Modal close buttons now 44x44px minimum
+  - BiomarkerInput delete button now 44x44px minimum
+  - FilterBar toggle now meets 44px minimum height
 
 - **Per-conversation settings not used for AI calls**
   - Server now fetches and uses conversation settings instead of global settings

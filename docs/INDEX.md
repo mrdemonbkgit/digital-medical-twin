@@ -1,6 +1,6 @@
 # Documentation Index
 
-> Last Updated: 2025-12-03 (Insights Dashboard implementation)
+> Last Updated: 2025-12-04 (Mobile responsive fixes)
 
 ## Summary
 
@@ -151,6 +151,7 @@ Master index for all project documentation. Search here first to find relevant d
 
 ### H
 
+- **hamburger menu**: src/components/layout/MobileNav.tsx
 - **health**: /docs/ONBOARDING.md, /docs/features/DATA_TRACKING.md
 - **historian**: /docs/features/AI_HISTORIAN.md
 - **hooks**: src/hooks/ (useEvents, useEvent, useEventMutation)
@@ -182,6 +183,8 @@ Master index for all project documentation. Search here first to find relevant d
 - **metrics**: /docs/features/DATA_TRACKING.md
 - **migrations**: /docs/DATABASE_MIGRATIONS.md, scripts/run-migrations.cjs
 - **milestones**: /docs/ROADMAP.md
+- **mobile**: /docs/CHANGELOG.md#unreleased, src/components/layout/MobileNav.tsx
+- **MobileNav**: src/components/layout/MobileNav.tsx
 - **MVP**: /docs/ROADMAP.md#phase-1-foundation
 
 ### O
@@ -214,6 +217,7 @@ Master index for all project documentation. Search here first to find relevant d
 - **React**: /docs/ONBOARDING.md#tech-stack, /docs/development/COMPONENT_LIBRARY.md
 - **reasoning_effort**: /docs/architecture/AI_INTEGRATION.md#openai-gpt-51
 - **recharts**: /docs/features/INSIGHTS_DASHBOARD.md#6-technical-architecture, src/components/insights/TrendChart.tsx, src/components/insights/SparklineCard.tsx
+- **responsive**: /docs/CHANGELOG.md#unreleased, src/components/layout/MobileNav.tsx
 - **roadmap**: /docs/ROADMAP.md
 
 ### S
@@ -239,6 +243,7 @@ Master index for all project documentation. Search here first to find relevant d
 
 - **tags**: /docs/features/DATA_TRACKING.md#tags-system, src/components/common/TagInput.tsx, src/hooks/useUserTags.ts
 - **Tailwind**: /docs/ONBOARDING.md#tech-stack
+- **touch targets**: /docs/CHANGELOG.md#unreleased (44px minimum)
 - **tech stack**: /docs/ONBOARDING.md#tech-stack
 - **testing**: /docs/development/TESTING_STRATEGY.md
 - **thinking_level**: /docs/architecture/AI_INTEGRATION.md#google-gemini-3-pro

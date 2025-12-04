@@ -166,7 +166,7 @@ export function BiomarkerInput({
                   variant="ghost"
                   size="sm"
                   onClick={() => handleRemove(index)}
-                  className="p-1 text-red-600 hover:text-red-700 hover:bg-red-100"
+                  className="p-2.5 min-w-[44px] min-h-[44px] text-red-600 hover:text-red-700 hover:bg-red-100"
                 >
                   <Trash2 className="w-4 h-4" />
                 </Button>

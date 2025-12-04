@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { Bot, User } from 'lucide-react';
+import { useState, useRef, useEffect } from 'react';
+import { Bot, User, MoreHorizontal } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { cn } from '@/utils/cn';
@@ -59,10 +59,23 @@ interface ChatMessageProps {
 
 export function ChatMessage({ message }: ChatMessageProps) {
   const [showDetails, setShowDetails] = useState(false);
+  const [showActions, setShowActions] = useState(false);
+  const actionsRef = useRef<HTMLDivElement>(null);
   const isAssistant = message.role === 'assistant';
 
   // Build activity items from message metadata
   const activities = isAssistant ? buildActivityItems(message) : [];
+
+  // Close actions menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (showActions && actionsRef.current && !actionsRef.current.contains(e.target as Node)) {
+        setShowActions(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showActions]);
 
   return (
     <>
@@ -123,12 +136,36 @@ export function ChatMessage({ message }: ChatMessageProps) {
         )}
       </div>
 
-      {/* Actions menu - appears on hover */}
-      <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
-        <MessageActionsMenu
-          message={message}
-          onShowDetails={() => setShowDetails(true)}
-        />
+      {/* Actions menu - visible on mobile tap, hover on desktop */}
+      <div ref={actionsRef} className="absolute top-2 right-2">
+        {/* Toggle button - always visible on mobile, hidden on desktop hover */}
+        <button
+          onClick={() => setShowActions(!showActions)}
+          className={cn(
+            'p-2 rounded-full hover:bg-gray-200 transition-all min-w-[44px] min-h-[44px] flex items-center justify-center',
+            'sm:opacity-0 sm:group-hover:opacity-100',
+            showActions && 'opacity-100 bg-gray-200'
+          )}
+          aria-label="Message actions"
+        >
+          <MoreHorizontal className="w-4 h-4 text-gray-500" />
+        </button>
+
+        {/* Actions dropdown - visible when showActions OR on desktop hover */}
+        <div
+          className={cn(
+            'absolute right-0 top-full mt-1 z-10',
+            showActions ? 'block' : 'hidden sm:group-hover:block'
+          )}
+        >
+          <MessageActionsMenu
+            message={message}
+            onShowDetails={() => {
+              setShowDetails(true);
+              setShowActions(false);
+            }}
+          />
+        </div>
       </div>
     </div>
 

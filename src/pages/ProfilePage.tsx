@@ -349,7 +349,7 @@ export function ProfilePage() {
                 </div>
               </div>
             ) : (
-              <div className="grid grid-cols-2 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                 <div>
                   <p className="text-sm text-gray-500">Display Name</p>
                   <p className="font-medium text-gray-900">
@@ -573,7 +573,7 @@ export function ProfilePage() {
                           key={condition}
                           className="flex items-start gap-3 py-2 border-b border-gray-100 last:border-0"
                         >
-                          <span className="font-medium text-gray-900 min-w-[180px]">
+                          <span className="font-medium text-gray-900 shrink-0">
                             {conditionLabel}:
                           </span>
                           <span className="text-gray-600">
@@ -649,7 +649,7 @@ export function ProfilePage() {
                 />
               </div>
             ) : (
-              <div className="grid grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                 <div>
                   <p className="text-sm text-gray-500">Smoking</p>
                   <p className="font-medium text-gray-900">

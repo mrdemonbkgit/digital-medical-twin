@@ -87,8 +87,8 @@ export function MatchDetailsTable({ matchDetails }: MatchDetailsTableProps) {
         </div>
       </div>
 
-      <div className="border border-gray-200 rounded-lg overflow-hidden">
-        <table className="w-full table-fixed divide-y divide-gray-200">
+      <div className="border border-gray-200 rounded-lg overflow-x-auto">
+        <table className="w-full min-w-[500px] table-fixed divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
               <th className="w-[25%] px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase">

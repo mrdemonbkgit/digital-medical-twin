@@ -126,7 +126,7 @@ export function MedicationForm({ data, onChange, errors }: MedicationFormProps) 
         />
       </div>
 
-      <div className="flex items-center gap-2">
+      <label htmlFor="isActive" className="flex items-center gap-3 min-h-[44px] cursor-pointer">
         <input
           type="checkbox"
           id="isActive"
@@ -137,12 +137,12 @@ export function MedicationForm({ data, onChange, errors }: MedicationFormProps) 
               handleChange('endDate', undefined);
             }
           }}
-          className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+          className="h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
         />
-        <label htmlFor="isActive" className="text-sm text-gray-700">
+        <span className="text-sm text-gray-700">
           Currently taking this medication
-        </label>
-      </div>
+        </span>
+      </label>
 
       <TextArea
         label="Notes (optional)"

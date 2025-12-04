@@ -59,7 +59,7 @@ export function CategoryFilter({
           />
 
           {/* Dropdown */}
-          <div className="absolute right-0 z-20 mt-2 w-64 rounded-lg border border-gray-200 bg-white shadow-lg">
+          <div className="absolute right-0 z-20 mt-2 w-full sm:w-64 min-w-[200px] max-w-[calc(100vw-2rem)] rounded-lg border border-gray-200 bg-white shadow-lg">
             <div className="border-b border-gray-100 p-2">
               <div className="flex gap-2">
                 <button

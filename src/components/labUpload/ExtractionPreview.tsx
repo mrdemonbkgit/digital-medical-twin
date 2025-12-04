@@ -164,8 +164,8 @@ function ProcessedBiomarkersTable({ biomarkers }: { biomarkers: ProcessedBiomark
       </div>
 
       {/* Processed biomarkers table */}
-      <div className="border border-gray-200 rounded-lg overflow-hidden">
-        <table className="w-full table-fixed divide-y divide-gray-200">
+      <div className="border border-gray-200 rounded-lg overflow-x-auto">
+        <table className="w-full min-w-[500px] table-fixed divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
               <th className="w-[30%] px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase">
@@ -222,8 +222,8 @@ function RawBiomarkersTable({ biomarkers }: { biomarkers: Biomarker[] }) {
         Biomarkers ({biomarkers.length})
         <span className="text-xs font-normal text-gray-500">(raw extraction)</span>
       </h4>
-      <div className="border border-gray-200 rounded-lg overflow-hidden">
-        <table className="w-full table-fixed divide-y divide-gray-200">
+      <div className="border border-gray-200 rounded-lg overflow-x-auto">
+        <table className="w-full min-w-[400px] table-fixed divide-y divide-gray-200">
           <thead className="bg-gray-50">
             <tr>
               <th className="w-[35%] px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase">

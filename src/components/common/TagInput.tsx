@@ -86,7 +86,7 @@ export function TagInput({
         {tags.map((tag) => (
           <span
             key={tag}
-            className="inline-flex items-center gap-1 px-2 py-0.5 bg-blue-100 text-blue-800 rounded-full text-sm"
+            className="inline-flex items-center gap-1 pl-3 pr-1 py-1 bg-blue-100 text-blue-800 rounded-full text-sm"
           >
             {tag}
             <button
@@ -95,9 +95,10 @@ export function TagInput({
                 e.stopPropagation();
                 removeTag(tag);
               }}
-              className="hover:text-blue-600 focus:outline-none"
+              className="p-1.5 rounded-full hover:bg-blue-200 hover:text-blue-700 focus:outline-none min-w-[28px] min-h-[28px] flex items-center justify-center"
+              aria-label={`Remove ${tag}`}
             >
-              <X className="h-3 w-3" />
+              <X className="h-3.5 w-3.5" />
             </button>
           </span>
         ))}

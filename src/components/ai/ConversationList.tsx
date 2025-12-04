@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { MessageSquare, Plus, Trash2, Pencil, Check, X, Loader2 } from 'lucide-react';
+import { useState, useRef, useEffect } from 'react';
+import { MessageSquare, Plus, Trash2, Pencil, Check, X, Loader2, MoreHorizontal } from 'lucide-react';
 import { Button } from '@/components/common';
 import { cn } from '@/utils/cn';
 import type { Conversation } from '@/types/conversations';
@@ -25,6 +25,19 @@ export function ConversationList({
 }: ConversationListProps) {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editTitle, setEditTitle] = useState('');
+  const [showActionsId, setShowActionsId] = useState<string | null>(null);
+  const actionsRef = useRef<HTMLDivElement>(null);
+
+  // Close actions menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (e: MouseEvent) => {
+      if (showActionsId && actionsRef.current && !actionsRef.current.contains(e.target as Node)) {
+        setShowActionsId(null);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showActionsId]);
 
   const handleStartEdit = (conv: Conversation, e: React.MouseEvent) => {
     e.stopPropagation();
@@ -138,21 +151,50 @@ export function ConversationList({
                       <div className="text-sm font-medium truncate">{conv.title}</div>
                       <div className="text-xs text-gray-500">{formatDate(conv.updatedAt)}</div>
                     </div>
-                    <div className="hidden group-hover:flex items-center gap-0.5">
+                    {/* Actions - visible toggle on mobile, hover on desktop */}
+                    <div ref={showActionsId === conv.id ? actionsRef : null} className="relative">
                       <button
-                        onClick={(e) => handleStartEdit(conv, e)}
-                        className="p-1 hover:bg-gray-200 rounded"
-                        title="Rename"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setShowActionsId(showActionsId === conv.id ? null : conv.id);
+                        }}
+                        className={cn(
+                          'p-2 rounded-full hover:bg-gray-200 transition-all min-w-[36px] min-h-[36px] flex items-center justify-center',
+                          'sm:opacity-0 sm:group-hover:opacity-100',
+                          showActionsId === conv.id && 'opacity-100 bg-gray-200'
+                        )}
+                        aria-label="Conversation actions"
                       >
-                        <Pencil className="h-3.5 w-3.5 text-gray-500" />
+                        <MoreHorizontal className="w-4 h-4 text-gray-500" />
                       </button>
-                      <button
-                        onClick={(e) => handleDelete(conv.id, e)}
-                        className="p-1 hover:bg-gray-200 rounded"
-                        title="Delete"
+                      {/* Actions dropdown */}
+                      <div
+                        className={cn(
+                          'absolute right-0 top-full mt-1 z-10 bg-white rounded-lg shadow-lg border border-gray-200 py-1',
+                          showActionsId === conv.id ? 'block' : 'hidden sm:group-hover:block'
+                        )}
                       >
-                        <Trash2 className="h-3.5 w-3.5 text-red-500" />
-                      </button>
+                        <button
+                          onClick={(e) => {
+                            handleStartEdit(conv, e);
+                            setShowActionsId(null);
+                          }}
+                          className="flex items-center gap-2 w-full px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 min-h-[44px]"
+                        >
+                          <Pencil className="h-4 w-4" />
+                          Rename
+                        </button>
+                        <button
+                          onClick={(e) => {
+                            handleDelete(conv.id, e);
+                            setShowActionsId(null);
+                          }}
+                          className="flex items-center gap-2 w-full px-3 py-2 text-sm text-red-600 hover:bg-red-50 min-h-[44px]"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                          Delete
+                        </button>
+                      </div>
                     </div>
                   </>
                 )}

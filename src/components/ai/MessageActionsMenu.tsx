@@ -57,11 +57,11 @@ export function MessageActionsMenu({
       {/* Trigger button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="p-1.5 rounded-md text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors"
+        className="p-2.5 rounded-full text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
         aria-label="Message actions"
         aria-expanded={isOpen}
       >
-        <MoreHorizontal className="w-4 h-4" />
+        <MoreHorizontal className="w-5 h-5" />
       </button>
 
       {/* Dropdown menu */}

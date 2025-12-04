@@ -98,7 +98,7 @@ export function TrendChart({ biomarker }: TrendChartProps) {
 
   return (
     <div className="h-48 sm:h-64 lg:h-80 w-full">
-      <ResponsiveContainer width="100%" height="100%">
+      <ResponsiveContainer width="100%" height="100%" minWidth={0}>
         <LineChart
           data={chartData}
           margin={{ top: 10, right: 10, left: 10, bottom: 10 }}

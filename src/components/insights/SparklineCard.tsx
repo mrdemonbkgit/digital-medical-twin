@@ -59,7 +59,7 @@ export function SparklineCard({ biomarker }: SparklineCardProps) {
       {/* Sparkline */}
       <div className="mb-2 h-12">
         {chartData.length > 1 ? (
-          <ResponsiveContainer width="100%" height="100%">
+          <ResponsiveContainer width="100%" height={48} minWidth={0}>
             <LineChart data={chartData}>
               {/* Reference lines for range */}
               {biomarker.referenceMin !== undefined && (

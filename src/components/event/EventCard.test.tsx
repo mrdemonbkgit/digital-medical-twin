@@ -5,6 +5,21 @@ import { MemoryRouter } from 'react-router-dom';
 import { EventCard } from './EventCard';
 import type { HealthEvent, LabResult, DoctorVisit, Medication } from '@/types';
 
+// Mock supabase to prevent env var errors from barrel exports
+vi.mock('@/lib/supabase', () => ({
+  supabase: {
+    from: () => ({
+      select: () => ({ data: [], error: null }),
+      insert: () => ({ data: null, error: null }),
+      update: () => ({ data: null, error: null }),
+      delete: () => ({ data: null, error: null }),
+    }),
+    auth: {
+      getSession: () => Promise.resolve({ data: { session: null }, error: null }),
+    },
+  },
+}));
+
 // Mock useNavigate
 const mockNavigate = vi.fn();
 vi.mock('react-router-dom', async () => {

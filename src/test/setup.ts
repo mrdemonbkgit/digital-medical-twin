@@ -7,6 +7,8 @@ afterEach(() => {
   cleanup();
 });
 
+// Only set up window mocks if window exists (jsdom environment)
+if (typeof window !== 'undefined') {
 // Mock window.matchMedia
 Object.defineProperty(window, 'matchMedia', {
   writable: true,
@@ -51,6 +53,7 @@ Object.defineProperty(window, 'scrollTo', {
   writable: true,
   value: vi.fn(),
 });
+}
 
 // Mock import.meta.env
 vi.stubGlobal('import.meta', {

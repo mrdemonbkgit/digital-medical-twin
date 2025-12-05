@@ -1,6 +1,6 @@
 # Testing Strategy
 
-> Last Updated: 2025-12-02
+> Last Updated: 2025-12-05
 
 ## Summary
 
@@ -8,39 +8,55 @@ Testing approach for Digital Medical Twin. Covers test types, tools, patterns, a
 
 ## Current Test Coverage
 
-**Total: 566 tests across 31 test files**
+**Total: 2824 tests across 153 test files**
 
 ### Test Files by Layer
 
-| Layer | Files | Tests |
-|-------|-------|-------|
-| API (`src/api/`) | 4 | 93 |
-| Hooks (`src/hooks/`) | 9 | 116 |
-| Context (`src/context/`) | 2 | 25 |
-| Components (`src/components/`) | 6 | ~180 |
-| Utils (`src/utils/`) | 2 | 51 |
-| Lib (`src/lib/`) | 8 | 101 |
+| Layer | Files | Tests (approx) |
+|-------|-------|----------------|
+| Components (`src/components/`) | 68 | ~900 |
+| Hooks (`src/hooks/`) | 22 | ~350 |
+| Lib (`src/lib/`) | 17 | ~300 |
+| Pages (`src/pages/`) | 16 | ~250 |
+| Backend API (`api/`) | 15 | ~200 |
+| API Layer (`src/api/`) | 7 | ~150 |
+| Utils (`src/utils/`) | 6 | ~100 |
+| Context (`src/context/`) | 1 | ~25 |
 
-### Key Test Files
+### Coverage by Category
 
-**API Layer:**
-- `biomarkers.test.ts` - Biomarker CRUD and reference data
-- `conversations.test.ts` - AI conversation management
-- `events.test.ts` - Health event CRUD operations
-- `settings.test.ts` - AI settings management
+| Category | Coverage | Notes |
+|----------|----------|-------|
+| Pages | 100% (16/16) | All page components tested |
+| Components | 99% (68/69) | Only duplicate ErrorBoundary untested |
+| Hooks | 100% (22/22) | All custom hooks tested |
+| Frontend API | 100% (7/7) | Full API layer coverage |
+| Backend API | 100% (15/15) | All endpoints tested |
+| Lib | 94% (17/18) | Type definitions excluded |
+| Utils | 100% (6/6) | All utility functions tested |
+| Context | 100% (1/1) | Auth context tested |
+
+### Key Test Areas
+
+**Components:**
+- Authentication forms (LoginForm, RegisterForm, ProtectedRoute)
+- Event management (EventCard, EventTypeSelector, all 6 event forms)
+- AI chat (ChatMessage, PDFUpload, activity components)
+- Insights (TrendChart, SparklineCard, CategoryFilter)
+- Timeline (FilterBar, SearchInput, DateRangeFilter)
+- Layout (Header, MobileNav, AppLayout)
 
 **Hooks:**
-- `useAIChat.test.ts` - AI chat state and messaging
-- `useAISettings.test.ts` - AI configuration
-- `useConversations.test.ts` - Conversation list management
-- `useEvents.test.ts` - Event fetching and pagination
-- `useLabUploads.test.ts` - Lab upload management
-- `useLabUploadMutation.test.ts` - Lab upload mutations
-- `useLabUploadProcessor.test.ts` - PDF processing workflow
+- AI integration (`useAIChat`, `useAISettings`, `useConversations`)
+- Data management (`useEvents`, `useBiomarkers`, `useProfile`)
+- Lab uploads (`useLabUploads`, `useLabUploadMutation`, `useLabUploadProcessor`)
+- UI state (`useImportData`, `useConfirmDialog`)
 
-**Context:**
-- `AuthContext.test.tsx` - Authentication state management
-- `CorrelationContext.test.tsx` - Request correlation
+**Backend:**
+- AI handlers (`chat`, `extract-lab-results`, `process-lab-upload`)
+- API endpoints (`settings/ai`, all tools)
+- Logger transports (console, file, sentry)
+- Utility functions (biomarkerMerger, pdfSplitter)
 
 ## Keywords
 

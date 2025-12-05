@@ -1,6 +1,6 @@
 # Changelog
 
-> Last Updated: 2025-12-04
+> Last Updated: 2025-12-05
 
 ## Summary
 
@@ -65,11 +65,18 @@ Version history and release notes for Digital Medical Twin. Lists all notable ch
   - Database migration: `20241204000000_add_vice_event_type.sql`
   - `src/components/event/forms/ViceForm.tsx`
 
-- **API Unit Tests for biomarkerMerger**
-  - First unit tests for backend API code (`api/lib/biomarkerMerger.test.ts`)
-  - 20 tests covering `mergeBiomarkers`, `mergeCorrections`, `calculateOverallVerificationStatus`
-  - Updated `vitest.config.ts` to include `api/**/*.test.ts`
-  - Total tests: 587 (was 567)
+- **Comprehensive Unit Test Coverage**
+  - Expanded from 566 tests to 2824 tests across 153 test files
+  - Coverage by layer:
+    - Pages: 100% (16/16) - All page components tested
+    - Components: 99% (68/69) - All components except duplicate ErrorBoundary
+    - Hooks: 100% (22/22) - All custom hooks tested
+    - Frontend API: 100% (7/7) - Full API layer coverage
+    - Backend API: 100% (15/15) - All endpoints tested
+    - Lib: 94% (17/18) - Type definitions excluded
+    - Utils: 100% (6/6) - All utility functions tested
+  - New test files for: all pages, event forms, AI components, insights, timeline, layout, backend logger, AI providers
+  - Updated `docs/development/TESTING_STRATEGY.md` with current coverage metrics
 
 ### Changed
 

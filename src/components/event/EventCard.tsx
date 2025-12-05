@@ -322,10 +322,18 @@ export function EventCard({ event, onDelete, isDeleting, searchQuery }: EventCar
       )}
     >
       {/* Header - always visible */}
-      <button
+      <div
+        role="button"
+        tabIndex={0}
         onClick={() => setIsExpanded(!isExpanded)}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            setIsExpanded(!isExpanded);
+          }
+        }}
         className={cn(
-          'w-full flex items-center justify-between p-4 text-left',
+          'w-full flex items-center justify-between p-4 text-left cursor-pointer',
           config.bg
         )}
       >
@@ -369,7 +377,7 @@ export function EventCard({ event, onDelete, isDeleting, searchQuery }: EventCar
             <ChevronDown className="w-5 h-5 text-gray-400" />
           )}
         </div>
-      </button>
+      </div>
 
       {/* Expanded content */}
       {isExpanded && (

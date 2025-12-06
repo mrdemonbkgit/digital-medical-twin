@@ -83,3 +83,82 @@ export function validateRegisterForm(
     errors,
   };
 }
+
+// Biomarker validation
+export interface BiomarkerInput {
+  standardCode?: string;
+  name: string;
+  value: number;
+  unit: string;
+  referenceMin?: number;
+  referenceMax?: number;
+  flag?: 'high' | 'low' | 'normal';
+}
+
+export interface BiomarkerValidationResult {
+  isValid: boolean;
+  errors: string[];
+  invalidIndices: number[];
+}
+
+/**
+ * Validate a single biomarker entry.
+ * Returns an array of error messages (empty if valid).
+ */
+export function validateBiomarker(biomarker: BiomarkerInput): string[] {
+  const errors: string[] = [];
+
+  // Name is required
+  if (!biomarker.name || biomarker.name.trim() === '') {
+    errors.push('Biomarker name is required');
+  }
+
+  // Value must be a positive number (biomarker values are never 0 or negative)
+  if (typeof biomarker.value !== 'number' || isNaN(biomarker.value)) {
+    errors.push('Value must be a valid number');
+  } else if (biomarker.value <= 0) {
+    errors.push('Value must be greater than 0');
+  }
+
+  // Unit is required if standardCode is set
+  if (biomarker.standardCode && (!biomarker.unit || biomarker.unit.trim() === '')) {
+    errors.push('Unit is required');
+  }
+
+  return errors;
+}
+
+/**
+ * Validate an array of biomarkers.
+ * Returns validation result with overall status, all errors, and indices of invalid entries.
+ */
+export function validateBiomarkers(biomarkers: BiomarkerInput[]): BiomarkerValidationResult {
+  const allErrors: string[] = [];
+  const invalidIndices: number[] = [];
+
+  biomarkers.forEach((biomarker, index) => {
+    const errors = validateBiomarker(biomarker);
+    if (errors.length > 0) {
+      invalidIndices.push(index);
+      errors.forEach((error) => {
+        allErrors.push(`Biomarker ${index + 1}: ${error}`);
+      });
+    }
+  });
+
+  return {
+    isValid: allErrors.length === 0,
+    errors: allErrors,
+    invalidIndices,
+  };
+}
+
+/**
+ * Filter out incomplete biomarkers (no name or standardCode selected).
+ * Useful for cleaning up form data before validation/submission.
+ */
+export function filterIncompleteBiomarkers(biomarkers: BiomarkerInput[]): BiomarkerInput[] {
+  return biomarkers.filter(
+    (b) => b.name && b.name.trim() !== '' && b.standardCode && b.standardCode.trim() !== ''
+  );
+}

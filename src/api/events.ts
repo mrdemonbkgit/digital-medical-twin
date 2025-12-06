@@ -1,5 +1,9 @@
 import { supabase } from '@/lib/supabase';
-import { escapePostgrestValue } from '@/utils/validation';
+import {
+  escapePostgrestValue,
+  validateBiomarkers,
+  filterIncompleteBiomarkers,
+} from '@/utils/validation';
 import type {
   HealthEvent,
   CreateEventInput,
@@ -405,6 +409,21 @@ export async function createEvent(input: CreateEventInput): Promise<HealthEvent>
     throw new Error('User not authenticated');
   }
 
+  // Validate and clean biomarkers for lab results
+  if (isLabResult(input)) {
+    // Filter out incomplete entries (user added but didn't fill in)
+    const completeBiomarkers = filterIncompleteBiomarkers(input.biomarkers);
+
+    // Validate the complete biomarkers
+    const validation = validateBiomarkers(completeBiomarkers);
+    if (!validation.isValid) {
+      throw new Error(`Invalid biomarkers: ${validation.errors.join('; ')}`);
+    }
+
+    // Use the filtered biomarkers
+    input = { ...input, biomarkers: completeBiomarkers };
+  }
+
   const row = eventToRow(input, user.id);
 
   const { data, error } = await supabase
@@ -440,7 +459,23 @@ export async function updateEvent(
   }
 
   // Merge existing with updates
-  const merged = { ...existing, ...input } as CreateEventInput;
+  let merged = { ...existing, ...input } as CreateEventInput;
+
+  // Validate and clean biomarkers for lab results
+  if (isLabResult(merged)) {
+    // Filter out incomplete entries (user added but didn't fill in)
+    const completeBiomarkers = filterIncompleteBiomarkers(merged.biomarkers);
+
+    // Validate the complete biomarkers
+    const validation = validateBiomarkers(completeBiomarkers);
+    if (!validation.isValid) {
+      throw new Error(`Invalid biomarkers: ${validation.errors.join('; ')}`);
+    }
+
+    // Use the filtered biomarkers
+    merged = { ...merged, biomarkers: completeBiomarkers };
+  }
+
   const row = eventToRow(merged, user.id);
 
   const { data, error } = await supabase

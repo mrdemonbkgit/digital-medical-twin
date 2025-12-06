@@ -1,4 +1,4 @@
-import { Plus, Trash2 } from 'lucide-react';
+import { Plus, Trash2, AlertCircle } from 'lucide-react';
 import type { Biomarker, BiomarkerStandard, Gender } from '@/types';
 import { Button, Input } from '@/components/common';
 import { BiomarkerSelect } from './BiomarkerSelect';
@@ -22,6 +22,14 @@ function calculateFlag(
   if (min !== undefined && value < min) return 'low';
   if (max !== undefined && value > max) return 'high';
   return 'normal';
+}
+
+// Check if a biomarker has an invalid value (used for form validation warnings)
+function hasInvalidValue(biomarker: Biomarker): boolean {
+  // Only validate if a biomarker has been selected (has standardCode)
+  if (!biomarker.standardCode) return false;
+  // Value must be greater than 0 for any biomarker
+  return biomarker.value <= 0;
 }
 
 export function BiomarkerInput({
@@ -134,21 +142,29 @@ export function BiomarkerInput({
         </p>
       ) : (
         <div className="space-y-4">
-          {biomarkers.map((biomarker, index) => (
+          {biomarkers.map((biomarker, index) => {
+            const isInvalid = hasInvalidValue(biomarker);
+            return (
             <div
               key={index}
               className={cn(
                 'p-4 border rounded-lg space-y-3',
-                biomarker.flag === 'high' && 'border-red-300 bg-red-50',
-                biomarker.flag === 'low' && 'border-blue-300 bg-blue-50',
-                biomarker.flag === 'normal' && 'border-green-300 bg-green-50',
-                !biomarker.flag && 'border-gray-200 bg-gray-50'
+                isInvalid && 'border-orange-400 bg-orange-50',
+                !isInvalid && biomarker.flag === 'high' && 'border-red-300 bg-red-50',
+                !isInvalid && biomarker.flag === 'low' && 'border-blue-300 bg-blue-50',
+                !isInvalid && biomarker.flag === 'normal' && 'border-green-300 bg-green-50',
+                !isInvalid && !biomarker.flag && 'border-gray-200 bg-gray-50'
               )}
             >
               <div className="flex items-start justify-between">
                 <span className="text-sm font-medium text-gray-700">
                   Biomarker {index + 1}
-                  {biomarker.flag && (
+                  {isInvalid && (
+                    <span className="ml-2 text-xs uppercase px-2 py-0.5 rounded bg-orange-100 text-orange-700">
+                      Invalid Value
+                    </span>
+                  )}
+                  {!isInvalid && biomarker.flag && (
                     <span
                       className={cn(
                         'ml-2 text-xs uppercase px-2 py-0.5 rounded',
@@ -210,8 +226,17 @@ export function BiomarkerInput({
                   </span>
                 </div>
               )}
+
+              {/* Invalid value warning */}
+              {isInvalid && (
+                <div className="flex items-center gap-2 text-sm text-orange-700">
+                  <AlertCircle className="h-4 w-4" />
+                  <span>Value must be greater than 0</span>
+                </div>
+              )}
             </div>
-          ))}
+          );
+          })}
         </div>
       )}
     </div>

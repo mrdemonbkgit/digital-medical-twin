@@ -5,6 +5,10 @@ import {
   validateLoginForm,
   validateRegisterForm,
   escapePostgrestValue,
+  validateBiomarker,
+  validateBiomarkers,
+  filterIncompleteBiomarkers,
+  type BiomarkerInput,
 } from './validation';
 
 describe('validation', () => {
@@ -199,6 +203,191 @@ describe('validation', () => {
       expect(escapePostgrestValue('headache')).toBe('headache');
       expect(escapePostgrestValue('Dr. Smith')).toBe('Dr. Smith');
       expect(escapePostgrestValue('blood pressure')).toBe('blood pressure');
+    });
+  });
+
+  describe('validateBiomarker', () => {
+    const validBiomarker: BiomarkerInput = {
+      standardCode: 'hdl-cholesterol',
+      name: 'HDL Cholesterol',
+      value: 45,
+      unit: 'mg/dL',
+      referenceMin: 40,
+      referenceMax: 60,
+    };
+
+    it('returns empty array for valid biomarker', () => {
+      const errors = validateBiomarker(validBiomarker);
+      expect(errors).toHaveLength(0);
+    });
+
+    it('returns error for empty name', () => {
+      const errors = validateBiomarker({ ...validBiomarker, name: '' });
+      expect(errors).toContain('Biomarker name is required');
+    });
+
+    it('returns error for whitespace-only name', () => {
+      const errors = validateBiomarker({ ...validBiomarker, name: '   ' });
+      expect(errors).toContain('Biomarker name is required');
+    });
+
+    it('returns error for value of 0', () => {
+      const errors = validateBiomarker({ ...validBiomarker, value: 0 });
+      expect(errors).toContain('Value must be greater than 0');
+    });
+
+    it('returns error for negative value', () => {
+      const errors = validateBiomarker({ ...validBiomarker, value: -5 });
+      expect(errors).toContain('Value must be greater than 0');
+    });
+
+    it('returns error for NaN value', () => {
+      const errors = validateBiomarker({ ...validBiomarker, value: NaN });
+      expect(errors).toContain('Value must be a valid number');
+    });
+
+    it('returns error for missing unit when standardCode is set', () => {
+      const errors = validateBiomarker({ ...validBiomarker, unit: '' });
+      expect(errors).toContain('Unit is required');
+    });
+
+    it('allows missing unit when standardCode is not set', () => {
+      const biomarker: BiomarkerInput = {
+        name: 'Custom Test',
+        value: 100,
+        unit: '',
+      };
+      const errors = validateBiomarker(biomarker);
+      expect(errors).not.toContain('Unit is required');
+    });
+
+    it('returns multiple errors for multiple issues', () => {
+      const errors = validateBiomarker({
+        standardCode: 'test',
+        name: '',
+        value: 0,
+        unit: '',
+      });
+      expect(errors).toContain('Biomarker name is required');
+      expect(errors).toContain('Value must be greater than 0');
+      expect(errors).toContain('Unit is required');
+      expect(errors).toHaveLength(3);
+    });
+
+    it('accepts very small positive values', () => {
+      const errors = validateBiomarker({ ...validBiomarker, value: 0.001 });
+      expect(errors).toHaveLength(0);
+    });
+
+    it('accepts very large values', () => {
+      const errors = validateBiomarker({ ...validBiomarker, value: 99999 });
+      expect(errors).toHaveLength(0);
+    });
+  });
+
+  describe('validateBiomarkers', () => {
+    const validBiomarker: BiomarkerInput = {
+      standardCode: 'hdl-cholesterol',
+      name: 'HDL Cholesterol',
+      value: 45,
+      unit: 'mg/dL',
+    };
+
+    it('returns valid for empty array', () => {
+      const result = validateBiomarkers([]);
+      expect(result.isValid).toBe(true);
+      expect(result.errors).toHaveLength(0);
+      expect(result.invalidIndices).toHaveLength(0);
+    });
+
+    it('returns valid for array of valid biomarkers', () => {
+      const result = validateBiomarkers([
+        validBiomarker,
+        { ...validBiomarker, name: 'LDL Cholesterol', value: 100 },
+      ]);
+      expect(result.isValid).toBe(true);
+      expect(result.errors).toHaveLength(0);
+      expect(result.invalidIndices).toHaveLength(0);
+    });
+
+    it('returns invalid with correct indices for invalid biomarkers', () => {
+      const result = validateBiomarkers([
+        validBiomarker,
+        { ...validBiomarker, value: 0 }, // Invalid at index 1
+        validBiomarker,
+        { ...validBiomarker, name: '' }, // Invalid at index 3
+      ]);
+      expect(result.isValid).toBe(false);
+      expect(result.invalidIndices).toEqual([1, 3]);
+    });
+
+    it('includes index in error messages', () => {
+      const result = validateBiomarkers([
+        { ...validBiomarker, value: 0 },
+      ]);
+      expect(result.errors[0]).toContain('Biomarker 1:');
+    });
+
+    it('reports all errors from all invalid biomarkers', () => {
+      const result = validateBiomarkers([
+        { standardCode: 'test', name: '', value: 0, unit: '' },
+      ]);
+      expect(result.errors.length).toBe(3); // name, value, unit
+    });
+  });
+
+  describe('filterIncompleteBiomarkers', () => {
+    it('returns empty array for empty input', () => {
+      expect(filterIncompleteBiomarkers([])).toEqual([]);
+    });
+
+    it('filters out biomarkers without name', () => {
+      const biomarkers: BiomarkerInput[] = [
+        { standardCode: 'hdl', name: '', value: 45, unit: 'mg/dL' },
+        { standardCode: 'ldl', name: 'LDL', value: 100, unit: 'mg/dL' },
+      ];
+      const result = filterIncompleteBiomarkers(biomarkers);
+      expect(result).toHaveLength(1);
+      expect(result[0].name).toBe('LDL');
+    });
+
+    it('filters out biomarkers without standardCode', () => {
+      const biomarkers: BiomarkerInput[] = [
+        { standardCode: '', name: 'HDL', value: 45, unit: 'mg/dL' },
+        { standardCode: 'ldl', name: 'LDL', value: 100, unit: 'mg/dL' },
+      ];
+      const result = filterIncompleteBiomarkers(biomarkers);
+      expect(result).toHaveLength(1);
+      expect(result[0].standardCode).toBe('ldl');
+    });
+
+    it('filters out biomarkers with whitespace-only name or standardCode', () => {
+      const biomarkers: BiomarkerInput[] = [
+        { standardCode: '   ', name: 'HDL', value: 45, unit: 'mg/dL' },
+        { standardCode: 'hdl', name: '   ', value: 45, unit: 'mg/dL' },
+        { standardCode: 'ldl', name: 'LDL', value: 100, unit: 'mg/dL' },
+      ];
+      const result = filterIncompleteBiomarkers(biomarkers);
+      expect(result).toHaveLength(1);
+    });
+
+    it('keeps complete biomarkers even with zero value', () => {
+      // Filter is for incomplete entries, not invalid values
+      const biomarkers: BiomarkerInput[] = [
+        { standardCode: 'hdl', name: 'HDL', value: 0, unit: 'mg/dL' },
+      ];
+      const result = filterIncompleteBiomarkers(biomarkers);
+      expect(result).toHaveLength(1);
+    });
+
+    it('keeps all complete biomarkers', () => {
+      const biomarkers: BiomarkerInput[] = [
+        { standardCode: 'hdl', name: 'HDL', value: 45, unit: 'mg/dL' },
+        { standardCode: 'ldl', name: 'LDL', value: 100, unit: 'mg/dL' },
+        { standardCode: 'trig', name: 'Triglycerides', value: 150, unit: 'mg/dL' },
+      ];
+      const result = filterIncompleteBiomarkers(biomarkers);
+      expect(result).toHaveLength(3);
     });
   });
 });

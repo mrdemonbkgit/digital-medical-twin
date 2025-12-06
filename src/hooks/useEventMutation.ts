@@ -1,6 +1,7 @@
 import { useState, useCallback } from 'react';
 import { createEvent, updateEvent, deleteEvent } from '@/api/events';
 import type { HealthEvent, CreateEventInput, UpdateEventInput } from '@/types';
+import { logger } from '@/lib/logger';
 
 interface UseEventMutationReturn {
   create: (input: CreateEventInput) => Promise<HealthEvent>;
@@ -32,6 +33,7 @@ export function useEventMutation(): UseEventMutationReturn {
       return event;
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to create event';
+      logger.error('Failed to create event', { error: err, input: { type: input.type, date: input.date } });
       setError(message);
       throw err;
     } finally {
@@ -48,6 +50,7 @@ export function useEventMutation(): UseEventMutationReturn {
       return event;
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to update event';
+      logger.error('Failed to update event', { error: err, eventId: id, input: { type: input.type } });
       setError(message);
       throw err;
     } finally {
@@ -63,6 +66,7 @@ export function useEventMutation(): UseEventMutationReturn {
       await deleteEvent(id);
     } catch (err) {
       const message = err instanceof Error ? err.message : 'Failed to delete event';
+      logger.error('Failed to delete event', { error: err, eventId: id });
       setError(message);
       throw err;
     } finally {

@@ -115,7 +115,7 @@ function discoverRoutes(dir: string, base = ''): string[] {
       if (entry !== 'lib') {
         routes.push(...discoverRoutes(fullPath, routePath));
       }
-    } else if (entry.endsWith('.js')) {
+    } else if (entry.endsWith('.js') && !entry.endsWith('.test.js')) {
       routes.push(routePath.replace(/\.js$/, '').replace(/\\/g, '/'));
     }
   }

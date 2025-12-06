@@ -1,6 +1,6 @@
 # Testing Strategy
 
-> Last Updated: 2025-12-05
+> Last Updated: 2025-12-06
 
 ## Summary
 
@@ -8,20 +8,20 @@ Testing approach for Digital Medical Twin. Covers test types, tools, patterns, a
 
 ## Current Test Coverage
 
-**Total: 2824 tests across 153 test files**
+**Total: 2852 tests across 155 test files**
 
 ### Test Files by Layer
 
 | Layer | Files | Tests (approx) |
 |-------|-------|----------------|
 | Components (`src/components/`) | 68 | ~900 |
-| Hooks (`src/hooks/`) | 22 | ~350 |
+| Hooks (`src/hooks/`) | 23 | ~370 |
 | Lib (`src/lib/`) | 17 | ~300 |
 | Pages (`src/pages/`) | 16 | ~250 |
 | Backend API (`api/`) | 15 | ~200 |
 | API Layer (`src/api/`) | 7 | ~150 |
 | Utils (`src/utils/`) | 6 | ~100 |
-| Context (`src/context/`) | 1 | ~25 |
+| Context (`src/context/`) | 2 | ~40 |
 
 ### Coverage by Category
 
@@ -29,12 +29,12 @@ Testing approach for Digital Medical Twin. Covers test types, tools, patterns, a
 |----------|----------|-------|
 | Pages | 100% (16/16) | All page components tested |
 | Components | 99% (68/69) | Only duplicate ErrorBoundary untested |
-| Hooks | 100% (22/22) | All custom hooks tested |
+| Hooks | 100% (23/23) | All custom hooks tested |
 | Frontend API | 100% (7/7) | Full API layer coverage |
 | Backend API | 100% (15/15) | All endpoints tested |
 | Lib | 94% (17/18) | Type definitions excluded |
 | Utils | 100% (6/6) | All utility functions tested |
-| Context | 100% (1/1) | Auth context tested |
+| Context | 100% (2/2) | Auth and Correlation contexts tested |
 
 ### Key Test Areas
 

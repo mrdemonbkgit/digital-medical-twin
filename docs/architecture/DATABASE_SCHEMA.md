@@ -31,6 +31,7 @@ Data models and database structure for Digital Medical Twin. Defines all entitie
 | Medication | Medications and supplements |
 | Intervention | Lifestyle changes and biohacks |
 | Metric | Wearable and manual metrics |
+| Document | Stored health documents (PDFs, images) |
 
 ---
 
@@ -157,6 +158,35 @@ interface Metric extends BaseEvent {
 type MetricSource = 'whoop' | 'oura' | 'apple_health' | 'garmin' | 'manual';
 ```
 
+### Document
+
+```typescript
+interface Document {
+  id: string;                    // UUID
+  userId: string;                // References User
+  filename: string;              // Original filename
+  storagePath: string;           // Path in Supabase storage
+  fileSize: number;              // Size in bytes
+  mimeType: string;              // MIME type (application/pdf, image/*)
+  category: DocumentCategory;
+  title?: string;                // Optional display title
+  description?: string;          // Optional notes
+  documentDate?: Date;           // Date of the document
+  labUploadId?: string;          // Links to lab_uploads if sent for extraction
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+type DocumentCategory =
+  | 'labs'
+  | 'prescriptions'
+  | 'imaging'
+  | 'discharge_summaries'
+  | 'insurance'
+  | 'referrals'
+  | 'other';
+```
+
 ---
 
 ## Relationships
@@ -164,7 +194,9 @@ type MetricSource = 'whoop' | 'oura' | 'apple_health' | 'garmin' | 'manual';
 ```
 User (1) ──────< (many) Event
   │
-  └── Settings (embedded)
+  ├── Settings (embedded)
+  │
+  └────< (many) Document ────> (optional) LabUpload
 
 Event (abstract)
   ├── LabResult ──────< (many) Biomarker (embedded)
@@ -184,10 +216,14 @@ Event (abstract)
 | events | userId, date (compound) | Timeline queries |
 | events | userId, type | Filter by event type |
 | events | userId, tags | Tag-based search |
+| documents | userId | User's documents |
+| documents | userId, category | Filter by category |
+| documents | labUploadId | Track extraction links |
 
 ---
 
 ## Related Documents
 
 - /docs/features/DATA_TRACKING.md — Event type details and validation
+- /docs/features/DOCUMENTS.md — Document storage feature
 - /docs/development/API_CONTRACTS.md — API endpoints for data access

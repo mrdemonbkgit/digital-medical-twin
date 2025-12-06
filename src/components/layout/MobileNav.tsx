@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Menu, X, LayoutDashboard, Calendar, Bot, FileUp, Settings, TrendingUp, User, LogOut } from 'lucide-react';
+import { Menu, X, LayoutDashboard, Calendar, Bot, FileUp, FolderOpen, Settings, TrendingUp, User, LogOut } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { ROUTES } from '@/routes/routes';
@@ -11,6 +11,7 @@ const navItems = [
   { to: ROUTES.TIMELINE, icon: Calendar, label: 'Timeline' },
   { to: ROUTES.AI_CHAT, icon: Bot, label: 'AI Historian' },
   { to: ROUTES.LAB_UPLOADS, icon: FileUp, label: 'Labs' },
+  { to: ROUTES.DOCUMENTS, icon: FolderOpen, label: 'Documents' },
   { to: ROUTES.INSIGHTS, icon: TrendingUp, label: 'Insights' },
   { to: ROUTES.SETTINGS, icon: Settings, label: 'Settings' },
 ];

@@ -1,7 +1,8 @@
 # Plan: Improve AI Chat Table Display
 
 > **Created:** 2025-12-02
-> **Status:** ✅ Complete
+> **Status:** ✅ Complete (Archived)
+> **Completed:** 2025-12-02
 > **Author:** Claude
 > **Priority:** Enhancement
 > **Estimated Scope:** Small (1 file + 1 dependency)

@@ -16,6 +16,7 @@ export const ROUTES = {
   AI_CHAT: '/ai',
   LAB_UPLOADS: '/lab-uploads',
   BIOMARKERS: '/biomarkers',
+  DOCUMENTS: '/documents',
   // Insights routes
   INSIGHTS: '/insights',
   INSIGHTS_DETAIL: '/insights/:code',

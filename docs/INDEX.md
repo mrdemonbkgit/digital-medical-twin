@@ -1,6 +1,6 @@
 # Documentation Index
 
-> Last Updated: 2025-12-04 (Mobile responsive fixes)
+> Last Updated: 2025-12-06 (Docs audit fixes)
 
 ## Summary
 
@@ -31,9 +31,6 @@ Master index for all project documentation. Search here first to find relevant d
 
 | Topic | Document | Sections |
 |-------|----------|----------|
-| Product specification | /PRODUCT_DESCRIPTION.md | Full doc |
-| Target users | /PRODUCT_DESCRIPTION.md | #target-users |
-| Product vision | /PRODUCT_DESCRIPTION.md | #vision |
 | Project overview | /docs/ONBOARDING.md | Full doc |
 | Tech stack | /docs/ONBOARDING.md | #tech-stack |
 | Directory structure | /docs/ONBOARDING.md | #directory-structure |
@@ -53,8 +50,10 @@ Master index for all project documentation. Search here first to find relevant d
 | AI Historian | /docs/features/AI_HISTORIAN.md | Full doc |
 | Insights Dashboard | /docs/features/INSIGHTS_DASHBOARD.md | Full doc |
 | Lab Uploads | /docs/features/LAB_UPLOADS.md | Full doc |
+| Document Storage | /docs/features/DOCUMENTS.md | Full doc |
 | User Profile | /docs/features/USER_PROFILE.md | Full doc |
 | Feature ideas (GPT-5.1) | /docs/ideas/gpt-5.1-feature-ideas.md | #high-impact-ideas |
+| Feature ideas (Gemini 3 Pro) | /docs/ideas/gemini-3-pro-features.md | Full doc |
 | Coding conventions | /docs/development/CODING_STANDARDS.md | Full doc |
 | Logging system | /docs/development/LOGGING.md | Full doc |
 | Component patterns | /docs/development/COMPONENT_LIBRARY.md | Full doc |
@@ -67,6 +66,8 @@ Master index for all project documentation. Search here first to find relevant d
 | Version history | /docs/CHANGELOG.md | Full doc |
 | Development roadmap | /docs/ROADMAP.md | Full doc |
 | Feature suggestions | /docs/ideas/FEATURE_SUGGESTIONS_OPUS_4_5.md | Full doc |
+| Manual test cases | /docs/testing/MANUAL_TEST_CASES.md | Full doc |
+| E2E test expansion plan | /docs/planning/2025-12-02_e2e-test-expansion.md | Full doc |
 | Phase 1 tasks | /docs/ROADMAP.md | #phase-1-foundation (Complete) |
 | Phase 2 tasks | /docs/ROADMAP.md | #phase-2-core-data-entry (Complete) |
 | Phase 3 tasks | /docs/ROADMAP.md | #phase-3-timeline-polish (Complete) |
@@ -115,6 +116,13 @@ Master index for all project documentation. Search here first to find relevant d
 - **dashboard**: /docs/features/INSIGHTS_DASHBOARD.md
 - **database**: /docs/architecture/DATABASE_SCHEMA.md, /docs/DATABASE_MIGRATIONS.md
 - **decisions**: /docs/DECISION_LOG.md
+- **documents**: /docs/features/DOCUMENTS.md
+- **document storage**: /docs/features/DOCUMENTS.md
+- **DocumentsPage**: src/pages/DocumentsPage.tsx
+- **DocumentCard**: src/components/documents/DocumentCard.tsx
+- **DocumentList**: src/components/documents/DocumentList.tsx
+- **DocumentViewer**: src/components/documents/DocumentViewer.tsx
+- **discharge summaries**: /docs/features/DOCUMENTS.md
 - **deliverables**: /docs/ROADMAP.md
 - **deployment**: /docs/DECISION_LOG.md#2025-11-26-hosting-platform-selection
 - **dev server**: /docs/ONBOARDING.md#local-api-development
@@ -126,6 +134,7 @@ Master index for all project documentation. Search here first to find relevant d
 
 ### E
 
+- **e2e**: /docs/development/TESTING_STRATEGY.md, /docs/planning/2025-12-02_e2e-test-expansion.md
 - **email**: /docs/architecture/AUTH_SYSTEM.md
 - **encryption**: /docs/SECURITY.md#api-key-management
 - **express**: /docs/ONBOARDING.md#local-api-development
@@ -160,7 +169,9 @@ Master index for all project documentation. Search here first to find relevant d
 ### I
 
 - **ideas**: /docs/ideas/gpt-5.1-feature-ideas.md
+- **imaging**: /docs/features/DOCUMENTS.md
 - **immunizations**: /docs/ideas/gpt-5.1-feature-ideas.md#allergies-immunizations-procedures
+- **insurance**: /docs/features/DOCUMENTS.md
 - **insights**: /docs/features/INSIGHTS_DASHBOARD.md, src/pages/InsightsPage.tsx, src/pages/InsightsDetailPage.tsx
 - **InsightsPage**: src/pages/InsightsPage.tsx
 - **import**: /docs/features/TIMELINE.md#data-import, src/lib/importData.ts, src/hooks/useImportEvents.ts
@@ -179,6 +190,7 @@ Master index for all project documentation. Search here first to find relevant d
 ### M
 
 - **Management API**: /docs/DATABASE_MIGRATIONS.md
+- **manual tests**: /docs/testing/MANUAL_TEST_CASES.md
 - **medications**: /docs/features/DATA_TRACKING.md
 - **metrics**: /docs/features/DATA_TRACKING.md
 - **migrations**: /docs/DATABASE_MIGRATIONS.md, scripts/run-migrations.cjs
@@ -205,9 +217,10 @@ Master index for all project documentation. Search here first to find relevant d
 - **ProfileSetupPage**: src/pages/ProfileSetupPage.tsx
 - **ProfilePage**: src/pages/ProfilePage.tsx
 - **phases**: /docs/ROADMAP.md
-- **planning**: /docs/ROADMAP.md
+- **planning**: /docs/ROADMAP.md, /docs/planning/
 - **presets**: See biomarker standards in /docs/features/LAB_UPLOADS.md#biomarker-standards-database
-- **product**: /PRODUCT_DESCRIPTION.md
+- **product**: /docs/ONBOARDING.md
+- **prescriptions**: /docs/features/DOCUMENTS.md
 - **protocol**: /docs/AGENT_PROTOCOL.md
 - **proxy**: /docs/DECISION_LOG.md#2025-11-26-ai-api-architecture
 
@@ -216,6 +229,7 @@ Master index for all project documentation. Search here first to find relevant d
 - **RAG**: /docs/features/AI_HISTORIAN.md
 - **React**: /docs/ONBOARDING.md#tech-stack, /docs/development/COMPONENT_LIBRARY.md
 - **reasoning_effort**: /docs/architecture/AI_INTEGRATION.md#openai-gpt-51
+- **referrals**: /docs/features/DOCUMENTS.md
 - **recharts**: /docs/features/INSIGHTS_DASHBOARD.md#6-technical-architecture, src/components/insights/TrendChart.tsx, src/components/insights/SparklineCard.tsx
 - **responsive**: /docs/CHANGELOG.md#unreleased, src/components/layout/MobileNav.tsx
 - **roadmap**: /docs/ROADMAP.md
@@ -245,7 +259,7 @@ Master index for all project documentation. Search here first to find relevant d
 - **Tailwind**: /docs/ONBOARDING.md#tech-stack
 - **touch targets**: /docs/CHANGELOG.md#unreleased (44px minimum)
 - **tech stack**: /docs/ONBOARDING.md#tech-stack
-- **testing**: /docs/development/TESTING_STRATEGY.md
+- **testing**: /docs/development/TESTING_STRATEGY.md, /docs/testing/MANUAL_TEST_CASES.md
 - **thinking_level**: /docs/architecture/AI_INTEGRATION.md#google-gemini-3-pro
 - **tools**: /docs/architecture/AI_INTEGRATION.md#tool-definitions, api/ai/tools/
 - **timeline**: /docs/features/TIMELINE.md, src/pages/TimelinePage.tsx
@@ -259,10 +273,14 @@ Master index for all project documentation. Search here first to find relevant d
 - **useConversations**: src/hooks/useConversations.ts
 - **useUserProfile**: src/hooks/useUserProfile.ts
 - **useRequireProfile**: src/hooks/useRequireProfile.ts
+- **useDocuments**: src/hooks/useDocuments.ts
+- **useDocumentMutation**: src/hooks/useDocumentMutation.ts
+- **useDocumentUpload**: src/hooks/useDocumentUpload.ts
+- **useSendToLabUploads**: src/hooks/useSendToLabUploads.ts
 - **useBiomarkers**: src/hooks/useBiomarkers.ts
 - **useBiomarkerTrends**: src/hooks/useBiomarkerTrends.ts
 - **useBiomarkerDetail**: src/hooks/useBiomarkerDetail.ts
-- **users**: /PRODUCT_DESCRIPTION.md#target-users
+- **users**: /docs/ONBOARDING.md
 
 ### V
 
@@ -272,7 +290,7 @@ Master index for all project documentation. Search here first to find relevant d
 - **version**: /docs/CHANGELOG.md
 - **vice**: /docs/features/DATA_TRACKING.md#vice-private, src/components/event/forms/ViceForm.tsx, src/types/events.ts
 - **ViceForm**: src/components/event/forms/ViceForm.tsx
-- **vision**: /PRODUCT_DESCRIPTION.md#vision
+- **vision**: /docs/ROADMAP.md
 - **visualization**: /docs/features/INSIGHTS_DASHBOARD.md
 
 ### W

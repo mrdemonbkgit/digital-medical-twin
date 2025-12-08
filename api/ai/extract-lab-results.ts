@@ -114,12 +114,14 @@ Urinalysis results come from TWO different methods - identify and extract correc
 
 1. **Dipstick/Chemical Analysis** (qualitative results):
    - Section headers: "Dipstick", "Chemical", "Tổng Phân Tích Nước Tiểu"
-   - ALWAYS OUTPUT English values: "Negative", "Positive", "Trace", "+", "++", "+++", "Normal"
-   - TRANSLATE non-English values to English:
-     * Âm Tính, Âm tính → "Negative"
-     * Dương Tính, Dương tính, Có phát hiện → "Positive"
-     * Bình thường → "Normal"
-     * Vết → "Trace"
+   - These tests have TEXT values, NOT numeric values - extract the text!
+   - IMPORTANT: Text like "Âm Tính" IS the value - do NOT set value to null!
+   - Extract and translate these text values:
+     * "Âm Tính" or "Âm tính" → set value to "Negative"
+     * "Dương Tính" or "Dương tính" or "Có phát hiện" → set value to "Positive"
+     * "Bình thường" → set value to "Normal"
+     * "Vết" → set value to "Trace"
+     * "+", "++", "+++" → keep as-is
    - TRANSLATE Vietnamese test names to English:
      * Máu → "Blood (Urine)"
      * Bạch Cầu → "Leukocytes (Urine)"
@@ -128,7 +130,8 @@ Urinalysis results come from TWO different methods - identify and extract correc
    - Set "isQualitative": true for these
    - Set "unit": "qualitative"
    - DO NOT include referenceMin/referenceMax for qualitative results
-   - Examples: Blood, Protein, Glucose, Ketones, Bilirubin, Nitrite, Leukocytes
+   - Example: {"name": "Blood (Urine)", "value": "Negative", "unit": "qualitative", "isQualitative": true}
+   - Common tests: Blood, Protein, Glucose, Ketones, Bilirubin, Nitrite, Leukocytes, Urobilinogen
 
 2. **Microscopy/Sediment Analysis** (quantitative results):
    - Section headers: "Microscopy", "Sediment", "Tế bào cặn", "Vi thể"

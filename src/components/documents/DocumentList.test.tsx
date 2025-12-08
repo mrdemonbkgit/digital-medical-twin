@@ -216,8 +216,9 @@ describe('DocumentList', () => {
       />
     );
 
-    const editButtons = screen.getAllByText('Edit');
-    fireEvent.click(editButtons[0]);
+    // Click edit on doc-1 specifically (DocumentList sorts by date, so use within to target)
+    const doc1Card = screen.getByTestId('doc-card-doc-1');
+    fireEvent.click(doc1Card.querySelector('button')!); // Edit button is first
 
     expect(mockOnEdit).toHaveBeenCalledWith(mockDocuments[0]);
   });
@@ -233,8 +234,10 @@ describe('DocumentList', () => {
       />
     );
 
-    const deleteButtons = screen.getAllByText('Delete');
-    fireEvent.click(deleteButtons[0]);
+    // Click delete on doc-1 specifically
+    const doc1Card = screen.getByTestId('doc-card-doc-1');
+    const buttons = doc1Card.querySelectorAll('button');
+    fireEvent.click(buttons[1]); // Delete button is second
 
     expect(mockOnDelete).toHaveBeenCalledWith(mockDocuments[0].id);
   });
@@ -250,8 +253,10 @@ describe('DocumentList', () => {
       />
     );
 
-    const viewButtons = screen.getAllByText('View');
-    fireEvent.click(viewButtons[0]);
+    // Click view on doc-1 specifically
+    const doc1Card = screen.getByTestId('doc-card-doc-1');
+    const buttons = doc1Card.querySelectorAll('button');
+    fireEvent.click(buttons[2]); // View button is third
 
     expect(mockOnView).toHaveBeenCalledWith(mockDocuments[0]);
   });

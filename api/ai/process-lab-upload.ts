@@ -348,8 +348,17 @@ Urinalysis results come from TWO different methods - identify and extract correc
 
 1. **Dipstick/Chemical Analysis** (qualitative results):
    - Section headers: "Dipstick", "Chemical", "Tổng Phân Tích Nước Tiểu"
-   - Results are text values: "Negative", "Positive", "Trace", "+", "++", "+++", "Normal"
-   - Vietnamese mapping: Âm Tính = Negative, Dương Tính = Positive, Bình thường = Normal
+   - ALWAYS OUTPUT English values: "Negative", "Positive", "Trace", "+", "++", "+++", "Normal"
+   - TRANSLATE non-English values to English:
+     * Âm Tính, Âm tính → "Negative"
+     * Dương Tính, Dương tính, Có phát hiện → "Positive"
+     * Bình thường → "Normal"
+     * Vết → "Trace"
+   - TRANSLATE Vietnamese test names to English:
+     * Máu → "Blood (Urine)"
+     * Bạch Cầu → "Leukocytes (Urine)"
+     * Đường → "Glucose (Urine)"
+     * Đạm → "Protein (Urine)"
    - Set "isQualitative": true for these
    - Set "unit": "qualitative"
    - DO NOT include referenceMin/referenceMax for qualitative results
@@ -1405,7 +1414,18 @@ Important:
 - If BOTH Vitamin D2 and Vitamin D3 are present but NO Total Vitamin D is explicitly extracted:
   - Calculate Total Vitamin D = Vitamin D2 + Vitamin D3
   - Add this as an ADDITIONAL biomarker in your response with originalName: "Total Vitamin D (calculated)"
-  - Mark it as matched to the "Total Vitamin D" standard`;
+  - Mark it as matched to the "Total Vitamin D" standard
+
+## Unit-Based Biomarker Routing:
+When a biomarker has multiple standards for different measurement types, use the UNIT to determine the correct match:
+
+1. **PDW (Platelet Distribution Width)**:
+   - If unit is "GSD", "10GSD", or "10 GSD" → match to "pdw_gsd" (statistical measurement)
+   - If unit is "fL", "%", or similar → match to "pdw" (volume measurement)
+
+2. **HBsAg (Hepatitis B Surface Antigen)**:
+   - If unit is "S/CO", "COI", or "cutoff index" → match to "hbsag_qualitative" (qualitative screening)
+   - If unit is "IU/mL" or similar quantitative unit → match to "hbsag" (quantitative measurement)`;
 
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), GEMINI_TIMEOUT_MS);

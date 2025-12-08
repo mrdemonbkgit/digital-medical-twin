@@ -155,9 +155,9 @@ describe('InsightsPage', () => {
 
       renderPage();
 
-      expect(screen.getByText('No biomarker data yet')).toBeInTheDocument();
+      expect(screen.getByText('No biomarker data in selected time range')).toBeInTheDocument();
       expect(
-        screen.getByText(/Upload lab results to start tracking/)
+        screen.getByText(/upload lab results to start tracking/i)
       ).toBeInTheDocument();
     });
   });

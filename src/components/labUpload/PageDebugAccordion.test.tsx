@@ -243,7 +243,7 @@ describe('PageDebugAccordion', () => {
       const page = createPageDebugInfo(1, {
         verification: {
           durationMs: 500,
-          verificationPassed: true,
+          verificationPassed: false,
           correctionsCount: 3,
           corrections: ['Fix 1', 'Fix 2', 'Fix 3'],
         },

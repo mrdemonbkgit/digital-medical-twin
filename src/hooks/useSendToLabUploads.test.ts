@@ -101,7 +101,7 @@ describe('useSendToLabUploads', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     global.fetch = vi.fn().mockResolvedValue({ ok: true });
-    global.crypto = { randomUUID: () => 'random-uuid' } as any;
+    vi.stubGlobal('crypto', { randomUUID: () => 'random-uuid' });
 
     vi.mocked(supabase.auth.getUser).mockResolvedValue({
       data: { user: mockUser as any },

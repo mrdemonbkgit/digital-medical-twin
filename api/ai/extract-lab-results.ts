@@ -114,8 +114,17 @@ Urinalysis results come from TWO different methods - identify and extract correc
 
 1. **Dipstick/Chemical Analysis** (qualitative results):
    - Section headers: "Dipstick", "Chemical", "Tổng Phân Tích Nước Tiểu"
-   - Results are text values: "Negative", "Positive", "Trace", "+", "++", "+++", "Normal"
-   - Vietnamese mapping: Âm Tính = Negative, Dương Tính = Positive, Bình thường = Normal
+   - ALWAYS OUTPUT English values: "Negative", "Positive", "Trace", "+", "++", "+++", "Normal"
+   - TRANSLATE non-English values to English:
+     * Âm Tính, Âm tính → "Negative"
+     * Dương Tính, Dương tính, Có phát hiện → "Positive"
+     * Bình thường → "Normal"
+     * Vết → "Trace"
+   - TRANSLATE Vietnamese test names to English:
+     * Máu → "Blood (Urine)"
+     * Bạch Cầu → "Leukocytes (Urine)"
+     * Đường → "Glucose (Urine)"
+     * Đạm → "Protein (Urine)"
    - Set "isQualitative": true for these
    - Set "unit": "qualitative"
    - DO NOT include referenceMin/referenceMax for qualitative results

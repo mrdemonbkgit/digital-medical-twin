@@ -98,8 +98,8 @@ describe('InsightsDetailPage', () => {
 
       renderWithRouter();
 
-      expect(screen.getByText('No data found for this biomarker')).toBeInTheDocument();
-      expect(screen.getByText(/Try selecting a different time range/)).toBeInTheDocument();
+      expect(screen.getByText('No data found in selected time range')).toBeInTheDocument();
+      expect(screen.getByText(/Try selecting a longer time range/)).toBeInTheDocument();
     });
 
     it('shows back link in no data state', () => {

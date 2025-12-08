@@ -57,6 +57,7 @@ function processedToStandardBiomarkers(processed: ProcessedBiomarker[]): Biomark
       referenceMin: p.referenceMin ?? undefined,
       referenceMax: p.referenceMax ?? undefined,
       flag: p.flag ?? undefined,
+      isQualitative: p.isQualitative,
     }));
 }
 

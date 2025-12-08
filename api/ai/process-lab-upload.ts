@@ -1260,7 +1260,9 @@ function normalizeUnitString(unit: string): string {
     // Normalize microunit variations
     .replace(/^uu/i, 'uiu')
     // Normalize micro-IU variations
-    .replace(/^uiu/i, 'uiu');
+    .replace(/^uiu/i, 'uiu')
+    // Normalize PDW unit: "10 GSD" or "10GSD" → "gsd" (10 is reference value, not part of unit)
+    .replace(/^10\s*gsd$/i, 'gsd');
 
   return normalized;
 }

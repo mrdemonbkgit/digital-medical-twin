@@ -105,34 +105,33 @@ export function useSendToLabUploads(): UseSendToLabUploadsReturn {
         labUploadId: labUpload.id,
       });
 
-      // Trigger processing
+      // Trigger processing (fire-and-forget - don't block UI)
       log.info('Triggering extraction processing', { uploadId: labUpload.id });
       const { data: { session } } = await supabase.auth.getSession();
 
       if (session?.access_token) {
-        try {
-          const response = await fetch('/api/ai/process-lab-upload', {
-            method: 'POST',
-            headers: {
-              Authorization: `Bearer ${session.access_token}`,
-              'Content-Type': 'application/json',
-              ...getCorrelationHeaders(sessionId, currentOperationId),
-            },
-            body: JSON.stringify({ uploadId: labUpload.id }),
+        // Fire and forget - don't await, let processing happen in background
+        fetch('/api/ai/process-lab-upload', {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${session.access_token}`,
+            'Content-Type': 'application/json',
+            ...getCorrelationHeaders(sessionId, currentOperationId),
+          },
+          body: JSON.stringify({ uploadId: labUpload.id }),
+        })
+          .then((response) => {
+            if (!response.ok) {
+              response.json().catch(() => ({})).then((errorData) => {
+                log.warn('Failed to trigger processing', { error: errorData });
+              });
+            } else {
+              log.info('Processing triggered successfully');
+            }
+          })
+          .catch((triggerErr) => {
+            log.warn('Failed to trigger processing', { error: triggerErr instanceof Error ? triggerErr.message : 'Unknown error' });
           });
-
-          if (!response.ok) {
-            const errorData = await response.json().catch(() => ({}));
-            log.warn('Failed to trigger processing', { error: errorData });
-            // Don't throw - the lab upload was created successfully
-            // User can check status on the Lab Uploads page
-          } else {
-            log.info('Processing triggered successfully');
-          }
-        } catch (triggerErr) {
-          log.warn('Failed to trigger processing', { error: triggerErr instanceof Error ? triggerErr.message : 'Unknown error' });
-          // Don't throw - the lab upload was created successfully
-        }
       }
 
       endOperation();

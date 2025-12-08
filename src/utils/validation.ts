@@ -88,11 +88,12 @@ export function validateRegisterForm(
 export interface BiomarkerInput {
   standardCode?: string;
   name: string;
-  value: number;
+  value: number | string; // Numeric for quantitative, string for qualitative
   unit: string;
   referenceMin?: number;
   referenceMax?: number;
   flag?: 'high' | 'low' | 'normal';
+  isQualitative?: boolean; // True for qualitative results like "Negative", "Positive"
 }
 
 export interface BiomarkerValidationResult {
@@ -113,11 +114,17 @@ export function validateBiomarker(biomarker: BiomarkerInput): string[] {
     errors.push('Biomarker name is required');
   }
 
-  // Value must be a positive number (biomarker values are never 0 or negative)
-  if (typeof biomarker.value !== 'number' || isNaN(biomarker.value)) {
-    errors.push('Value must be a valid number');
-  } else if (biomarker.value <= 0) {
-    errors.push('Value must be greater than 0');
+  // Value validation depends on whether it's qualitative or quantitative
+  if (biomarker.isQualitative) {
+    // Qualitative biomarkers must have a non-empty string value
+    if (typeof biomarker.value !== 'string' || biomarker.value.trim() === '') {
+      errors.push('Qualitative value is required');
+    }
+  } else {
+    // Quantitative biomarkers must have a valid number
+    if (typeof biomarker.value !== 'number' || isNaN(biomarker.value)) {
+      errors.push('Value must be a valid number');
+    }
   }
 
   // Unit is required if standardCode is set

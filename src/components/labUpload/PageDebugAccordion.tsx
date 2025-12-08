@@ -107,26 +107,32 @@ function PageRow({ page, isExpanded, onToggle }: PageRowProps) {
                   ) : (
                     <span className="text-amber-600">
                       Issues found
-                    </span>
-                  )}
-                  {page.verification.correctionsCount > 0 && (
-                    <span className="ml-1">
-                      ({page.verification.correctionsCount} correction
-                      {page.verification.correctionsCount !== 1 ? 's' : ''})
+                      {page.verification.correctionsCount > 0 && (
+                        <span className="ml-1">
+                          ({page.verification.correctionsCount} correction
+                          {page.verification.correctionsCount !== 1 ? 's' : ''})
+                        </span>
+                      )}
                     </span>
                   )}
                 </p>
                 {/* Corrections list */}
-                {page.verification.corrections.length > 0 && (
+                {!page.verification.verificationPassed && (
                   <ul className="mt-2 space-y-1">
-                    {page.verification.corrections.map((correction, idx) => (
-                      <li
-                        key={idx}
-                        className="text-xs text-amber-600 pl-2 border-l-2 border-amber-300"
-                      >
-                        {correction}
+                    {page.verification.corrections.length > 0 ? (
+                      page.verification.corrections.map((correction, idx) => (
+                        <li
+                          key={idx}
+                          className="text-xs text-amber-600 pl-2 border-l-2 border-amber-300"
+                        >
+                          {correction}
+                        </li>
+                      ))
+                    ) : (
+                      <li className="text-xs text-gray-500 pl-2 border-l-2 border-gray-300 italic">
+                        Verification flagged issues but no specific corrections provided
                       </li>
-                    ))}
+                    )}
                   </ul>
                 )}
               </div>

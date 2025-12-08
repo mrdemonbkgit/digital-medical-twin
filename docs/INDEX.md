@@ -280,6 +280,7 @@ Master index for all project documentation. Search here first to find relevant d
 - **useBiomarkers**: src/hooks/useBiomarkers.ts
 - **useBiomarkerTrends**: src/hooks/useBiomarkerTrends.ts
 - **useBiomarkerDetail**: src/hooks/useBiomarkerDetail.ts
+- **useInsightsTimeRange**: src/hooks/useInsightsTimeRange.ts
 - **users**: /docs/ONBOARDING.md
 
 ### V

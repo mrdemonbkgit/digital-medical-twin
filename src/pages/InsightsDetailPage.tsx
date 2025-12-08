@@ -1,17 +1,16 @@
-import { useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { ArrowLeft, AlertTriangle } from 'lucide-react';
 import { PageWrapper } from '@/components/layout';
 import { Card, CardContent, LoadingSpinner } from '@/components/common';
 import { useBiomarkerDetail } from '@/hooks/useBiomarkerDetail';
+import { useInsightsTimeRange } from '@/hooks/useInsightsTimeRange';
 import { TimeRangeFilter, TrendChart, StatsPanel } from '@/components/insights';
-import type { TimeRange } from '@/lib/insights/dataProcessing';
 import { BIOMARKER_CATEGORIES } from '@/types/biomarker';
 import { ROUTES } from '@/routes/routes';
 
 export function InsightsDetailPage() {
   const { code } = useParams<{ code: string }>();
-  const [timeRange, setTimeRange] = useState<TimeRange>('1y');
+  const [timeRange, setTimeRange] = useInsightsTimeRange();
 
   const { timeSeries, stats, standard, isLoading, error } = useBiomarkerDetail(
     code || null,
@@ -40,11 +39,11 @@ export function InsightsDetailPage() {
     );
   }
 
-  // No data for this biomarker
+  // No data for this biomarker in selected time range
   if (!timeSeries) {
     return (
       <PageWrapper title="Biomarker Details">
-        <div className="mb-6">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between mb-6">
           <Link
             to={ROUTES.INSIGHTS}
             className="inline-flex items-center gap-1 text-sm text-gray-600 hover:text-gray-900"
@@ -52,15 +51,16 @@ export function InsightsDetailPage() {
             <ArrowLeft className="h-4 w-4" />
             Back to Insights
           </Link>
+          <TimeRangeFilter value={timeRange} onChange={setTimeRange} />
         </div>
         <Card>
           <CardContent>
             <div className="flex flex-col items-center justify-center py-16">
               <p className="text-lg font-medium text-gray-900">
-                No data found for this biomarker
+                No data found in selected time range
               </p>
               <p className="mt-2 text-gray-500">
-                Try selecting a different time range or check your lab results.
+                Try selecting a longer time range to see historical data.
               </p>
             </div>
           </CardContent>

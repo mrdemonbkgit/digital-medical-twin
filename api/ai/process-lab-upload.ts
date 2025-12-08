@@ -16,28 +16,30 @@ export type VerificationStatus = 'clean' | 'corrected' | 'failed';
 // Types
 interface Biomarker {
   name: string;
-  value: number;
+  value: number | string; // Numeric for quantitative, string for qualitative (e.g., "Negative")
   unit: string;
   secondaryValue?: number;
   secondaryUnit?: string;
   referenceMin?: number;
   referenceMax?: number;
   flag?: 'high' | 'low' | 'normal';
+  isQualitative?: boolean; // True for qualitative results like "Negative", "Positive", "Trace"
 }
 
 // Processed biomarker - matched to standard with converted values
 interface ProcessedBiomarker {
   originalName: string;
-  originalValue: number;
+  originalValue: number | string; // Numeric for quantitative, string for qualitative
   originalUnit: string;
   standardCode: string | null;
   standardName: string | null;
-  standardValue: number | null;
+  standardValue: number | string | null; // Numeric for quantitative, string for qualitative
   standardUnit: string | null;
   referenceMin: number | null;
   referenceMax: number | null;
   flag: 'high' | 'low' | 'normal' | null;
   matched: boolean;
+  isQualitative?: boolean; // True for qualitative results
   validationIssues?: string[];
 }
 
@@ -147,7 +149,7 @@ interface ExtractionDebugInfo {
     pagesFailed?: number;
   };
   stage3: {
-    name: 'Biomarker Matching';
+    name: 'Biomarker Matching & Conversion';
     startedAt: string;
     completedAt: string;
     durationMs: number;
@@ -157,6 +159,10 @@ interface ExtractionDebugInfo {
     userGender: 'male' | 'female';
     rawResponse: string;
     matchDetails: BiomarkerMatchDetail[];
+    // Conversion statistics (deterministic unit conversion)
+    conversionMethod: 'deterministic';
+    conversionsApplied: number;
+    conversionsMissing: number;
   };
   // Merge stage (only for chunked)
   mergeStage?: MergeStageInfo;
@@ -314,13 +320,14 @@ Return ONLY valid JSON in this exact format (no markdown, no code blocks):
   "biomarkers": [
     {
       "name": "Standard English biomarker name",
-      "value": 123.4,
+      "value": 123.4 or "Negative",
       "unit": "primary unit as shown in PDF",
       "secondaryValue": 6.8,
       "secondaryUnit": "alternative unit if shown",
       "referenceMin": 0,
       "referenceMax": 100,
-      "flag": "high" or "low" or "normal"
+      "flag": "high" or "low" or "normal",
+      "isQualitative": false or true
     }
   ]
 }
@@ -334,7 +341,26 @@ Important:
 - Parse numeric values correctly (remove commas, handle decimals)
 - Determine flag based on reference range if not explicitly stated
 - If a field is not found, omit it from the response
-- Return ONLY the JSON object, nothing else`;
+- Return ONLY the JSON object, nothing else
+
+## URINALYSIS HANDLING (CRITICAL):
+Urinalysis results come from TWO different methods - identify and extract correctly:
+
+1. **Dipstick/Chemical Analysis** (qualitative results):
+   - Section headers: "Dipstick", "Chemical", "Tổng Phân Tích Nước Tiểu"
+   - Results are text values: "Negative", "Positive", "Trace", "+", "++", "+++", "Normal"
+   - Vietnamese mapping: Âm Tính = Negative, Dương Tính = Positive, Bình thường = Normal
+   - Set "isQualitative": true for these
+   - Set "unit": "qualitative"
+   - DO NOT include referenceMin/referenceMax for qualitative results
+
+2. **Microscopy/Sediment Analysis** (quantitative results):
+   - Section headers: "Microscopy", "Sediment", "Tế bào cặn", "Vi thể"
+   - Results are NUMERIC values with units like /μL or cells/HPF
+   - Set "isQualitative": false (or omit)
+   - Include proper numeric value and unit
+
+For biomarkers in BOTH sections, extract BOTH with distinct names.`;
 
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), GEMINI_TIMEOUT_MS);
@@ -427,7 +453,7 @@ async function extractPageWithGeminiStreaming(
   pageNumber: number,
   isFirstPage: boolean,
   log: Logger
-): Promise<{ biomarkers: Biomarker[]; metadata?: Partial<ExtractedLabData>; parseError?: string }> {
+): Promise<{ biomarkers: Biomarker[]; metadata?: Partial<ExtractedLabData>; parseError?: string; rawResponse?: string }> {
   if (!GOOGLE_API_KEY) {
     throw new Error('Google API key not configured');
   }
@@ -602,7 +628,7 @@ Important:
   // Handle empty response - page might have no biomarkers
   if (!jsonStr) {
     log.info(`Page ${pageNumber} returned empty response - assuming no biomarkers on this page`);
-    return { biomarkers: [] };
+    return { biomarkers: [], rawResponse: '(empty response)' };
   }
 
   if (jsonStr.startsWith('```json')) {
@@ -613,8 +639,9 @@ Important:
 
   try {
     const extracted = JSON.parse(jsonStr);
-    const result: { biomarkers: Biomarker[]; metadata?: Partial<ExtractedLabData> } = {
+    const result: { biomarkers: Biomarker[]; metadata?: Partial<ExtractedLabData>; rawResponse: string } = {
       biomarkers: extracted.biomarkers || [],
+      rawResponse: jsonStr,
     };
 
     if (isFirstPage) {
@@ -642,7 +669,8 @@ Important:
     log.info(`Page ${pageNumber} - treating as empty page (no biomarkers)`);
     return {
       biomarkers: [],
-      parseError: `PARSE_ERROR: ${errorMsg} | Response: ${jsonStr.substring(0, 200)}`
+      parseError: `PARSE_ERROR: ${errorMsg} | Response: ${jsonStr.substring(0, 200)}`,
+      rawResponse: jsonStr,
     };
   }
 }
@@ -653,7 +681,7 @@ async function verifyPageWithGPT(
   extractedBiomarkers: Biomarker[],
   pageNumber: number,
   log: Logger
-): Promise<{ biomarkers: Biomarker[]; status: VerificationStatus; corrections: string[] }> {
+): Promise<{ biomarkers: Biomarker[]; status: VerificationStatus; corrections: string[]; rawResponse?: string }> {
   if (!OPENAI_API_KEY) {
     log.warn(`Page ${pageNumber} verification skipped - no API key`);
     return { biomarkers: extractedBiomarkers, status: 'failed', corrections: ['OpenAI API key not configured - skipping verification'] };
@@ -813,6 +841,7 @@ NOTE: If corrections array is empty, the extraction was clean. If corrections we
       biomarkers: verified.biomarkers || extractedBiomarkers,
       status: verificationStatus,
       corrections,
+      rawResponse: jsonStr,
     };
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
@@ -859,10 +888,8 @@ async function processPage(
   pageDebug.extraction.completedAt = new Date().toISOString();
   pageDebug.extraction.durationMs = Date.now() - extractionStart;
   pageDebug.extraction.biomarkersExtracted = extracted.biomarkers.length;
-  // Record parse errors in rawResponsePreview if extraction had issues
-  pageDebug.extraction.rawResponsePreview = extracted.parseError
-    ? extracted.parseError
-    : `Extracted ${extracted.biomarkers.length} biomarkers from page ${pageChunk.pageNumber}`;
+  // Store actual raw AI response for debugging
+  pageDebug.extraction.rawResponsePreview = extracted.rawResponse || '(no response)';
 
   log.info(`Page ${pageChunk.pageNumber} extraction complete`, {
     biomarkerCount: extracted.biomarkers.length,
@@ -909,6 +936,7 @@ async function processPage(
   pageDebug.verification.verificationStatus = verified.status;
   pageDebug.verification.correctionsCount = verified.corrections.length;
   pageDebug.verification.corrections = verified.corrections;
+  pageDebug.verification.rawResponsePreview = verified.rawResponse || '(no response)';
 
   log.info(`Page ${pageChunk.pageNumber} verification complete`, {
     status: verified.status,
@@ -1185,6 +1213,125 @@ interface PostProcessResult {
   processedBiomarkers: ProcessedBiomarker[];
   rawResponse: string;
   matchDetails: BiomarkerMatchDetail[];
+  // Conversion statistics
+  conversionsApplied: number;
+  conversionsMissing: number;
+}
+
+// Normalize unit string to handle common aliases and Unicode variants
+// ug = mcg = μg (microgram), uU = uIU = μU (microunit)
+// Also handles Unicode superscripts (³→3, ⁶→6) and micro signs (µ→u, μ→u)
+function normalizeUnitString(unit: string): string {
+  let normalized = unit
+    .trim()
+    // Normalize Unicode micro signs FIRST (both U+00B5 MICRO SIGN and U+03BC GREEK MU)
+    .replace(/µ/g, 'u')  // U+00B5 MICRO SIGN → u
+    .replace(/μ/g, 'u')  // U+03BC GREEK SMALL LETTER MU → u
+    // Normalize Unicode superscript numbers
+    .replace(/⁰/g, '0').replace(/¹/g, '1').replace(/²/g, '2').replace(/³/g, '3')
+    .replace(/⁴/g, '4').replace(/⁵/g, '5').replace(/⁶/g, '6')
+    .replace(/⁷/g, '7').replace(/⁸/g, '8').replace(/⁹/g, '9')
+    // Lowercase after Unicode normalization
+    .toLowerCase()
+    // Normalize scientific notation for cell counts: 10³/uL = K/uL, 10⁶/uL = M/uL
+    .replace(/10\^?3\/ul/g, 'k/ul')
+    .replace(/10\^?6\/ul/g, 'm/ul')
+    .replace(/10\^?9\/l/g, 'k/ul')   // 10^9/L = K/uL (same as 10³/μL)
+    .replace(/x?10\^?9\/l/g, 'k/ul') // x10^9/L variant
+    .replace(/10\^?12\/l/g, 'm/ul')  // 10^12/L = M/uL (same as 10⁶/μL)
+    .replace(/x?10\^?12\/l/g, 'm/ul')// x10^12/L variant
+    // Normalize singular/plural time units
+    .replace(/\bsecond\b/g, 'seconds')
+    .replace(/\bminute\b/g, 'minutes')
+    // Normalize microgram variations (after µ→u conversion)
+    .replace(/^ug/i, 'mcg')
+    // Normalize microunit variations
+    .replace(/^uu/i, 'uiu')
+    // Normalize micro-IU variations
+    .replace(/^uiu/i, 'uiu');
+
+  return normalized;
+}
+
+// Deterministic unit conversion function
+// Returns the converted value and the factor used (or null if no conversion)
+function convertBiomarkerValue(
+  originalValue: number,
+  originalUnit: string | null | undefined,
+  standardUnit: string,
+  unitConversions: Record<string, number>
+): { convertedValue: number; conversionFactor: number | null } {
+  // Handle missing unit - return original value without conversion
+  if (!originalUnit) {
+    return { convertedValue: originalValue, conversionFactor: null };
+  }
+
+  // Normalize units for comparison (handles ug/mcg/μg equivalence, Unicode, superscripts)
+  const normalizedOriginal = normalizeUnitString(originalUnit);
+  const normalizedStandard = normalizeUnitString(standardUnit);
+
+  // Same unit (after normalization) - no conversion needed
+  if (normalizedOriginal === normalizedStandard) {
+    return { convertedValue: originalValue, conversionFactor: null };
+  }
+
+  // Build a normalized lookup map from unitConversions
+  // This allows matching "10³/µL" (normalized to "k/ul") with "10^9/L" (also normalized to "k/ul")
+  const normalizedConversions: Record<string, number> = {};
+  for (const [key, value] of Object.entries(unitConversions)) {
+    const normalizedKey = normalizeUnitString(key);
+    normalizedConversions[normalizedKey] = value;
+    // Also keep original key for exact matches
+    normalizedConversions[key.toLowerCase()] = value;
+  }
+
+  // Try to find a conversion factor using normalized original unit
+  let factor: number | null = null;
+
+  // First try: exact normalized match
+  if (normalizedConversions[normalizedOriginal] !== undefined) {
+    factor = normalizedConversions[normalizedOriginal];
+  }
+
+  // Second try: variations of the original unit
+  if (factor === null) {
+    const unitVariations = [
+      originalUnit,                           // Original as-is
+      originalUnit.toLowerCase(),             // Lowercase
+      originalUnit.replace(/^ug/i, 'mcg'),    // ug -> mcg
+      originalUnit.replace(/^ug/i, 'μg'),     // ug -> μg
+      originalUnit.replace(/^mcg/i, 'ug'),    // mcg -> ug
+      originalUnit.replace(/^mcg/i, 'μg'),    // mcg -> μg
+      originalUnit.replace(/^μg/i, 'mcg'),    // μg -> mcg
+      originalUnit.replace(/^μg/i, 'ug'),     // μg -> ug
+      originalUnit.replace(/^uu/i, 'uiu'),    // uU -> uIU
+      originalUnit.replace(/^uiu/i, 'uu'),    // uIU -> uU
+    ];
+
+    for (const variation of unitVariations) {
+      const normalizedVariation = normalizeUnitString(variation);
+      if (normalizedConversions[normalizedVariation] !== undefined) {
+        factor = normalizedConversions[normalizedVariation];
+        break;
+      }
+      // Also try direct lookup
+      if (unitConversions[variation] !== undefined) {
+        factor = unitConversions[variation];
+        break;
+      }
+    }
+  }
+
+  if (factor === null) {
+    // No conversion found - return original value
+    console.warn(`No conversion factor from "${originalUnit}" to "${standardUnit}"`);
+    return { convertedValue: originalValue, conversionFactor: null };
+  }
+
+  // Apply conversion: value_in_standard = value_in_source * factor
+  // Round to 2 decimal places for cleaner display
+  const convertedValue = Math.round(originalValue * factor * 100) / 100;
+  return { convertedValue, conversionFactor: factor };
 }
 
 // Stage 3: Post-processing with Gemini - match biomarkers to standards
@@ -1209,7 +1356,7 @@ async function postProcessWithGemini(
   const biomarkersJson = JSON.stringify(extractedData.biomarkers, null, 2);
   const standardsJson = JSON.stringify(standardsList, null, 2);
 
-  const prompt = `You are a biomarker matching and conversion expert. Match each extracted biomarker to its standardized equivalent and convert values.
+  const prompt = `You are a biomarker matching expert. Match each extracted biomarker to its standardized equivalent.
 
 ## Extracted Biomarkers:
 \`\`\`json
@@ -1224,7 +1371,7 @@ ${standardsJson}
 ## Your Task:
 For EACH extracted biomarker:
 1. Match it to a standard biomarker by comparing the name with standard names and aliases
-2. If matched, convert the value to the standard unit using the conversion factors
+2. DO NOT convert values - keep the original value and unit exactly as extracted
 3. Flag any validation issues (e.g., value seems unreasonably high/low for that biomarker)
 
 ## Response Format:
@@ -1232,24 +1379,25 @@ Return ONLY valid JSON (no markdown) as an array of processed biomarkers:
 [
   {
     "originalName": "The original name from extraction",
-    "originalValue": 123.4,
+    "originalValue": 123.4 or "Negative",
     "originalUnit": "original unit",
     "standardCode": "matched_code or null if no match",
     "standardName": "Matched Standard Name or null",
-    "standardValue": 123.4 (converted value or null),
-    "standardUnit": "standard unit or null",
     "matched": true/false,
+    "isQualitative": true/false,
     "validationIssues": ["list of any concerns about the value"]
   }
 ]
 
 Important:
 - Match carefully - the extracted name may be abbreviated or in a different language
-- Use the conversion factors to convert values (value_in_standard = value * factor)
-- If the original unit matches the standard unit, no conversion needed
-- If you can't find a matching conversion factor but the units are similar, try to match anyway
-- For unmatched biomarkers, set standardCode/standardName/standardValue/standardUnit to null
+- DO NOT do any value conversion - unit conversion will be handled separately by code
+- For unmatched biomarkers, set standardCode/standardName to null
 - Flag validation issues like: "value appears extremely high", "negative value unexpected", etc.
+
+## QUALITATIVE BIOMARKERS:
+- Biomarkers with isQualitative: true have STRING values like "Negative", "Positive", "Trace", "+", "++", "+++"
+- Match qualitative biomarkers to standards with unit: "qualitative" (e.g., urine_blood, urine_protein for dipstick results)
 
 ## Special Rule for Vitamin D:
 - Match generic "Vitamin D" (not specified as D2 or D3) to "Total Vitamin D" standard
@@ -1318,51 +1466,148 @@ Important:
     throw new Error('Failed to parse post-processing result from Gemini');
   }
 
-  // Add reference ranges and flags from standards
-  for (const processed of processedBiomarkers) {
-    if (processed.matched && processed.standardCode) {
-      const standard = standards.find((s) => s.code === processed.standardCode);
-      if (standard) {
-        const range = standard.reference_ranges[userGender];
-        processed.referenceMin = range.low;
-        processed.referenceMax = range.high;
+  // DETERMINISTIC CONVERSION: Apply unit conversion and reference ranges
+  // Track conversion statistics
+  let conversionsApplied = 0;
+  let conversionsMissing = 0;
 
-        // Calculate flag based on standard range
-        if (processed.standardValue !== null) {
-          if (processed.standardValue < range.low) {
-            processed.flag = 'low';
-          } else if (processed.standardValue > range.high) {
-            processed.flag = 'high';
-          } else {
-            processed.flag = 'normal';
-          }
-        }
+  for (const processed of processedBiomarkers) {
+    // Initialize standardValue/standardUnit for unmatched biomarkers
+    if (!processed.matched || !processed.standardCode) {
+      processed.standardValue = null;
+      processed.standardUnit = null;
+      processed.referenceMin = null;
+      processed.referenceMax = null;
+      processed.flag = null;
+      continue;
+    }
+
+    const standard = standards.find((s) => s.code === processed.standardCode);
+    if (!standard) {
+      processed.standardValue = null;
+      processed.standardUnit = null;
+      processed.referenceMin = null;
+      processed.referenceMax = null;
+      processed.flag = null;
+      continue;
+    }
+
+    // Handle qualitative biomarkers - pass through as-is
+    if (processed.isQualitative || standard.standard_unit === 'qualitative') {
+      processed.isQualitative = true;
+      processed.standardValue = processed.originalValue; // Pass through string value
+      processed.standardUnit = 'qualitative';
+      processed.referenceMin = null;
+      processed.referenceMax = null;
+      processed.flag = null;
+      continue;
+    }
+
+    // DETERMINISTIC CONVERSION for quantitative biomarkers
+    if (typeof processed.originalValue === 'number') {
+      const { convertedValue, conversionFactor } = convertBiomarkerValue(
+        processed.originalValue,
+        processed.originalUnit,
+        standard.standard_unit,
+        standard.unit_conversions
+      );
+      processed.standardValue = convertedValue;
+      processed.standardUnit = standard.standard_unit;
+
+      // Track conversion statistics and store for debugging
+      const extendedProcessed = processed as ProcessedBiomarker & {
+        _conversionFactor?: number | null;
+        _conversionMissing?: { fromUnit: string; toUnit: string };
+      };
+
+      if (conversionFactor !== null) {
+        conversionsApplied++;
+        extendedProcessed._conversionFactor = conversionFactor;
+      } else if (processed.originalUnit && standard.standard_unit &&
+                 normalizeUnitString(processed.originalUnit) !== normalizeUnitString(standard.standard_unit)) {
+        // Conversion was needed but no factor found - store details for debugging
+        conversionsMissing++;
+        extendedProcessed._conversionMissing = {
+          fromUnit: processed.originalUnit,
+          toUnit: standard.standard_unit,
+        };
       }
+    } else {
+      // Non-numeric value that isn't qualitative - pass through
+      processed.standardValue = processed.originalValue;
+      processed.standardUnit = processed.originalUnit;
+    }
+
+    // Apply gender-specific reference ranges
+    const range = standard.reference_ranges[userGender];
+    processed.referenceMin = range.low;
+    processed.referenceMax = range.high;
+
+    // Calculate flag based on converted value vs reference range
+    if (processed.standardValue !== null && typeof processed.standardValue === 'number') {
+      if (processed.standardValue < range.low) {
+        processed.flag = 'low';
+      } else if (processed.standardValue > range.high) {
+        processed.flag = 'high';
+      } else {
+        processed.flag = 'normal';
+      }
+    } else {
+      processed.flag = null;
     }
   }
 
+  // DEDUPLICATION: Keep only HbA1c (NGSP), remove IFCC variant if both present
+  const hba1cBiomarkers = processedBiomarkers.filter((b) => b.standardCode === 'hba1c');
+  if (hba1cBiomarkers.length > 1) {
+    // Prefer NGSP variant
+    const ngspVariant = hba1cBiomarkers.find((b) =>
+      b.originalName.toUpperCase().includes('NGSP')
+    );
+    const keepIndex = ngspVariant
+      ? processedBiomarkers.indexOf(ngspVariant)
+      : processedBiomarkers.indexOf(hba1cBiomarkers[0]);
+
+    // Remove all other HbA1c entries
+    processedBiomarkers = processedBiomarkers.filter(
+      (b, idx) => b.standardCode !== 'hba1c' || idx === keepIndex
+    );
+  }
+
   // Build match details for debugging
-  const matchDetails: BiomarkerMatchDetail[] = processedBiomarkers.map((b) => ({
-    originalName: b.originalName,
-    matchedCode: b.standardCode,
-    matchedName: b.standardName,
-    conversionApplied:
-      b.standardValue !== null && b.standardValue !== b.originalValue
-        ? {
-            fromValue: b.originalValue,
-            fromUnit: b.originalUnit,
-            toValue: b.standardValue,
-            toUnit: b.standardUnit!,
-            factor: b.originalValue !== 0 ? b.standardValue / b.originalValue : 0,
-          }
-        : undefined,
-    validationIssues: b.validationIssues || [],
-  }));
+  const matchDetails: BiomarkerMatchDetail[] = processedBiomarkers.map((b) => {
+    const extendedB = b as ProcessedBiomarker & {
+      _conversionFactor?: number | null;
+      _conversionMissing?: { fromUnit: string; toUnit: string };
+    };
+    const factor = extendedB._conversionFactor;
+    const missing = extendedB._conversionMissing;
+
+    return {
+      originalName: b.originalName,
+      matchedCode: b.standardCode,
+      matchedName: b.standardName,
+      conversionApplied:
+        factor !== null && factor !== undefined && typeof b.originalValue === 'number' && typeof b.standardValue === 'number'
+          ? {
+              fromValue: b.originalValue,
+              fromUnit: b.originalUnit,
+              toValue: b.standardValue,
+              toUnit: b.standardUnit!,
+              factor,
+            }
+          : undefined,
+      conversionMissing: missing,
+      validationIssues: b.validationIssues || [],
+    };
+  });
 
   return {
     processedBiomarkers,
     rawResponse: content.slice(0, 50000), // Truncate to 50KB
     matchDetails,
+    conversionsApplied,
+    conversionsMissing,
   };
 }
 
@@ -1456,7 +1701,7 @@ async function handler(req: LoggedRequest, res: VercelResponse) {
         corrections: [],
       },
       stage3: {
-        name: 'Biomarker Matching',
+        name: 'Biomarker Matching & Conversion',
         startedAt: '',
         completedAt: '',
         durationMs: 0,
@@ -1466,6 +1711,9 @@ async function handler(req: LoggedRequest, res: VercelResponse) {
         userGender: 'male',
         rawResponse: '',
         matchDetails: [],
+        conversionMethod: 'deterministic',
+        conversionsApplied: 0,
+        conversionsMissing: 0,
       },
     };
 
@@ -1720,11 +1968,15 @@ async function handler(req: LoggedRequest, res: VercelResponse) {
       debugInfo.stage3.unmatchedCount = unmatchedCount;
       debugInfo.stage3.rawResponse = postProcessResult.rawResponse;
       debugInfo.stage3.matchDetails = postProcessResult.matchDetails;
+      debugInfo.stage3.conversionsApplied = postProcessResult.conversionsApplied;
+      debugInfo.stage3.conversionsMissing = postProcessResult.conversionsMissing;
 
       log.info('Stage 3 complete', {
         totalBiomarkers: postProcessResult.processedBiomarkers.length,
         matched: matchedCount,
         unmatched: unmatchedCount,
+        conversionsApplied: postProcessResult.conversionsApplied,
+        conversionsMissing: postProcessResult.conversionsMissing,
       });
 
       // Add processed biomarkers to final data

@@ -149,22 +149,120 @@ export function StageTimeline({ debugInfo }: StageTimelineProps) {
           />
         )}
 
-        {/* Stage 3: Biomarker Matching */}
+        {/* Stage 3: Biomarker Matching & Conversion - Verbose */}
         <StageCard
           name={stage3.name}
           icon={<Link2 className="h-4 w-4" />}
           durationMs={stage3.durationMs}
           totalMs={totalDurationMs}
           details={
-            <div className="flex flex-wrap gap-x-3 gap-y-1">
-              <span>Standards: {stage3.standardsCount}</span>
-              <span>Gender: {stage3.userGender}</span>
-              <span>
-                Matched: <span className="text-green-600">{stage3.matchedCount}</span>
-                {stage3.unmatchedCount > 0 && (
-                  <> / Unmatched: <span className="text-amber-600">{stage3.unmatchedCount}</span></>
-                )}
-              </span>
+            <div className="space-y-2">
+              {/* Summary row */}
+              <div className="flex flex-wrap gap-x-3 gap-y-1">
+                <span>Standards: {stage3.standardsCount}</span>
+                <span>Gender: {stage3.userGender}</span>
+                <span>
+                  Matched: <span className="text-green-600">{stage3.matchedCount}</span>
+                  {stage3.unmatchedCount > 0 && (
+                    <> / Unmatched: <span className="text-amber-600">{stage3.unmatchedCount}</span></>
+                  )}
+                </span>
+                <span className="inline-flex items-center px-1.5 py-0.5 rounded bg-blue-50 text-blue-700 font-medium">
+                  {stage3.conversionMethod}
+                </span>
+              </div>
+
+              {/* Matched biomarkers list */}
+              {stage3.matchDetails.filter(d => d.matchedCode).length > 0 && (
+                <div className="pt-1 border-t border-gray-100">
+                  <div className="text-xs text-green-600 font-medium mb-1">
+                    ✓ Matched ({stage3.matchedCount}):
+                  </div>
+                  <div className="space-y-0.5 text-xs">
+                    {stage3.matchDetails
+                      .filter(d => d.matchedCode)
+                      .map((d, i) => (
+                        <div key={i} className="flex gap-2">
+                          <span className="text-gray-600">{d.originalName}</span>
+                          <span className="text-gray-400">→</span>
+                          <span className="font-mono text-gray-700">{d.matchedCode}</span>
+                        </div>
+                      ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Conversions applied list */}
+              {stage3.matchDetails.filter(d => d.conversionApplied).length > 0 && (
+                <div className="pt-1 border-t border-gray-100">
+                  <div className="text-xs text-blue-600 font-medium mb-1">
+                    ↔ Conversions ({stage3.conversionsApplied}):
+                  </div>
+                  <div className="space-y-0.5 font-mono text-xs">
+                    {stage3.matchDetails
+                      .filter(d => d.conversionApplied)
+                      .map((d, i) => (
+                        <div key={i}>
+                          {d.originalName}: {d.conversionApplied!.fromValue} {d.conversionApplied!.fromUnit}
+                          {' → '}{d.conversionApplied!.toValue.toFixed(2)} {d.conversionApplied!.toUnit}
+                          {' '}(×{d.conversionApplied!.factor})
+                        </div>
+                      ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Missing conversions */}
+              {stage3.matchDetails.filter(d => d.conversionMissing).length > 0 && (
+                <div className="pt-1 border-t border-gray-100">
+                  <div className="text-xs text-orange-600 font-medium mb-1">
+                    ⚠ Missing Conversions ({stage3.conversionsMissing}):
+                  </div>
+                  <div className="space-y-0.5 font-mono text-xs text-orange-700">
+                    {stage3.matchDetails
+                      .filter(d => d.conversionMissing)
+                      .map((d, i) => (
+                        <div key={i}>
+                          {d.originalName}: {d.conversionMissing!.fromUnit} → {d.conversionMissing!.toUnit}
+                        </div>
+                      ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Unmatched biomarkers */}
+              {stage3.matchDetails.filter(d => !d.matchedCode).length > 0 && (
+                <div className="pt-1 border-t border-gray-100">
+                  <div className="text-xs text-amber-600 font-medium mb-1">
+                    ✗ Unmatched ({stage3.unmatchedCount}):
+                  </div>
+                  <div className="space-y-0.5 text-xs text-amber-700">
+                    {stage3.matchDetails
+                      .filter(d => !d.matchedCode)
+                      .map((d, i) => (
+                        <div key={i}>{d.originalName}</div>
+                      ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Validation issues */}
+              {stage3.matchDetails.some(d => d.validationIssues?.length > 0) && (
+                <div className="pt-1 border-t border-gray-100">
+                  <div className="text-xs text-red-600 font-medium mb-1">
+                    ⚠ Validation Issues:
+                  </div>
+                  <div className="space-y-0.5 text-xs text-red-700">
+                    {stage3.matchDetails
+                      .filter(d => d.validationIssues?.length > 0)
+                      .map((d, i) => (
+                        <div key={i}>
+                          {d.originalName}: {d.validationIssues.join(', ')}
+                        </div>
+                      ))}
+                  </div>
+                </div>
+              )}
             </div>
           }
         />

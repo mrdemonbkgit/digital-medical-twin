@@ -22,11 +22,12 @@ export interface BaseEvent {
 export interface Biomarker {
   standardCode?: string; // Links to biomarker_standards.code (optional for unmatched biomarkers)
   name: string;
-  value: number;
+  value: number | string; // Numeric for quantitative, string for qualitative (e.g., "Negative", "Trace", "+")
   unit: string;
   referenceMin?: number;
   referenceMax?: number;
   flag?: 'high' | 'low' | 'normal';
+  isQualitative?: boolean; // True for dipstick/qualitative results like "Negative", "Positive"
 }
 
 export interface LabResultAttachment {

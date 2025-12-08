@@ -150,6 +150,11 @@ export function extractAllBiomarkerSummaries(
   // Process all lab results
   for (const lab of labResults) {
     for (const biomarker of lab.biomarkers || []) {
+      // Skip qualitative biomarkers - trend analysis only makes sense for numeric values
+      if (typeof biomarker.value !== 'number') {
+        continue;
+      }
+
       const key = getBiomarkerKey(biomarker);
       const standard = findBiomarkerStandard(biomarker, standards);
       const refRange = getReferenceRange(standard, gender);

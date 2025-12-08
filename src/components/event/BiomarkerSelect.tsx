@@ -141,7 +141,7 @@ export function BiomarkerSelect({
       >
         {selectedBiomarker ? (
           <div className="flex items-center gap-2 flex-1 min-w-0">
-            <span className="truncate text-gray-900">{selectedBiomarker.name}</span>
+            <span className="text-gray-900">{selectedBiomarker.name}</span>
             <span className="text-xs text-gray-400 font-mono shrink-0">
               {selectedBiomarker.code}
             </span>

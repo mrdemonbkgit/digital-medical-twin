@@ -13,13 +13,14 @@ type VerificationStatus = 'clean' | 'corrected' | 'failed';
 // Types
 interface Biomarker {
   name: string;
-  value: number;
+  value: number | string; // Numeric for quantitative, string for qualitative (e.g., "Negative")
   unit: string;
   secondaryValue?: number;
   secondaryUnit?: string;
   referenceMin?: number;
   referenceMax?: number;
   flag?: 'high' | 'low' | 'normal';
+  isQualitative?: boolean; // True for qualitative results like "Negative", "Positive", "Trace"
 }
 
 interface ExtractionResult {
@@ -85,13 +86,14 @@ Return ONLY valid JSON in this exact format (no markdown, no code blocks):
   "biomarkers": [
     {
       "name": "Standard English biomarker name",
-      "value": 123.4,
+      "value": 123.4 or "Negative",
       "unit": "primary unit as shown in PDF",
       "secondaryValue": 6.8,
       "secondaryUnit": "alternative unit if shown",
       "referenceMin": 0,
       "referenceMax": 100,
-      "flag": "high" or "low" or "normal"
+      "flag": "high" or "low" or "normal",
+      "isQualitative": false or true
     }
   ]
 }
@@ -105,7 +107,31 @@ Important:
 - Parse numeric values correctly (remove commas, handle decimals)
 - Determine flag based on reference range if not explicitly stated
 - If a field is not found, omit it from the response
-- Return ONLY the JSON object, nothing else`;
+- Return ONLY the JSON object, nothing else
+
+## URINALYSIS HANDLING (CRITICAL):
+Urinalysis results come from TWO different methods - identify and extract correctly:
+
+1. **Dipstick/Chemical Analysis** (qualitative results):
+   - Section headers: "Dipstick", "Chemical", "Tổng Phân Tích Nước Tiểu"
+   - Results are text values: "Negative", "Positive", "Trace", "+", "++", "+++", "Normal"
+   - Vietnamese mapping: Âm Tính = Negative, Dương Tính = Positive, Bình thường = Normal
+   - Set "isQualitative": true for these
+   - Set "unit": "qualitative"
+   - DO NOT include referenceMin/referenceMax for qualitative results
+   - Examples: Blood, Protein, Glucose, Ketones, Bilirubin, Nitrite, Leukocytes
+
+2. **Microscopy/Sediment Analysis** (quantitative results):
+   - Section headers: "Microscopy", "Sediment", "Tế bào cặn", "Vi thể"
+   - Results are NUMERIC values with units like /μL or cells/HPF
+   - Set "isQualitative": false (or omit)
+   - Include proper numeric value and unit
+   - Vietnamese terms: Hồng Cầu = RBC, Bạch Cầu = WBC, Trụ = Casts, Tinh Thể = Crystals
+   - Examples: RBC (Microscopy), WBC (Microscopy), Epithelial Cells, Casts, Crystals
+
+For biomarkers that appear in BOTH sections (like RBC/WBC), extract BOTH:
+- "Urine Blood" (dipstick, qualitative) AND "Urine RBC (Microscopy)" (numeric /μL)
+- "Urine WBC" (dipstick, qualitative) AND "Urine WBC (Microscopy)" (numeric /μL)`;
 
   // Set up timeout with AbortController
   const controller = new AbortController();
@@ -242,6 +268,13 @@ Carefully compare the extracted JSON above against the original PDF and verify a
    - Secondary value/unit: If PDF shows values in multiple units (e.g., both mg/dL and mmol/L), these should be captured
    - Reference range: Min and max values must match PDF
    - Flag: Must be correct (high/low/normal) based on value vs reference range
+   - isQualitative: Must be true for qualitative results (Negative/Positive/Trace/etc.)
+
+## URINALYSIS VERIFICATION:
+- **Dipstick results** must have string values ("Negative", "Positive", etc.) and isQualitative: true
+- **Microscopy results** must have numeric values with units like /μL or cells/HPF
+- Vietnamese: Âm Tính = Negative, Dương Tính = Positive, Bình thường = Normal
+- If PDF shows BOTH dipstick AND microscopy for the same parameter (e.g., Blood), verify BOTH are extracted
 
 ## Response Format:
 Return ONLY valid JSON (no markdown code blocks) with the corrected/verified data:
@@ -255,13 +288,14 @@ Return ONLY valid JSON (no markdown code blocks) with the corrected/verified dat
   "biomarkers": [
     {
       "name": "English name",
-      "value": 123.4,
+      "value": 123.4 or "Negative",
       "unit": "original unit from PDF",
       "secondaryValue": 6.8,
       "secondaryUnit": "alternative unit if shown",
       "referenceMin": 0,
       "referenceMax": 100,
-      "flag": "high" or "low" or "normal"
+      "flag": "high" or "low" or "normal",
+      "isQualitative": true or false
     }
   ],
   "corrections": ["List each correction made, e.g., 'Fixed Glucose value from 95 to 96', or empty array if none"]

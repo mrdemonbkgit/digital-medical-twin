@@ -97,9 +97,9 @@ export interface ExtractionDebugInfo {
     pagesFailed?: number;
   };
 
-  // Stage 3: Post-Processing
+  // Stage 3: Post-Processing (matching + deterministic conversion)
   stage3: {
-    name: 'Biomarker Matching';
+    name: 'Biomarker Matching & Conversion';
     startedAt: string;
     completedAt: string;
     durationMs: number;
@@ -109,6 +109,10 @@ export interface ExtractionDebugInfo {
     userGender: 'male' | 'female';
     rawResponse: string;
     matchDetails: BiomarkerMatchDetail[];
+    // Conversion statistics (deterministic unit conversion)
+    conversionMethod: 'deterministic';
+    conversionsApplied: number; // How many biomarkers had unit conversion applied
+    conversionsMissing: number; // How many couldn't find a conversion factor
   };
 
   // Merge stage (only for chunked extraction)
@@ -131,6 +135,11 @@ export interface BiomarkerMatchDetail {
     toUnit: string;
     factor: number;
   };
+  // Track when conversion was needed but no factor was found
+  conversionMissing?: {
+    fromUnit: string;
+    toUnit: string;
+  };
   validationIssues: string[];
 }
 
@@ -138,21 +147,23 @@ export interface BiomarkerMatchDetail {
 export interface ProcessedBiomarker {
   // Original extracted data
   originalName: string;
-  originalValue: number;
+  originalValue: number | string; // Numeric for quantitative, string for qualitative
   originalUnit: string;
   // Matched standard (null if unmatched)
   standardCode: string | null;
   standardName: string | null;
-  // Converted value in standard unit
-  standardValue: number | null;
+  // Converted value in standard unit (null for qualitative)
+  standardValue: number | string | null;
   standardUnit: string | null;
-  // Reference range (gender-specific from standards)
+  // Reference range (gender-specific from standards, null for qualitative)
   referenceMin: number | null;
   referenceMax: number | null;
-  // Computed flag based on standard reference range
+  // Computed flag based on standard reference range (null for qualitative)
   flag: 'high' | 'low' | 'normal' | null;
   // Match status
   matched: boolean;
+  // Is this a qualitative result (e.g., "Negative", "Positive")?
+  isQualitative?: boolean;
   // Validation issues (if any)
   validationIssues?: string[];
 }

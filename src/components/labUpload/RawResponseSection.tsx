@@ -87,7 +87,22 @@ function CollapsibleResponse({ title, content, defaultOpen = false }: Collapsibl
 }
 
 export function RawResponseSection({ debugInfo }: RawResponseSectionProps) {
-  const { stage1, stage2, stage3 } = debugInfo;
+  const { stage1, stage2, stage3, isChunked, pageDetails } = debugInfo;
+
+  // For chunked extraction, aggregate per-page responses
+  const stage1Content = isChunked && pageDetails && pageDetails.length > 0
+    ? pageDetails.map((page) =>
+        `=== Page ${page.pageNumber} ===\n${page.extraction.rawResponsePreview || '(no response)'}`
+      ).join('\n\n')
+    : stage1.rawResponse;
+
+  const stage2Content = isChunked && pageDetails && pageDetails.length > 0
+    ? pageDetails
+        .filter((page) => page.verification)
+        .map((page) =>
+          `=== Page ${page.pageNumber} ===\n${page.verification?.rawResponsePreview || '(no response)'}`
+        ).join('\n\n') || undefined
+    : stage2.rawResponse;
 
   return (
     <div className="space-y-3">
@@ -95,13 +110,13 @@ export function RawResponseSection({ debugInfo }: RawResponseSectionProps) {
 
       <div className="space-y-2">
         <CollapsibleResponse
-          title="Stage 1: Gemini Extraction Response"
-          content={stage1.rawResponse}
+          title={isChunked ? `Stage 1: Gemini Extraction (${pageDetails?.length || 0} pages)` : "Stage 1: Gemini Extraction Response"}
+          content={stage1Content}
         />
 
         <CollapsibleResponse
-          title="Stage 2: GPT Verification Response"
-          content={stage2.rawResponse}
+          title={isChunked ? `Stage 2: GPT Verification (${pageDetails?.filter(p => p.verification).length || 0} pages)` : "Stage 2: GPT Verification Response"}
+          content={stage2Content}
         />
 
         <CollapsibleResponse

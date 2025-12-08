@@ -24,6 +24,8 @@ interface ExtractionPreviewProps {
 
 function getBiomarkerFlag(biomarker: Biomarker): 'high' | 'low' | 'normal' | null {
   if (biomarker.flag) return biomarker.flag;
+  // Qualitative values (strings) don't have flags
+  if (typeof biomarker.value === 'string') return null;
   if (biomarker.referenceMin !== undefined && biomarker.value < biomarker.referenceMin) return 'low';
   if (biomarker.referenceMax !== undefined && biomarker.value > biomarker.referenceMax) return 'high';
   if (biomarker.referenceMin !== undefined || biomarker.referenceMax !== undefined) return 'normal';
@@ -79,7 +81,9 @@ function ProcessedBiomarkerRow({ biomarker }: { biomarker: ProcessedBiomarker })
       <td className="px-2 py-2 text-right">
         <div className="text-sm text-gray-900 font-mono">
           {biomarker.matched && biomarker.standardValue !== null
-            ? biomarker.standardValue.toFixed(1)
+            ? typeof biomarker.standardValue === 'number'
+              ? biomarker.standardValue.toFixed(1)
+              : biomarker.standardValue
             : biomarker.originalValue}
         </div>
         {biomarker.matched &&

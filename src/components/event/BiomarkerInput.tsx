@@ -1,4 +1,4 @@
-import { Plus, Trash2, AlertCircle } from 'lucide-react';
+import { Plus, Trash2 } from 'lucide-react';
 import type { Biomarker, BiomarkerStandard, Gender } from '@/types';
 import { Button, Input } from '@/components/common';
 import { BiomarkerSelect } from './BiomarkerSelect';
@@ -14,22 +14,21 @@ interface BiomarkerInputProps {
 }
 
 function calculateFlag(
-  value: number,
+  value: number | string,
   min?: number,
   max?: number
 ): 'high' | 'low' | 'normal' | undefined {
+  // Qualitative values (strings) don't have flags
+  if (typeof value === 'string') return undefined;
   if (min === undefined && max === undefined) return undefined;
   if (min !== undefined && value < min) return 'low';
   if (max !== undefined && value > max) return 'high';
   return 'normal';
 }
 
-// Check if a biomarker has an invalid value (used for form validation warnings)
-function hasInvalidValue(biomarker: Biomarker): boolean {
-  // Only validate if a biomarker has been selected (has standardCode)
-  if (!biomarker.standardCode) return false;
-  // Value must be greater than 0 for any biomarker
-  return biomarker.value <= 0;
+// Helper to check if a biomarker standard is qualitative
+function isQualitativeStandard(standard: BiomarkerStandard): boolean {
+  return standard.standardUnit === 'qualitative';
 }
 
 export function BiomarkerInput({
@@ -80,18 +79,35 @@ export function BiomarkerInput({
         };
       }
 
+      // Check if this is a qualitative biomarker
+      const isQualitative = isQualitativeStandard(standard);
+
+      if (isQualitative) {
+        // Qualitative biomarkers have string values and no reference ranges
+        return {
+          standardCode: standard.code,
+          name: standard.name,
+          value: typeof b.value === 'string' ? b.value : '', // Keep existing string value or start empty
+          unit: standard.standardUnit,
+          referenceMin: undefined,
+          referenceMax: undefined,
+          flag: undefined,
+        };
+      }
+
       // Get gender-specific reference range (default to male)
       const gender = userGender === 'female' ? 'female' : 'male';
       const range = standard.referenceRanges[gender];
+      const numericValue = typeof b.value === 'number' ? b.value : 0;
 
       return {
         standardCode: standard.code,
         name: standard.name,
-        value: b.value, // Keep existing value if any
+        value: numericValue, // Keep existing value if any
         unit: standard.standardUnit,
         referenceMin: range.low,
         referenceMax: range.high,
-        flag: calculateFlag(b.value, range.low, range.high),
+        flag: calculateFlag(numericValue, range.low, range.high),
       };
     });
 
@@ -110,6 +126,28 @@ export function BiomarkerInput({
     });
 
     onChange(updated);
+  };
+
+  const handleQualitativeValueChange = (index: number, value: string) => {
+    const updated = biomarkers.map((b, i) => {
+      if (i !== index) return b;
+
+      return {
+        ...b,
+        value,
+        flag: undefined, // Qualitative values don't have flags
+      };
+    });
+
+    onChange(updated);
+  };
+
+  // Helper to check if a biomarker at index is qualitative
+  const isBiomarkerQualitative = (index: number): boolean => {
+    const biomarker = biomarkers[index];
+    if (!biomarker.standardCode) return false;
+    const standard = availableStandards.find(s => s.code === biomarker.standardCode);
+    return standard ? isQualitativeStandard(standard) : false;
   };
 
   return (
@@ -142,29 +180,21 @@ export function BiomarkerInput({
         </p>
       ) : (
         <div className="space-y-4">
-          {biomarkers.map((biomarker, index) => {
-            const isInvalid = hasInvalidValue(biomarker);
-            return (
+          {biomarkers.map((biomarker, index) => (
             <div
               key={index}
               className={cn(
                 'p-4 border rounded-lg space-y-3',
-                isInvalid && 'border-orange-400 bg-orange-50',
-                !isInvalid && biomarker.flag === 'high' && 'border-red-300 bg-red-50',
-                !isInvalid && biomarker.flag === 'low' && 'border-blue-300 bg-blue-50',
-                !isInvalid && biomarker.flag === 'normal' && 'border-green-300 bg-green-50',
-                !isInvalid && !biomarker.flag && 'border-gray-200 bg-gray-50'
+                biomarker.flag === 'high' && 'border-red-300 bg-red-50',
+                biomarker.flag === 'low' && 'border-blue-300 bg-blue-50',
+                biomarker.flag === 'normal' && 'border-green-300 bg-green-50',
+                !biomarker.flag && 'border-gray-200 bg-gray-50'
               )}
             >
               <div className="flex items-start justify-between">
                 <span className="text-sm font-medium text-gray-700">
                   Biomarker {index + 1}
-                  {isInvalid && (
-                    <span className="ml-2 text-xs uppercase px-2 py-0.5 rounded bg-orange-100 text-orange-700">
-                      Invalid Value
-                    </span>
-                  )}
-                  {!isInvalid && biomarker.flag && (
+                  {biomarker.flag && (
                     <span
                       className={cn(
                         'ml-2 text-xs uppercase px-2 py-0.5 rounded',
@@ -188,35 +218,46 @@ export function BiomarkerInput({
                 </Button>
               </div>
 
-              <div className="grid gap-3 sm:grid-cols-2">
+              <div className="space-y-3">
                 <BiomarkerSelect
                   biomarkers={availableStandards}
                   value={biomarker.standardCode || null}
                   onChange={(standard) => handleSelectBiomarker(index, standard)}
                   excludeCodes={usedCodes.filter((code): code is string => code !== undefined && code !== biomarker.standardCode)}
                 />
-                <div className="grid grid-cols-2 gap-2">
-                  <Input
-                    label="Value"
-                    type="number"
-                    step="any"
-                    value={biomarker.value || ''}
-                    onChange={(e) =>
-                      handleValueChange(index, parseFloat(e.target.value) || 0)
-                    }
-                    disabled={!biomarker.standardCode}
-                  />
+                <div className="grid grid-cols-2 gap-3">
+                  {isBiomarkerQualitative(index) ? (
+                    <Input
+                      label="Value"
+                      type="text"
+                      placeholder="e.g., Negative, Positive"
+                      value={typeof biomarker.value === 'string' ? biomarker.value : ''}
+                      onChange={(e) => handleQualitativeValueChange(index, e.target.value)}
+                      disabled={!biomarker.standardCode}
+                    />
+                  ) : (
+                    <Input
+                      label="Value"
+                      type="number"
+                      step="any"
+                      value={typeof biomarker.value === 'number' ? biomarker.value : ''}
+                      onChange={(e) =>
+                        handleValueChange(index, parseFloat(e.target.value) || 0)
+                      }
+                      disabled={!biomarker.standardCode}
+                    />
+                  )}
                   <Input
                     label="Unit"
-                    value={biomarker.unit}
+                    value={biomarker.unit === 'qualitative' ? 'Qualitative' : biomarker.unit}
                     disabled
                     className="bg-gray-100"
                   />
                 </div>
               </div>
 
-              {/* Reference range display (read-only) */}
-              {biomarker.standardCode && (
+              {/* Reference range display (read-only) - only for quantitative biomarkers */}
+              {biomarker.standardCode && !isBiomarkerQualitative(index) && biomarker.referenceMin !== undefined && (
                 <div className="flex items-center gap-4 text-sm text-gray-500">
                   <span>
                     Reference Range:{' '}
@@ -226,17 +267,8 @@ export function BiomarkerInput({
                   </span>
                 </div>
               )}
-
-              {/* Invalid value warning */}
-              {isInvalid && (
-                <div className="flex items-center gap-2 text-sm text-orange-700">
-                  <AlertCircle className="h-4 w-4" />
-                  <span>Value must be greater than 0</span>
-                </div>
-              )}
             </div>
-          );
-          })}
+          ))}
         </div>
       )}
     </div>

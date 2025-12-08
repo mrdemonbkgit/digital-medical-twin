@@ -231,14 +231,14 @@ describe('validation', () => {
       expect(errors).toContain('Biomarker name is required');
     });
 
-    it('returns error for value of 0', () => {
+    it('allows value of 0', () => {
       const errors = validateBiomarker({ ...validBiomarker, value: 0 });
-      expect(errors).toContain('Value must be greater than 0');
+      expect(errors).toHaveLength(0);
     });
 
-    it('returns error for negative value', () => {
+    it('allows negative value', () => {
       const errors = validateBiomarker({ ...validBiomarker, value: -5 });
-      expect(errors).toContain('Value must be greater than 0');
+      expect(errors).toHaveLength(0);
     });
 
     it('returns error for NaN value', () => {
@@ -265,11 +265,11 @@ describe('validation', () => {
       const errors = validateBiomarker({
         standardCode: 'test',
         name: '',
-        value: 0,
+        value: NaN,
         unit: '',
       });
       expect(errors).toContain('Biomarker name is required');
-      expect(errors).toContain('Value must be greater than 0');
+      expect(errors).toContain('Value must be a valid number');
       expect(errors).toContain('Unit is required');
       expect(errors).toHaveLength(3);
     });
@@ -282,6 +282,57 @@ describe('validation', () => {
     it('accepts very large values', () => {
       const errors = validateBiomarker({ ...validBiomarker, value: 99999 });
       expect(errors).toHaveLength(0);
+    });
+
+    // Qualitative biomarker tests
+    it('validates qualitative biomarker with string value', () => {
+      const qualitativeBiomarker: BiomarkerInput = {
+        standardCode: 'urine_blood',
+        name: 'Urine Blood',
+        value: 'Negative',
+        unit: 'qualitative',
+        isQualitative: true,
+      };
+      const errors = validateBiomarker(qualitativeBiomarker);
+      expect(errors).toHaveLength(0);
+    });
+
+    it('returns error for qualitative biomarker with empty string value', () => {
+      const qualitativeBiomarker: BiomarkerInput = {
+        standardCode: 'urine_blood',
+        name: 'Urine Blood',
+        value: '',
+        unit: 'qualitative',
+        isQualitative: true,
+      };
+      const errors = validateBiomarker(qualitativeBiomarker);
+      expect(errors).toContain('Qualitative value is required');
+    });
+
+    it('returns error for qualitative biomarker with whitespace-only value', () => {
+      const qualitativeBiomarker: BiomarkerInput = {
+        standardCode: 'urine_blood',
+        name: 'Urine Blood',
+        value: '   ',
+        unit: 'qualitative',
+        isQualitative: true,
+      };
+      const errors = validateBiomarker(qualitativeBiomarker);
+      expect(errors).toContain('Qualitative value is required');
+    });
+
+    it('accepts various qualitative values', () => {
+      const values = ['Negative', 'Positive', 'Trace', '+', '++', '+++', 'Normal'];
+      values.forEach((value) => {
+        const biomarker: BiomarkerInput = {
+          name: 'Test',
+          value,
+          unit: 'qualitative',
+          isQualitative: true,
+        };
+        const errors = validateBiomarker(biomarker);
+        expect(errors).toHaveLength(0);
+      });
     });
   });
 
@@ -313,7 +364,7 @@ describe('validation', () => {
     it('returns invalid with correct indices for invalid biomarkers', () => {
       const result = validateBiomarkers([
         validBiomarker,
-        { ...validBiomarker, value: 0 }, // Invalid at index 1
+        { ...validBiomarker, value: NaN }, // Invalid at index 1
         validBiomarker,
         { ...validBiomarker, name: '' }, // Invalid at index 3
       ]);
@@ -323,16 +374,16 @@ describe('validation', () => {
 
     it('includes index in error messages', () => {
       const result = validateBiomarkers([
-        { ...validBiomarker, value: 0 },
+        { ...validBiomarker, name: '' },
       ]);
       expect(result.errors[0]).toContain('Biomarker 1:');
     });
 
     it('reports all errors from all invalid biomarkers', () => {
       const result = validateBiomarkers([
-        { standardCode: 'test', name: '', value: 0, unit: '' },
+        { standardCode: 'test', name: '', value: NaN, unit: '' },
       ]);
-      expect(result.errors.length).toBe(3); // name, value, unit
+      expect(result.errors.length).toBe(3); // name, value (NaN), unit
     });
   });
 

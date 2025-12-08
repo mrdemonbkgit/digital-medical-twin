@@ -24,6 +24,9 @@ export type BiomarkerCategory =
   | 'pancreatic'
   | 'tumor_marker'
   | 'urinalysis'
+  | 'stool_analysis'
+  | 'infectious_disease'
+  | 'body_composition'
   | 'other';
 
 // Reference range for a specific gender
@@ -172,6 +175,18 @@ export const BIOMARKER_CATEGORIES: Record<BiomarkerCategory, { label: string; de
   urinalysis: {
     label: 'Urinalysis',
     description: 'Urine analysis markers',
+  },
+  stool_analysis: {
+    label: 'Stool Analysis',
+    description: 'Fecal markers and stool test results',
+  },
+  infectious_disease: {
+    label: 'Infectious Disease',
+    description: 'Viral and bacterial antibody/antigen markers',
+  },
+  body_composition: {
+    label: 'Body Composition',
+    description: 'Weight, body fat, and muscle mass metrics',
   },
   other: {
     label: 'Other',

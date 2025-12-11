@@ -1,4 +1,5 @@
-import { TrendingUp } from 'lucide-react';
+import { useState } from 'react';
+import { Search, TrendingUp, X } from 'lucide-react';
 import { PageWrapper } from '@/components/layout';
 import { Card, CardContent, LoadingSpinner } from '@/components/common';
 import { useBiomarkerTrends } from '@/hooks/useBiomarkerTrends';
@@ -14,6 +15,7 @@ import { BIOMARKER_CATEGORIES } from '@/types/biomarker';
 
 export function InsightsPage() {
   const [timeRange, setTimeRange] = useInsightsTimeRange();
+  const [searchQuery, setSearchQuery] = useState('');
 
   const {
     summaries,
@@ -87,13 +89,34 @@ export function InsightsPage() {
     );
   }
 
+  // Filter biomarkers by search query
+  const searchLower = searchQuery.toLowerCase().trim();
+  const filteredGroupedByCategory = Object.fromEntries(
+    Object.entries(groupedByCategory).map(([category, biomarkers]) => [
+      category,
+      searchLower
+        ? biomarkers.filter(
+            (b) =>
+              b.name.toLowerCase().includes(searchLower) ||
+              b.code.toLowerCase().includes(searchLower)
+          )
+        : biomarkers,
+    ])
+  ) as typeof groupedByCategory;
+
+  // Count filtered results
+  const filteredCount = Object.values(filteredGroupedByCategory).reduce(
+    (sum, arr) => sum + arr.length,
+    0
+  );
+
   // Get ordered categories that have data and are visible
   const categoryOrder = Object.keys(BIOMARKER_CATEGORIES) as Array<
     keyof typeof BIOMARKER_CATEGORIES
   >;
   const orderedCategories = categoryOrder.filter(
     (cat) =>
-      groupedByCategory[cat]?.length > 0 && visibleCategories.includes(cat)
+      filteredGroupedByCategory[cat]?.length > 0 && visibleCategories.includes(cat)
   );
 
   return (
@@ -108,10 +131,31 @@ export function InsightsPage() {
                   Biomarker Trends
                 </h2>
                 <p className="mt-1 text-sm text-gray-600">
-                  Tracking {summaries.length} biomarkers from your lab results
+                  {searchQuery
+                    ? `Found ${filteredCount} of ${summaries.length} biomarkers`
+                    : `Tracking ${summaries.length} biomarkers from your lab results`}
                 </p>
               </div>
               <div className="flex flex-wrap items-center gap-3">
+                {/* Search input */}
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                  <input
+                    type="text"
+                    placeholder="Search biomarkers..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="h-9 w-48 rounded-md border border-gray-300 bg-white pl-9 pr-8 text-sm placeholder:text-gray-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  />
+                  {searchQuery && (
+                    <button
+                      onClick={() => setSearchQuery('')}
+                      className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  )}
+                </div>
                 <CategoryFilter
                   availableCategories={categoriesWithData}
                   visibleCategories={visibleCategories}
@@ -132,13 +176,24 @@ export function InsightsPage() {
             <CategorySection
               key={category}
               category={category}
-              biomarkers={groupedByCategory[category]}
+              biomarkers={filteredGroupedByCategory[category]}
             />
           ))}
         </div>
 
+        {/* No search results */}
+        {searchQuery && filteredCount === 0 && (
+          <Card>
+            <CardContent>
+              <p className="py-8 text-center text-gray-500">
+                No biomarkers found matching "{searchQuery}"
+              </p>
+            </CardContent>
+          </Card>
+        )}
+
         {/* No visible categories */}
-        {orderedCategories.length === 0 && visibleCategories.length === 0 && (
+        {!searchQuery && orderedCategories.length === 0 && visibleCategories.length === 0 && (
           <Card>
             <CardContent>
               <p className="py-8 text-center text-gray-500">

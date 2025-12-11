@@ -206,10 +206,9 @@ const PAGE_EXTRACTION_TIMEOUT_MS = 180000;
 const PAGE_VERIFICATION_TIMEOUT_MS = 180000;
 
 // Chunking threshold for page-by-page extraction
-// - Below threshold: Single-shot extraction (faster, simpler)
-// - At/above threshold: Per-page extraction with merge (handles large PDFs reliably)
-// Value of 4 balances extraction quality vs API overhead based on testing
-const CHUNK_PAGE_THRESHOLD = 4;
+// - All PDFs now use per-page extraction for consistency
+// - This ensures qualitative biomarkers (urinalysis) are handled uniformly
+const CHUNK_PAGE_THRESHOLD = 1;
 
 // Per-page processing result type
 interface PageProcessingResult {
@@ -487,13 +486,14 @@ Return ONLY valid JSON in this exact format (no markdown, no code blocks):
   "biomarkers": [
     {
       "name": "Standard English biomarker name",
-      "value": 123.4,
+      "value": 123.4 or "Negative",
       "unit": "primary unit as shown in PDF",
       "secondaryValue": 6.8,
       "secondaryUnit": "alternative unit if shown",
       "referenceMin": 0,
       "referenceMax": 100,
-      "flag": "high" or "low" or "normal"
+      "flag": "high" or "low" or "normal",
+      "isQualitative": false or true
     }
   ]
 }
@@ -508,7 +508,21 @@ Important:
 - Parse numeric values correctly (remove commas, handle decimals)
 - Determine flag based on reference range if not explicitly stated
 - If a field is not found, omit it from the response
-- Return ONLY the JSON object, nothing else`;
+- Return ONLY the JSON object, nothing else
+
+## URINALYSIS HANDLING (CRITICAL):
+1. **Dipstick/Chemical Analysis** (qualitative results):
+   - Text like "Âm Tính" IS the value - do NOT set value to null!
+   - "Âm Tính" or "Âm tính" → set value to "Negative"
+   - "Dương Tính" or "Dương tính" → set value to "Positive"
+   - "Vết" → set value to "Trace"
+   - "+", "++", "+++" → keep as-is
+   - Set "isQualitative": true, "unit": "qualitative"
+   - Example: {"name": "Blood (Urine)", "value": "Negative", "unit": "qualitative", "isQualitative": true}
+
+2. **Microscopy/Sediment Analysis** (quantitative results):
+   - Numeric values with units like /μL or cells/HPF
+   - Set "isQualitative": false (or omit)`;
 
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), PAGE_EXTRACTION_TIMEOUT_MS);
@@ -1267,6 +1281,20 @@ function normalizeUnitString(unit: string): string {
   return normalized;
 }
 
+// Parse detection limit values (e.g., "<3" → 3, ">100" → 100)
+// These are values like "<3 IU/mL" where the actual value is below/above detection threshold
+function parseDetectionLimitValue(value: number | string): number | string {
+  if (typeof value === 'number') return value;
+  if (typeof value === 'string') {
+    // Match: <3, >100, <=0.5, >=1.0, etc.
+    const match = value.trim().match(/^[<>]=?\s*([\d.]+)$/);
+    if (match) {
+      return parseFloat(match[1]);
+    }
+  }
+  return value;
+}
+
 // Deterministic unit conversion function
 // Returns the converted value and the factor used (or null if no conversion)
 function convertBiomarkerValue(
@@ -1518,7 +1546,8 @@ When a biomarker has multiple standards for different measurement types, use the
     }
 
     // Handle qualitative biomarkers - pass through as-is
-    if (processed.isQualitative || standard.standard_unit === 'qualitative') {
+    // Trust database standard_unit, not Gemini's isQualitative flag (which may be wrong for S/CO ratios)
+    if (standard.standard_unit === 'qualitative') {
       processed.isQualitative = true;
       processed.standardValue = processed.originalValue; // Pass through string value
       processed.standardUnit = 'qualitative';
@@ -1527,6 +1556,12 @@ When a biomarker has multiple standards for different measurement types, use the
       processed.flag = null;
       continue;
     }
+
+    // Parse detection limit values (e.g., "<3" → 3, ">100" → 100)
+    processed.originalValue = parseDetectionLimitValue(processed.originalValue);
+
+    // Reset isQualitative flag - trust database standard_unit, not Gemini's classification
+    processed.isQualitative = false;
 
     // DETERMINISTIC CONVERSION for quantitative biomarkers
     if (typeof processed.originalValue === 'number') {

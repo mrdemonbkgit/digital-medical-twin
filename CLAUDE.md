@@ -2,6 +2,7 @@
 
 ## Quick Start
 
+0. Run `date` to know current datetime
 1. Read /docs/ONBOARDING.md for project setup
 2. Search /docs/INDEX.md for task-relevant docs
 3. Follow /docs/AGENT_PROTOCOL.md for all work

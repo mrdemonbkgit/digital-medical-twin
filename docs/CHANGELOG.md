@@ -26,6 +26,12 @@ Version history and release notes for Digital Medical Twin. Lists all notable ch
 
 ### Added
 
+- **Insights Page Search Bar**
+  - Search biomarkers by name or code
+  - Live filtering with result count
+  - Clear button and empty state
+  - `src/pages/InsightsPage.tsx`
+
 - **Mobile Navigation Drawer**
   - New hamburger menu on mobile for full navigation access
   - Slide-out drawer with all nav items, user info, and logout
@@ -90,6 +96,33 @@ Version history and release notes for Digital Medical Twin. Lists all notable ch
   - Exports `createSupabaseClient()`, `getUserId()`, and `SupabaseClientAny` type
   - Reduced ~112 lines of duplicated code across 4 files
   - Affected files: `api/ai/chat.ts`, `api/ai/extract-lab-results.ts`, `api/ai/process-lab-upload.ts`, `api/settings/ai.ts`
+
+### Fixed
+
+- **Lab Extraction: Detection Limit Values**
+  - Values like `<3` now correctly parsed to numeric `3` in post-processing
+  - Deterministic parsing instead of relying on AI prompts
+  - `api/ai/process-lab-upload.ts`
+
+- **Lab Extraction: Qualitative Biomarker Classification**
+  - S/CO ratio biomarkers (HBsAg, Anti-HCV) no longer incorrectly marked as qualitative
+  - Trust database `standard_unit` over Gemini's `isQualitative` flag
+  - Fixes "Qualitative value is required" validation errors
+  - `api/ai/process-lab-upload.ts`
+
+- **Lab Extraction: Unified Pipeline**
+  - All PDFs now use per-page extraction (CHUNK_PAGE_THRESHOLD=1)
+  - Per-page prompt now includes URINALYSIS handling for qualitative values
+  - Fixes null values for urine dipstick biomarkers
+  - `api/ai/process-lab-upload.ts`
+
+- **Free Androgen Index Unit Conversion**
+  - Added % to ratio conversion (1:1) for FAI biomarker
+  - `supabase/migrations/20241211000000_fix_free_androgen_index_unit.sql`
+
+---
+
+## Phase 6 - Polish and Launch (Partial)
 
 ### Added
 

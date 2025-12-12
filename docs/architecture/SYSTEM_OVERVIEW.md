@@ -45,7 +45,7 @@ High-level architecture of Digital Medical Twin. Describes the major components,
            ▼                   ▼                   ▼
    ┌───────────────┐   ┌───────────────┐   ┌───────────────┐
    │  Cloud DB     │   │   Auth        │   │   AI APIs     │
-   │  (Events,     │   │   Service     │   │  - GPT-5.1    │
+   │  (Events,     │   │   Service     │   │  - GPT-5.2    │
    │   Users)      │   │               │   │  - Gemini 3   │
    └───────────────┘   └───────────────┘   └───────────────┘
 ```
@@ -103,7 +103,7 @@ User Question → AIChat → AIContext → API Layer
                                          ↓
                               Build RAG prompt
                                          ↓
-                              AI API (GPT-5.1 / Gemini 3)
+                              AI API (GPT-5.2 / Gemini 3)
                                          ↓
                               Response → AIChat (display)
 ```
@@ -115,8 +115,8 @@ User Question → AIChat → AIContext → API Layer
 | Service | Purpose | Auth Method |
 |---------|---------|-------------|
 | Cloud Database | Event storage, user data | Service credentials |
-| OpenAI API | GPT-5.1 for AI Historian | User API key |
-| Google AI API | Gemini 3 Pro for AI Historian | User API key |
+| OpenAI API | GPT-5.2 for AI Historian | Server API key |
+| Google AI API | Gemini 3 Pro for AI Historian | Server API key |
 
 ---
 

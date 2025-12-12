@@ -91,7 +91,7 @@ type VerificationStatus = 'clean' | 'corrected' | 'failed';
 **Architecture:**
 1. User uploads PDF to Supabase Storage (`lab-pdfs` bucket)
 2. Stage 1: Gemini 3 Pro (thinking: high) extracts all data as structured JSON
-3. Stage 2: GPT-5.1 (reasoning: high) verifies against original PDF, makes corrections
+3. Stage 2: GPT-5.2 (reasoning: high) verifies against original PDF, makes corrections
 4. Form auto-populated with verified data
 
 **Consequences:**
@@ -161,11 +161,11 @@ type VerificationStatus = 'clean' | 'corrected' | 'failed';
 
 **Options Considered:**
 1. OpenAI GPT-4o — Proven, widely used
-2. OpenAI GPT-5.1 — Latest generation, superior reasoning
+2. OpenAI GPT-5.2 — Latest generation, superior reasoning
 3. Google Gemini 1.5 Pro — Large context window
 4. Google Gemini 3 Pro — Latest generation, advanced capabilities
 
-**Decision:** Support both GPT-5.1 and Gemini 3 Pro, user's choice
+**Decision:** Support both GPT-5.2 and Gemini 3 Pro, user's choice
 
 **Consequences:**
 - Need to implement adapter pattern for multiple AI providers

@@ -2,21 +2,21 @@ import type { EventType } from './events';
 
 // AI Provider types
 export type AIProvider = 'openai' | 'google';
-export type AIModel = 'gpt-5.1' | 'gemini-3-pro-preview';
+export type AIModel = 'gpt-5.2' | 'gemini-3-pro-preview';
 
 // Provider-specific reasoning parameters
-// Note: OpenAI gpt-5.1 only supports none, low, medium, high (not 'minimal')
+// Note: OpenAI gpt-5.2 only supports none, low, medium, high (not 'minimal')
 export type OpenAIReasoningEffort = 'none' | 'low' | 'medium' | 'high';
 export type GeminiThinkingLevel = 'low' | 'high';
 
 // Model configurations - latest models only
 export const AI_MODELS: Record<AIProvider, AIModel[]> = {
-  openai: ['gpt-5.1'],
+  openai: ['gpt-5.2'],
   google: ['gemini-3-pro-preview'],
 };
 
 export const MODEL_DISPLAY_NAMES: Record<AIModel, string> = {
-  'gpt-5.1': 'GPT-5.1',
+  'gpt-5.2': 'GPT-5.2',
   'gemini-3-pro-preview': 'Gemini 3 Pro',
 };
 

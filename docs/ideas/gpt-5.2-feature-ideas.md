@@ -1,4 +1,4 @@
-# Feature Ideas (GPT-5.1)
+# Feature Ideas (GPT-5.2)
 
 > Last Updated: 2025-11-28
 
@@ -33,12 +33,12 @@ New feature concepts for Digital Medical Twin, grounded in current product scope
 ### Care-Team Share Packs
 
 - **Why:** Users need rapid, safe handoffs for doctors and emergencies; builds on existing export.
-- **What:** One-click “Doctor packet” and “Emergency card” exports with redaction presets (hide notes/tags), optional short-lived share link.
+- **What:** One-click "Doctor packet" and "Emergency card" exports with redaction presets (hide notes/tags), optional short-lived share link.
 - **Where:** Leverage `src/hooks/useExportEvents.ts`, `src/lib/exportData.ts`; add serverless handler under `api/` to mint time-bound links; surface actions in Timeline/Settings.
 
 ### Experiment and Outcome Tracking
 
-- **Why:** Users run n=1 interventions; automate before/after comparisons to answer “did this help?”
+- **Why:** Users run n=1 interventions; automate before/after comparisons to answer "did this help?"
 - **What:** Let users mark an intervention/medication as an experiment with start/end; auto-pull nearby metrics/labs, compute deltas, and feed structured context to AI Historian.
 - **Where:** Add experiment metadata to event schema; small analytics helper; update `src/lib/ai/retriever.ts` and `api/ai/chat.ts` context formatting; UI badges on EventCard.
 

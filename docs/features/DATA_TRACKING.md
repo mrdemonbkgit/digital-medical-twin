@@ -74,7 +74,7 @@ Lab result PDFs can be uploaded via the dedicated **Lab Uploads** page (`/lab-up
 
 The two-stage AI pipeline:
 1. **Stage 1 - Extraction:** Gemini 3 Pro (thinking: high) analyzes the PDF
-2. **Stage 2 - Verification:** GPT-5.1 (reasoning: high) verifies and corrects (optional)
+2. **Stage 2 - Verification:** GPT-5.2 (reasoning: high) verifies and corrects (optional)
 
 ### Extraction Fields
 

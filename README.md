@@ -67,7 +67,7 @@ A personal health data tracking application with AI-powered insights. Track lab 
 | `npm run build` | Production build |
 | `npm run test` | Run unit tests |
 | `npm run test:e2e` | Run E2E tests |
-| `npm run lint` | Run ESLint |
+| `npm run lint` | Run TypeScript type check |
 
 ## Project Structure
 
@@ -110,7 +110,8 @@ A personal health data tracking application with AI-powered insights. Track lab 
 | Variable | Description |
 |----------|-------------|
 | `SUPABASE_SERVICE_ROLE_KEY` | Supabase service role key |
-| `ENCRYPTION_KEY` | 32-byte base64 string for API key encryption |
+| `OPENAI_API_KEY` | OpenAI API key for GPT-5.2 |
+| `GOOGLE_API_KEY` | Google API key for Gemini |
 | `ALLOWED_ORIGIN` | CORS origin (defaults to production URL) |
 
 ## License

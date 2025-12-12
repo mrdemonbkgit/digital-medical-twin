@@ -758,7 +758,7 @@ NOTE: If corrections array is empty, the extraction was clean. If corrections we
         // @ts-expect-error - dispatcher is valid for undici but not in standard fetch types
         dispatcher: gptAgent,
         body: JSON.stringify({
-          model: 'gpt-5.1',
+          model: 'gpt-5.2',
           input: [
             {
               role: 'user',
@@ -1092,7 +1092,7 @@ NOTE: If corrections array is empty, the extraction was clean. If corrections we
         // @ts-expect-error - dispatcher is valid for undici but not in standard fetch types
         dispatcher: gptAgent,
         body: JSON.stringify({
-          model: 'gpt-5.1',
+          model: 'gpt-5.2',
           input: [
             {
               role: 'user',
@@ -1206,7 +1206,7 @@ NOTE: If corrections array is empty, the extraction was clean. If corrections we
       verificationStatus,
       corrections,
       rawResponse: content.slice(0, 50000), // Truncate to 50KB
-      model: 'gpt-5.1',
+      model: 'gpt-5.2',
       reasoningEffort: 'medium',
     };
   } catch (error) {
@@ -1889,7 +1889,7 @@ async function handler(req: LoggedRequest, res: VercelResponse) {
       debugInfo.stage2.verificationStatus = verificationStatus;
       debugInfo.stage2.correctionsCount = allCorrections.length;
       debugInfo.stage2.corrections = allCorrections;
-      debugInfo.stage2.model = 'gpt-5.1 (per-page)';
+      debugInfo.stage2.model = 'gpt-5.2 (per-page)';
       debugInfo.stage2.reasoningEffort = 'low';
       debugInfo.stage2.pagesVerified = pagesVerified;
       debugInfo.stage2.pagesPassed = pagesClean + pagesCorrected; // Backwards compatibility

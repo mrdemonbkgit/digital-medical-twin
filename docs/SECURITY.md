@@ -1,6 +1,6 @@
 # Security Documentation
 
-> Last Updated: 2025-12-02 (Security hardening)
+> Last Updated: 2025-12-12 (Hosted service model documentation)
 
 ## Summary
 
@@ -8,7 +8,7 @@ Security architecture and best practices for the Digital Medical Twin applicatio
 
 ## Keywords
 
-`security` `authentication` `encryption` `API keys` `JWT` `session` `headers`
+`security` `authentication` `API keys` `JWT` `session` `headers`
 
 ## Table of Contents
 
@@ -74,64 +74,61 @@ Routes wrapped with `<ProtectedRoute>` redirect to `/login` if unauthenticated:
 
 ## API Key Management
 
-### Encryption Architecture
+### Hosted Service Model
 
-AI provider API keys are encrypted using **AES-256-GCM** encryption, implemented server-side only.
+This application uses a **hosted service model** where AI API keys are managed server-side via environment variables. Users do not provide their own API keys.
 
-| Property | Value |
-|----------|-------|
-| Algorithm | AES-256-GCM |
-| Key Size | 256 bits (32 bytes) |
-| IV | 12 bytes, randomly generated per encryption |
-| Auth Tag | 16 bytes, ensures data integrity |
+| Aspect | Implementation |
+|--------|---------------|
+| Key Storage | Server environment variables |
+| User Control | Provider/model selection only |
+| Billing | Service operator (not per-user) |
 
-### Storage
+### Server-Side Keys
 
-Encrypted keys are stored in the `user_settings` table:
+AI provider keys are configured as server environment variables:
+
+| Variable | Purpose |
+|----------|---------|
+| `OPENAI_API_KEY` | OpenAI GPT-5.2 API access |
+| `GOOGLE_API_KEY` | Google Gemini API access |
+
+These keys are never exposed to clients and are only used in serverless API routes.
+
+### User Settings
+
+Users can configure their AI preferences in the Settings page:
 
 ```sql
 user_settings
-├── encrypted_openai_key    -- OpenAI API key (encrypted)
-├── encrypted_google_key    -- Google/Gemini API key (encrypted)
-└── encrypted_api_key       -- Legacy fallback (deprecated)
+├── ai_provider             -- 'openai' or 'google'
+├── ai_model                -- Model ID (e.g., 'gpt-5.2', 'gemini-3-pro-preview')
+├── openai_reasoning_effort -- 'none', 'low', 'medium', 'high'
+└── gemini_thinking_level   -- 'low', 'high'
 ```
 
-### Key Storage Flow
+### Settings Flow
 
 ```
-1. User enters API key in Settings page
+1. User selects AI provider and model in Settings
    ↓
-2. PUT /api/settings/ai sends key with Bearer token
+2. PUT /api/settings/ai validates and stores preferences
    ↓
-3. Server validates token via Supabase
+3. Chat API uses stored preferences with server API keys
    ↓
-4. API key encrypted using ENCRYPTION_KEY env var
-   ↓
-5. Encrypted key stored in user_settings
-   ↓
-6. API returns success (never returns decrypted keys)
+4. Server-side validation ensures valid provider/model combinations
 ```
 
-### Key Retrieval
+### Server-Side Validation
 
-The API never returns decrypted keys. Instead, it returns boolean flags:
+The `/api/settings/ai` endpoint validates model selections:
 
-```json
-{
-  "hasOpenAIKey": true,
-  "hasGoogleKey": false,
-  "provider": "openai",
-  "model": "gpt-5.1"
-}
+```typescript
+const VALID_MODELS = {
+  openai: ['gpt-5.2'],
+  google: ['gemini-3-pro-preview'],
+};
 ```
-
-### Key Deletion
-
-```
-DELETE /api/settings/ai?provider=openai
-```
-
-Clears the specified provider's encrypted key from the database.
 
 ---
 
@@ -256,8 +253,9 @@ These must **never** be exposed to the client:
 | Variable | Purpose | Security |
 |----------|---------|----------|
 | `SUPABASE_SERVICE_ROLE_KEY` | Full database access | Server-only, bypasses RLS |
-| `ENCRYPTION_KEY` | API key encryption | Server-only, 32-byte base64 string |
 | `SUPABASE_URL` | Alternative Supabase URL | Server configuration |
+| `OPENAI_API_KEY` | OpenAI API access | Server-only |
+| `GOOGLE_API_KEY` | Google AI API access | Server-only |
 | `ALLOWED_ORIGIN` | CORS origin restriction | Defaults to production URL |
 
 ### Validation

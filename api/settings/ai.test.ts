@@ -165,7 +165,7 @@ describe('AI Settings API', () => {
     it('updates provider and model', async () => {
       mockReq.body = {
         provider: 'google',
-        model: 'gemini-1.5-flash',
+        model: 'gemini-3-pro-preview',
       };
 
       await handler(mockReq as any, mockRes as any);
@@ -175,11 +175,23 @@ describe('AI Settings API', () => {
         expect.objectContaining({
           user_id: 'user-123',
           ai_provider: 'google',
-          ai_model: 'gemini-1.5-flash',
+          ai_model: 'gemini-3-pro-preview',
         }),
         { onConflict: 'user_id' }
       );
       expect(mockRes.status).toHaveBeenCalledWith(200);
+    });
+
+    it('returns 400 for invalid model', async () => {
+      mockReq.body = {
+        provider: 'google',
+        model: 'invalid-model',
+      };
+
+      await handler(mockReq as any, mockRes as any);
+
+      expect(mockRes.status).toHaveBeenCalledWith(400);
+      expect(mockRes.json).toHaveBeenCalledWith({ error: 'Invalid model for provider' });
     });
 
     it('updates reasoning effort', async () => {

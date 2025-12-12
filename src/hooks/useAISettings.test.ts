@@ -46,7 +46,7 @@ describe('useAISettings', () => {
     mockMaybeSingle.mockResolvedValue({
       data: {
         ai_provider: 'openai',
-        ai_model: 'gpt-5.1',
+        ai_model: 'gpt-5.2',
         openai_reasoning_effort: 'high',
         gemini_thinking_level: 'high',
         agentic_mode: true,
@@ -82,7 +82,7 @@ describe('useAISettings', () => {
 
     expect(result.current.settings).toEqual({
       provider: 'openai',
-      model: 'gpt-5.1',
+      model: 'gpt-5.2',
       openaiReasoningEffort: 'high',
       geminiThinkingLevel: 'high',
       agenticMode: true,
@@ -181,7 +181,7 @@ describe('useAISettings', () => {
     await act(async () => {
       await result.current.updateSettings({
         provider: 'openai',
-        model: 'gpt-5.1',
+        model: 'gpt-5.2',
         openaiReasoningEffort: 'high',
       });
     });
@@ -191,7 +191,7 @@ describe('useAISettings', () => {
       expect.objectContaining({
         user_id: 'user-123',
         ai_provider: 'openai',
-        ai_model: 'gpt-5.1',
+        ai_model: 'gpt-5.2',
         openai_reasoning_effort: 'high',
       }),
       { onConflict: 'user_id' }
@@ -270,7 +270,7 @@ describe('useAISettings', () => {
     mockMaybeSingle.mockResolvedValueOnce({
       data: {
         ai_provider: 'openai',
-        ai_model: 'gpt-5.1',
+        ai_model: 'gpt-5.2',
       },
       error: null,
     });

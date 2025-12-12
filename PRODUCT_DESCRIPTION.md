@@ -119,7 +119,7 @@ This is not a generic chatbot. This is a **Retrieval-Augmented Generation (RAG) 
 **How It Works:**
 1. You ask a question in natural language
 2. The app retrieves relevant events from your timeline
-3. Your selected AI model (GPT-5.1 or Gemini 3 Pro) analyzes the data
+3. Your selected AI model (GPT-5.2 or Gemini 3 Pro) analyzes the data
 4. You receive a personalized, data-backed response
 
 **Example Queries:**
@@ -134,7 +134,7 @@ This is not a generic chatbot. This is a **Retrieval-Augmented Generation (RAG) 
 | **Preparation** | "Create a summary of my health history for a new endocrinologist" |
 
 **Model Options:**
-- **OpenAI GPT-5.1**: Latest generation reasoning, superior analysis and synthesis
+- **OpenAI GPT-5.2**: Latest generation reasoning, superior analysis and synthesis
 - **Google Gemini 3 Pro**: Advanced context understanding, exceptional summarization
 
 ---
@@ -216,7 +216,7 @@ Health data is sensitive. We keep it secure in the cloud for seamless access acr
 | **State Management** | React Context + Hooks | Lightweight, efficient state handling |
 | **Storage** | Cloud Database | Encrypted sync across devices |
 | **Authentication** | Username/Password | Simple, secure access |
-| **AI Integration** | OpenAI GPT-5.1 / Google Gemini 3 Pro API | Best-in-class language models for analysis |
+| **AI Integration** | OpenAI GPT-5.2 / Google Gemini 3 Pro API | Best-in-class language models for analysis |
 
 ### Architecture Principles
 
@@ -242,7 +242,7 @@ Health data is sensitive. We keep it secure in the cloud for seamless access acr
 3. **Configure AI (Optional but Recommended)**
    - Click **"Ask AI"** button in the interface
    - Navigate to **Settings**
-   - Select your preferred model (GPT-5.1 or Gemini 3 Pro)
+   - Select your preferred model (GPT-5.2 or Gemini 3 Pro)
    - Configure your API access
 
 4. **Start Querying**

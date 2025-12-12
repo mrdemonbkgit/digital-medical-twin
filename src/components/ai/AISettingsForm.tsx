@@ -9,12 +9,12 @@ import {
 } from '@/types/ai';
 
 const PROVIDER_OPTIONS = [
-  { value: 'openai', label: 'OpenAI (GPT-5.1)' },
+  { value: 'openai', label: 'OpenAI (GPT-5.2)' },
   { value: 'google', label: 'Google (Gemini 3 Pro)' },
 ];
 
 const MODEL_OPTIONS: Record<AIProvider, Array<{ value: string; label: string }>> = {
-  openai: [{ value: 'gpt-5.1', label: 'GPT-5.1' }],
+  openai: [{ value: 'gpt-5.2', label: 'GPT-5.2' }],
   google: [{ value: 'gemini-3-pro-preview', label: 'Gemini 3 Pro' }],
 };
 
@@ -132,7 +132,7 @@ export function AISettingsForm() {
             }))}
           />
           <p className="text-xs text-gray-500 mt-1">
-            Controls how much time GPT-5.1 spends thinking before responding. Higher values produce
+            Controls how much time GPT-5.2 spends thinking before responding. Higher values produce
             more thorough answers but take longer.
           </p>
         </div>

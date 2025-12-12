@@ -152,7 +152,7 @@ function rowToEvent(row: EventRow): HealthEvent {
         ...base,
         type: 'vice',
         viceCategory: (row.vice_category || 'alcohol') as Vice['viceCategory'],
-        quantity: row.vice_quantity || undefined,
+        quantity: row.vice_quantity ?? undefined,
         unit: row.vice_unit || undefined,
         context: row.vice_context || undefined,
         trigger: row.vice_trigger || undefined,

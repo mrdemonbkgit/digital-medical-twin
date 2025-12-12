@@ -41,7 +41,7 @@ Retrieval-Augmented Generation (RAG) enables the AI to answer questions using th
 │       ↓                                                      │
 │  4. Build Context Prompt                                     │
 │       ↓                                                      │
-│  5. Send to AI Provider ───────▶ GPT-5.1 / Gemini 3         │
+│  5. Send to AI Provider ───────▶ GPT-5.2 / Gemini 3         │
 │       ↓                                                      │
 │  6. Return Response                                          │
 └─────────────────────────────────────────────────────────────┘
@@ -61,16 +61,16 @@ Retrieval-Augmented Generation (RAG) enables the AI to answer questions using th
 
 ## Supported Models
 
-### OpenAI GPT-5.1
+### OpenAI GPT-5.2
 
 | Property | Value |
 |----------|-------|
-| Model ID | `gpt-5.1` |
-| Context Window | 128,000 tokens |
+| Model ID | `gpt-5.2` |
+| Context Window | 400,000 tokens |
 | Best For | Complex reasoning, analysis |
 | API Base | https://api.openai.com/v1 |
 
-**Reasoning Effort Parameter:** Controls how much thinking GPT-5.1 does before responding.
+**Reasoning Effort Parameter:** Controls how much thinking GPT-5.2 does before responding.
 
 | Value | Description |
 |-------|-------------|
@@ -110,7 +110,7 @@ The application uses server-side API keys configured as environment variables. U
 
 | Variable | Description |
 |----------|-------------|
-| `OPENAI_API_KEY` | OpenAI API key for GPT-5.1 |
+| `OPENAI_API_KEY` | OpenAI API key for GPT-5.2 |
 | `GOOGLE_API_KEY` | Google AI API key for Gemini |
 
 ### User Settings
@@ -344,9 +344,9 @@ Two-stage AI pipeline for extracting data from lab result PDFs. Uses asynchronou
 
 | Property | Value |
 |----------|-------|
-| Model | `gpt-5.1` |
+| Model | `gpt-5.2` |
 | Reasoning Effort | `high` |
-| Max Output Tokens | 128000 |
+| Max Output Tokens | 16000 |
 | Input | PDF image + Stage 1 JSON |
 
 **Verification Tasks:**

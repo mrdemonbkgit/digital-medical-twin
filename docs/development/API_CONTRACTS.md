@@ -328,7 +328,7 @@ Send message to AI Historian.
 {
   "message": "Compare my vitamin D levels over the past year",
   "provider": "openai",
-  "model": "gpt-5.1"
+  "model": "gpt-5.2"
 }
 ```
 
@@ -363,8 +363,7 @@ Save AI configuration.
 ```json
 {
   "provider": "openai",
-  "model": "gpt-5.1",
-  "apiKey": "sk-...",
+  "model": "gpt-5.2",
   "temperature": 0.7
 }
 ```

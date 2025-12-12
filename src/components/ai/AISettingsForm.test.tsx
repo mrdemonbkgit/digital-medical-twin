@@ -73,7 +73,7 @@ describe('AISettingsForm', () => {
 
   it('shows OpenAI reasoning effort dropdown when provider is openai', () => {
     vi.mocked(useAISettings).mockReturnValue({
-      settings: { ...defaultSettings, provider: 'openai', model: 'gpt-5.1' },
+      settings: { ...defaultSettings, provider: 'openai', model: 'gpt-5.2' },
       isLoading: false,
       error: null,
       updateSettings: mockUpdateSettings,
@@ -111,7 +111,7 @@ describe('AISettingsForm', () => {
     mockUpdateSettings.mockResolvedValueOnce(undefined);
 
     vi.mocked(useAISettings).mockReturnValue({
-      settings: { ...defaultSettings, provider: 'openai', model: 'gpt-5.1' },
+      settings: { ...defaultSettings, provider: 'openai', model: 'gpt-5.2' },
       isLoading: false,
       error: null,
       updateSettings: mockUpdateSettings,
@@ -126,7 +126,7 @@ describe('AISettingsForm', () => {
     await waitFor(() => {
       expect(mockUpdateSettings).toHaveBeenCalledWith({
         provider: 'openai',
-        model: 'gpt-5.1',
+        model: 'gpt-5.2',
         openaiReasoningEffort: 'medium',
         geminiThinkingLevel: 'high',
         agenticMode: true,
@@ -138,7 +138,7 @@ describe('AISettingsForm', () => {
     mockUpdateSettings.mockResolvedValueOnce(undefined);
 
     vi.mocked(useAISettings).mockReturnValue({
-      settings: { ...defaultSettings, provider: 'openai', model: 'gpt-5.1' },
+      settings: { ...defaultSettings, provider: 'openai', model: 'gpt-5.2' },
       isLoading: false,
       error: null,
       updateSettings: mockUpdateSettings,
@@ -159,7 +159,7 @@ describe('AISettingsForm', () => {
     mockUpdateSettings.mockRejectedValueOnce(new Error('Failed to save'));
 
     vi.mocked(useAISettings).mockReturnValue({
-      settings: { ...defaultSettings, provider: 'openai', model: 'gpt-5.1' },
+      settings: { ...defaultSettings, provider: 'openai', model: 'gpt-5.2' },
       isLoading: false,
       error: null,
       updateSettings: mockUpdateSettings,
@@ -199,7 +199,7 @@ describe('AISettingsForm', () => {
 
   it('enables save button when provider is selected', () => {
     vi.mocked(useAISettings).mockReturnValue({
-      settings: { ...defaultSettings, provider: 'openai', model: 'gpt-5.1' },
+      settings: { ...defaultSettings, provider: 'openai', model: 'gpt-5.2' },
       isLoading: false,
       error: null,
       updateSettings: mockUpdateSettings,
@@ -223,7 +223,7 @@ describe('AISettingsForm', () => {
 
   it('shows description text for reasoning parameters', () => {
     vi.mocked(useAISettings).mockReturnValue({
-      settings: { ...defaultSettings, provider: 'openai', model: 'gpt-5.1' },
+      settings: { ...defaultSettings, provider: 'openai', model: 'gpt-5.2' },
       isLoading: false,
       error: null,
       updateSettings: mockUpdateSettings,
@@ -232,6 +232,6 @@ describe('AISettingsForm', () => {
 
     render(<AISettingsForm />);
 
-    expect(screen.getByText(/controls how much time gpt-5.1 spends thinking/i)).toBeInTheDocument();
+    expect(screen.getByText(/controls how much time gpt-5.2 spends thinking/i)).toBeInTheDocument();
   });
 });

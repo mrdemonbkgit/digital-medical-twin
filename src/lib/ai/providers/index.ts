@@ -27,11 +27,11 @@ export function createProvider(provider: AIProvider, apiKey: string): AIProvider
 export function getDefaultModel(provider: AIProvider): string {
   switch (provider) {
     case 'openai':
-      return 'gpt-5.1';
+      return 'gpt-5.2';
     case 'google':
-      return 'gemini-3-pro';
+      return 'gemini-3-pro-preview';
     default:
-      return 'gpt-5.1';
+      return 'gpt-5.2';
   }
 }
 
@@ -40,8 +40,8 @@ export function getDefaultModel(provider: AIProvider): string {
  */
 export function isValidModelForProvider(model: string, provider: AIProvider): boolean {
   const providerModels: Record<AIProvider, string[]> = {
-    openai: ['gpt-5.1', 'gpt-4o', 'gpt-4-turbo'],
-    google: ['gemini-3-pro', 'gemini-2.0-flash', 'gemini-1.5-pro'],
+    openai: ['gpt-5.2'],
+    google: ['gemini-3-pro-preview'],
   };
 
   return providerModels[provider]?.includes(model) ?? false;

@@ -4,7 +4,7 @@
 
 ## Summary
 
-The AI Historian is a RAG-powered chat interface that answers questions about the user's health history. Users can query trends, find correlations, and generate summaries using their choice of GPT-5.1 or Gemini 3 Pro. Features include persistent conversation history, activity timeline (ChatGPT-style), web search grounding with inline citations, and multi-provider API key management.
+The AI Historian is a RAG-powered chat interface that answers questions about the user's health history. Users can query trends, find correlations, and generate summaries using their choice of GPT-5.2 or Gemini 3 Pro. Features include persistent conversation history, activity timeline (ChatGPT-style), web search grounding with inline citations, and multi-provider API key management.
 
 ## Keywords
 
@@ -300,7 +300,7 @@ Find specific information.
 | Setting | Options | Default |
 |---------|---------|---------|
 | AI Provider | OpenAI, Google | None |
-| Model | GPT-5.1 (OpenAI), Gemini 3 Pro (Google) | Auto-selected by provider |
+| Model | GPT-5.2 (OpenAI), Gemini 3 Pro (Google) | Auto-selected by provider |
 | Reasoning Effort (OpenAI) | None, Minimal, Low, Medium, High | Medium |
 | Thinking Level (Google) | Low, High | High |
 | Agentic Mode | On, Off | On (OpenAI), Off (Gemini) |
@@ -308,7 +308,7 @@ Find specific information.
 ### How It Works
 
 - **Server-side API keys**: The application uses centrally-managed API keys. Users do not need to provide their own keys.
-- **Provider selection**: Choose between OpenAI GPT-5.1 or Google Gemini 3 Pro
+- **Provider selection**: Choose between OpenAI GPT-5.2 or Google Gemini 3 Pro
 - **Reasoning configuration**: Adjust how deeply the AI thinks before responding
   - **OpenAI Reasoning Effort**: Controls thinking tokens (higher = more thorough but slower)
   - **Gemini Thinking Level**: Controls thinking depth (high recommended for complex queries)

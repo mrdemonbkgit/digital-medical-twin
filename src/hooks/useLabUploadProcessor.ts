@@ -47,6 +47,12 @@ export function useLabUploadProcessor(): UseLabUploadProcessorReturn {
   const startPolling = useCallback((uploadId: string) => {
     const log = logger.child('LabUploadProcessor');
 
+    // Clear any existing interval first to prevent stacking
+    if (pollIntervalRef.current) {
+      clearInterval(pollIntervalRef.current);
+      pollIntervalRef.current = null;
+    }
+
     const poll = async () => {
       try {
         const upload = await getLabUpload(uploadId);

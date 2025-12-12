@@ -1,6 +1,6 @@
 # Documentation Index
 
-> Last Updated: 2025-12-06 (Docs audit fixes)
+> Last Updated: 2025-12-12 (GPT-5.2 model update)
 
 ## Summary
 
@@ -52,7 +52,7 @@ Master index for all project documentation. Search here first to find relevant d
 | Lab Uploads | /docs/features/LAB_UPLOADS.md | Full doc |
 | Document Storage | /docs/features/DOCUMENTS.md | Full doc |
 | User Profile | /docs/features/USER_PROFILE.md | Full doc |
-| Feature ideas (GPT-5.1) | /docs/ideas/gpt-5.1-feature-ideas.md | #high-impact-ideas |
+| Feature ideas (GPT-5.2) | /docs/ideas/gpt-5.2-feature-ideas.md | #high-impact-ideas |
 | Feature ideas (Gemini 3 Pro) | /docs/ideas/gemini-3-pro-features.md | Full doc |
 | Coding conventions | /docs/development/CODING_STANDARDS.md | Full doc |
 | Logging system | /docs/development/LOGGING.md | Full doc |
@@ -84,7 +84,7 @@ Master index for all project documentation. Search here first to find relevant d
 - **agent**: /docs/AGENT_PROTOCOL.md
 - **agentic**: /docs/architecture/AI_INTEGRATION.md#agentic-mode, /docs/features/AI_HISTORIAN.md#agentic-vs-one-shot-mode
 - **AI**: /docs/architecture/AI_INTEGRATION.md, /docs/features/AI_HISTORIAN.md
-- **allergies**: /docs/ideas/gpt-5.1-feature-ideas.md#allergies-immunizations-procedures
+- **allergies**: /docs/ideas/gpt-5.2-feature-ideas.md#allergies-immunizations-procedures
 - **API**: /docs/development/API_CONTRACTS.md
 - **architecture**: /docs/architecture/SYSTEM_OVERVIEW.md
 - **authentication**: /docs/architecture/AUTH_SYSTEM.md
@@ -128,7 +128,7 @@ Master index for all project documentation. Search here first to find relevant d
 - **dev server**: /docs/ONBOARDING.md#local-api-development
 - **dev:api**: /docs/ONBOARDING.md#local-api-development
 - **directory**: /docs/ONBOARDING.md#directory-structure
-- **doctor packet**: /docs/ideas/gpt-5.1-feature-ideas.md#care-team-share-packs
+- **doctor packet**: /docs/ideas/gpt-5.2-feature-ideas.md#care-team-share-packs
 - **doctor visits**: /docs/features/DATA_TRACKING.md
 - **documentation**: /docs/AGENT_PROTOCOL.md#updating-documentation
 
@@ -142,15 +142,15 @@ Master index for all project documentation. Search here first to find relevant d
 - **EventCard**: src/components/event/EventCard.tsx
 - **EventForm**: src/components/event/forms/
 - **export**: /docs/features/TIMELINE.md#data-export, src/lib/exportData.ts, src/hooks/useExportEvents.ts
-- **experiments**: /docs/ideas/gpt-5.1-feature-ideas.md#experiment-and-outcome-tracking
+- **experiments**: /docs/ideas/gpt-5.2-feature-ideas.md#experiment-and-outcome-tracking
 
 ### F
 
 - **family health history**: /docs/ideas/FEATURE_SUGGESTIONS_OPUS_4_5.md#3-family-health-history-module
 - **features**: /docs/features/
-- **feature ideas**: /docs/ideas/gpt-5.1-feature-ideas.md
+- **feature ideas**: /docs/ideas/gpt-5.2-feature-ideas.md
 - **feature suggestions**: /docs/ideas/FEATURE_SUGGESTIONS_OPUS_4_5.md
-- **FHIR**: /docs/ideas/FEATURE_SUGGESTIONS_OPUS_4_5.md#4-fhir-health-records-import, /docs/ideas/gpt-5.1-feature-ideas.md#fhir-and-portal-imports
+- **FHIR**: /docs/ideas/FEATURE_SUGGESTIONS_OPUS_4_5.md#4-fhir-health-records-import, /docs/ideas/gpt-5.2-feature-ideas.md#fhir-and-portal-imports
 
 ### G
 
@@ -168,9 +168,9 @@ Master index for all project documentation. Search here first to find relevant d
 
 ### I
 
-- **ideas**: /docs/ideas/gpt-5.1-feature-ideas.md
+- **ideas**: /docs/ideas/gpt-5.2-feature-ideas.md
 - **imaging**: /docs/features/DOCUMENTS.md
-- **immunizations**: /docs/ideas/gpt-5.1-feature-ideas.md#allergies-immunizations-procedures
+- **immunizations**: /docs/ideas/gpt-5.2-feature-ideas.md#allergies-immunizations-procedures
 - **insurance**: /docs/features/DOCUMENTS.md
 - **insights**: /docs/features/INSIGHTS_DASHBOARD.md, src/pages/InsightsPage.tsx, src/pages/InsightsDetailPage.tsx
 - **InsightsPage**: src/pages/InsightsPage.tsx
@@ -201,7 +201,7 @@ Master index for all project documentation. Search here first to find relevant d
 
 ### O
 
-- **observations**: /docs/ideas/gpt-5.1-feature-ideas.md#observations-of-daily-living
+- **observations**: /docs/ideas/gpt-5.2-feature-ideas.md#observations-of-daily-living
 - **offline**: /docs/DECISION_LOG.md#2025-11-26-offline-support-deferral
 - **onboarding**: /docs/ONBOARDING.md
 - **one-shot**: /docs/features/AI_HISTORIAN.md#agentic-vs-one-shot-mode, /docs/architecture/AI_INTEGRATION.md#one-shot-fallback
@@ -228,7 +228,7 @@ Master index for all project documentation. Search here first to find relevant d
 
 - **RAG**: /docs/features/AI_HISTORIAN.md
 - **React**: /docs/ONBOARDING.md#tech-stack, /docs/development/COMPONENT_LIBRARY.md
-- **reasoning_effort**: /docs/architecture/AI_INTEGRATION.md#openai-gpt-51
+- **reasoning_effort**: /docs/architecture/AI_INTEGRATION.md#openai-gpt-52
 - **referrals**: /docs/features/DOCUMENTS.md
 - **recharts**: /docs/features/INSIGHTS_DASHBOARD.md#6-technical-architecture, src/components/insights/TrendChart.tsx, src/components/insights/SparklineCard.tsx
 - **responsive**: /docs/CHANGELOG.md#unreleased, src/components/layout/MobileNav.tsx

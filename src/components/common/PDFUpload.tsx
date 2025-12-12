@@ -211,7 +211,7 @@ const stageMessages: Record<ExtractionStage, { text: string; showSpinner: boolea
   uploading: { text: 'Uploading PDF...', showSpinner: true },
   fetching_pdf: { text: 'Fetching PDF from storage...', showSpinner: true },
   extracting_gemini: { text: 'Stage 1: Extracting with Gemini 3 Pro...', showSpinner: true },
-  verifying_gpt: { text: 'Stage 2: Verifying with GPT-5.1...', showSpinner: true },
+  verifying_gpt: { text: 'Stage 2: Verifying with GPT-5.2...', showSpinner: true },
   complete: { text: 'Extraction complete!', showSpinner: false },
   error: { text: 'Extraction failed', showSpinner: false },
 };

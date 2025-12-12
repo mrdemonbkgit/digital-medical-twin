@@ -25,7 +25,7 @@ Project setup, tech stack, and directory structure. Read this first when startin
 
 Digital Medical Twin is a **personal health tracking application** designed for individual users to maintain a comprehensive digital twin of their own medical history. Each user tracks their own health data - the app is not designed for managing multiple patients or family members within a single account.
 
-Users log health events (bloodwork, doctor visits, medications, interventions, metrics) and query their history using AI (GPT-5.1 or Gemini 3 Pro). Data is stored in the cloud with username/password authentication.
+Users log health events (bloodwork, doctor visits, medications, interventions, metrics) and query their history using AI (GPT-5.2 or Gemini 3 Pro). Data is stored in the cloud with username/password authentication.
 
 ### Design Assumptions
 
@@ -47,7 +47,7 @@ Users log health events (bloodwork, doctor visits, medications, interventions, m
 | Database | Supabase (PostgreSQL) | latest |
 | Auth | Supabase Auth | latest |
 | Hosting | Vercel | latest |
-| AI | OpenAI GPT-5.1 / Google Gemini 3 Pro | latest |
+| AI | OpenAI GPT-5.2 / Google Gemini 3 Pro | latest |
 | AI Proxy | Vercel Serverless Functions | latest |
 
 ---

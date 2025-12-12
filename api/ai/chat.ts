@@ -109,7 +109,7 @@ const OPENAI_API_KEY = process.env.OPENAI_API_KEY || '';
 const GOOGLE_API_KEY = process.env.GOOGLE_API_KEY || '';
 
 // Reasoning parameter types
-// Note: OpenAI gpt-5.1 only supports none, low, medium, high (not 'minimal')
+// Note: OpenAI gpt-5.2 only supports none, low, medium, high (not 'minimal')
 type OpenAIReasoningEffort = 'none' | 'low' | 'medium' | 'high';
 type GeminiThinkingLevel = 'low' | 'high';
 
@@ -302,7 +302,7 @@ async function openaiComplete(
     .map((m) => ({ role: m.role, content: m.content }));
 
   // Use Responses API for extended capabilities
-  // reasoning_effort controls thinking depth for GPT-5.1
+  // reasoning_effort controls thinking depth for GPT-5.2
   const requestBody: Record<string, unknown> = {
     model,
     input,
@@ -1420,7 +1420,7 @@ async function handler(req: LoggedRequest, res: VercelResponse) {
     }
 
     // Call AI provider and track elapsed time
-    const effectiveModel = model || (provider === 'openai' ? 'gpt-5.1' : 'gemini-3-pro-preview');
+    const effectiveModel = model || (provider === 'openai' ? 'gpt-5.2' : 'gemini-3-pro-preview');
 
     const t_ai = Date.now();
     let result: ExtendedAIResponse & { healthToolCalls?: ToolCallResult[] };
@@ -1556,7 +1556,7 @@ async function handler(req: LoggedRequest, res: VercelResponse) {
         agenticMode: !usedFallback,
         toolCallCount: result.healthToolCalls?.length || 0,
       },
-      _timings: timings, // Include in response for frontend debugging
+      ...(process.env.NODE_ENV !== 'production' && { _timings: timings }),
     };
 
     if (useSSE) {

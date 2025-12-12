@@ -231,7 +231,7 @@ For biomarkers that appear in BOTH sections (like RBC/WBC), extract BOTH:
   }
 }
 
-// Stage 2: GPT-5.1 verification (reasoning: high)
+// Stage 2: GPT-5.2 verification (reasoning: high)
 async function verifyWithGPT(
   pdfBase64: string,
   extractedData: ExtractionResult
@@ -332,7 +332,7 @@ NOTE: If corrections array is empty, the extraction was clean. If corrections we
         // @ts-expect-error - dispatcher is valid for undici but not in standard fetch types
         dispatcher: longTimeoutAgent,
         body: JSON.stringify({
-          model: 'gpt-5.1',
+          model: 'gpt-5.2',
           input: [
             {
               role: 'user',

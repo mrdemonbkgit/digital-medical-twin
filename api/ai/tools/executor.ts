@@ -108,7 +108,7 @@ async function executeSearchEvents(
 
   // Search by query text
   if (args.query && typeof args.query === 'string') {
-    const searchTerm = args.query.replace(/[%_]/g, ''); // Sanitize
+    const searchTerm = args.query.replace(/[%_,()]/g, ''); // Sanitize PostgREST special chars
     query = query.or(
       `title.ilike.%${searchTerm}%,` +
       `notes.ilike.%${searchTerm}%,` +
@@ -259,13 +259,18 @@ async function executeGetBiomarkerHistory(
   if (history.length >= 2) {
     const first = history[0].value;
     const last = history[history.length - 1].value;
-    const change = ((last - first) / first) * 100;
-    if (Math.abs(change) < 5) {
-      trend = 'stable';
-    } else if (change > 0) {
-      trend = `increasing (+${change.toFixed(1)}%)`;
+    if (first === 0) {
+      // Handle divide by zero case
+      trend = last === 0 ? 'stable' : 'increasing from zero';
     } else {
-      trend = `decreasing (${change.toFixed(1)}%)`;
+      const change = ((last - first) / first) * 100;
+      if (Math.abs(change) < 5) {
+        trend = 'stable';
+      } else if (change > 0) {
+        trend = `increasing (+${change.toFixed(1)}%)`;
+      } else {
+        trend = `decreasing (${change.toFixed(1)}%)`;
+      }
     }
   }
 

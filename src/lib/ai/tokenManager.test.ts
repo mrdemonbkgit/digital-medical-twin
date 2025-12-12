@@ -89,13 +89,13 @@ function createMetric(id: string, date: string, title: string = 'Metric'): Metri
 
 describe('tokenManager', () => {
   describe('calculateBudget', () => {
-    it('calculates budget for gpt-5.1 model', () => {
-      const budget = calculateBudget('gpt-5.1');
+    it('calculates budget for gpt-5.2 model', () => {
+      const budget = calculateBudget('gpt-5.2');
 
-      expect(budget.total).toBe(128000);
+      expect(budget.total).toBe(400000);
       expect(budget.systemPrompt).toBe(500);
       expect(budget.responseBuffer).toBe(2000);
-      expect(budget.contextBudget).toBe(128000 - 500 - 2000);
+      expect(budget.contextBudget).toBe(400000 - 500 - 2000);
     });
 
     it('calculates budget for gemini-3-pro-preview model', () => {
@@ -113,13 +113,13 @@ describe('tokenManager', () => {
     });
 
     it('reserves correct tokens for system prompt', () => {
-      const budget = calculateBudget('gpt-5.1');
+      const budget = calculateBudget('gpt-5.2');
 
       expect(budget.systemPrompt).toBe(500);
     });
 
     it('reserves correct tokens for response', () => {
-      const budget = calculateBudget('gpt-5.1');
+      const budget = calculateBudget('gpt-5.2');
 
       expect(budget.responseBuffer).toBe(2000);
     });

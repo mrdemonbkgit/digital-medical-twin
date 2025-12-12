@@ -7,7 +7,7 @@ import {
 } from '../lib/supabase.js';
 
 // Valid values for reasoning parameters
-// Note: OpenAI gpt-5.1 does not support 'minimal' reasoning effort
+// Note: OpenAI gpt-5.2 does not support 'minimal' reasoning effort
 const VALID_OPENAI_REASONING_EFFORTS = ['none', 'low', 'medium', 'high'];
 const VALID_GEMINI_THINKING_LEVELS = ['low', 'high'];
 
@@ -83,6 +83,15 @@ async function handler(req: LoggedRequest, res: VercelResponse) {
 
       if (geminiThinkingLevel && !VALID_GEMINI_THINKING_LEVELS.includes(geminiThinkingLevel)) {
         return res.status(400).json({ error: 'Invalid Gemini thinking level' });
+      }
+
+      // Validate model is compatible with provider
+      const VALID_MODELS: Record<string, string[]> = {
+        openai: ['gpt-5.2'],
+        google: ['gemini-3-pro-preview'],
+      };
+      if (model && provider && !VALID_MODELS[provider]?.includes(model)) {
+        return res.status(400).json({ error: 'Invalid model for provider' });
       }
 
       // Build update object

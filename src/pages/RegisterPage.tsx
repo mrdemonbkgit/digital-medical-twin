@@ -13,12 +13,12 @@ export function RegisterPage() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4 py-12">
+    <div className="flex min-h-screen items-center justify-center bg-gray-50 dark:bg-zinc-900 px-4 py-12">
       <div className="w-full max-w-md">
         <div className="mb-8 text-center">
-          <Activity className="mx-auto h-12 w-12 text-blue-600" />
-          <h1 className="mt-4 text-2xl font-bold text-gray-900">Digital Medical Twin</h1>
-          <p className="mt-2 text-gray-600">Create your account</p>
+          <Activity className="mx-auto h-12 w-12 text-blue-600 dark:text-blue-400" />
+          <h1 className="mt-4 text-2xl font-bold text-gray-900 dark:text-zinc-100">Digital Medical Twin</h1>
+          <p className="mt-2 text-gray-600 dark:text-zinc-400">Create your account</p>
         </div>
 
         <Card>

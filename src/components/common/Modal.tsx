@@ -61,7 +61,7 @@ export function Modal({
       {/* Modal content */}
       <div
         className={cn(
-          'relative w-full mx-4 bg-white rounded-lg shadow-xl',
+          'relative w-full mx-4 bg-white rounded-lg shadow-xl dark:bg-zinc-800',
           sizeClasses[size],
           className
         )}
@@ -71,16 +71,16 @@ export function Modal({
       >
         {/* Header */}
         {title && (
-          <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
+          <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-zinc-700">
             <h2
               id="modal-title"
-              className="text-lg font-semibold text-gray-900"
+              className="text-lg font-semibold text-gray-900 dark:text-zinc-100"
             >
               {title}
             </h2>
             <button
               onClick={onClose}
-              className="p-2.5 min-w-[44px] min-h-[44px] text-gray-400 hover:text-gray-600 rounded-full hover:bg-gray-100 flex items-center justify-center"
+              className="p-2.5 min-w-[44px] min-h-[44px] text-gray-400 hover:text-gray-600 rounded-full hover:bg-gray-100 dark:text-zinc-400 dark:hover:text-zinc-300 dark:hover:bg-zinc-700 flex items-center justify-center"
               aria-label="Close modal"
             >
               <X className="w-5 h-5" />
@@ -93,7 +93,7 @@ export function Modal({
           {!title && (
             <button
               onClick={onClose}
-              className="absolute top-4 right-4 p-2.5 min-w-[44px] min-h-[44px] text-gray-400 hover:text-gray-600 rounded-full hover:bg-gray-100 flex items-center justify-center"
+              className="absolute top-4 right-4 p-2.5 min-w-[44px] min-h-[44px] text-gray-400 hover:text-gray-600 rounded-full hover:bg-gray-100 dark:text-zinc-400 dark:hover:text-zinc-300 dark:hover:bg-zinc-700 flex items-center justify-center"
               aria-label="Close modal"
             >
               <X className="w-5 h-5" />

@@ -23,7 +23,7 @@ export function ActivityPanel({
     <div className="mt-3">
       <button
         onClick={() => setIsExpanded(!isExpanded)}
-        className="flex items-center gap-2 text-sm text-gray-500 hover:text-gray-700 transition-colors"
+        className="flex items-center gap-2 text-sm text-gray-500 dark:text-zinc-400 hover:text-gray-700 dark:hover:text-zinc-300 transition-colors"
       >
         <ChevronRight
           className={cn(
@@ -33,12 +33,12 @@ export function ActivityPanel({
         />
         <span className="font-medium">Activity</span>
         {elapsedTime && (
-          <span className="text-gray-400">· {elapsedTime}</span>
+          <span className="text-gray-400 dark:text-zinc-400">· {elapsedTime}</span>
         )}
       </button>
 
       {isExpanded && (
-        <div className="mt-3 ml-2 border-l-2 border-gray-200 pl-4 space-y-4">
+        <div className="mt-3 ml-2 border-l-2 border-gray-200 dark:border-zinc-700 pl-4 space-y-4">
           <ActivityTimeline activities={activities} />
         </div>
       )}

@@ -6,7 +6,7 @@ export function AppLayout() {
   const location = useLocation();
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 dark:bg-zinc-900">
       <Header />
       <ErrorBoundary key={location.pathname}>
         <Outlet />

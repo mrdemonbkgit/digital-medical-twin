@@ -1,6 +1,9 @@
 @import "tailwindcss";
 @plugin "@tailwindcss/typography";
 
+/* Enable class-based dark mode */
+@custom-variant dark (&:where(.dark, .dark *));
+
 @theme {
   /* Custom colors for the app */
   --color-primary: #2563eb;
@@ -21,6 +24,11 @@
 /* Base styles */
 body {
   @apply bg-gray-50 text-gray-900 antialiased;
+}
+
+/* Dark mode base styles */
+.dark body {
+  @apply bg-zinc-900 text-zinc-100;
 }
 
 /* Focus styles */

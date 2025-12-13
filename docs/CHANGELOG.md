@@ -1,6 +1,6 @@
 # Changelog
 
-> Last Updated: 2025-12-05
+> Last Updated: 2025-12-13
 
 ## Summary
 
@@ -25,6 +25,30 @@ Version history and release notes for Digital Medical Twin. Lists all notable ch
 ## [Unreleased]
 
 ### Added
+
+- **Theme Switching (Light/Dark/System)**
+  - New theme toggle in Settings page with Light, Dark, and System options
+  - System mode follows OS preferences via `prefers-color-scheme`
+  - Theme persisted to localStorage
+  - `src/context/ThemeContext.tsx`, `src/types/theme.ts`
+
+### Changed
+
+- **Dark Mode Color Palette Overhaul**
+  - Migrated from `slate` (blue-tinted) to `zinc` (true neutral gray) palette
+  - Improved WCAG accessibility compliance:
+    - Primary text: 15.4:1 contrast ratio
+    - Secondary text: 9.3:1 contrast ratio
+    - Placeholder text: 5.9:1 (was 2.7:1 - now WCAG AA compliant)
+  - New elevation-based background system:
+    - Base: `zinc-900` (#18181b) - less harsh than pure black
+    - Surface 1: `zinc-800` for cards
+    - Surface 2: `zinc-700` for elevated elements
+    - Hover: `zinc-600` for interactive states
+  - Updated 24 component files across layout, common, AI, event, and page layers
+  - Better visual hierarchy and reduced eye strain
+
+### Added (previous)
 
 - **Insights Page Search Bar**
   - Search biomarkers by name or code

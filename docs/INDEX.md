@@ -1,6 +1,6 @@
 # Documentation Index
 
-> Last Updated: 2025-12-12 (GPT-5.2 model update)
+> Last Updated: 2025-12-13 (Dark mode color overhaul)
 
 ## Summary
 
@@ -113,6 +113,7 @@ Master index for all project documentation. Search here first to find relevant d
 
 ### D
 
+- **dark mode**: /docs/CHANGELOG.md#unreleased
 - **dashboard**: /docs/features/INSIGHTS_DASHBOARD.md
 - **database**: /docs/architecture/DATABASE_SCHEMA.md, /docs/DATABASE_MIGRATIONS.md
 - **decisions**: /docs/DECISION_LOG.md
@@ -257,6 +258,8 @@ Master index for all project documentation. Search here first to find relevant d
 
 - **tags**: /docs/features/DATA_TRACKING.md#tags-system, src/components/common/TagInput.tsx, src/hooks/useUserTags.ts
 - **Tailwind**: /docs/ONBOARDING.md#tech-stack
+- **theme**: /docs/CHANGELOG.md#unreleased, src/context/ThemeContext.tsx
+- **ThemeContext**: src/context/ThemeContext.tsx
 - **touch targets**: /docs/CHANGELOG.md#unreleased (44px minimum)
 - **tech stack**: /docs/ONBOARDING.md#tech-stack
 - **testing**: /docs/development/TESTING_STRATEGY.md, /docs/testing/MANUAL_TEST_CASES.md
@@ -296,7 +299,12 @@ Master index for all project documentation. Search here first to find relevant d
 
 ### W
 
+- **WCAG**: /docs/CHANGELOG.md#unreleased
 - **wearables**: /docs/ideas/FEATURE_SUGGESTIONS_OPUS_4_5.md#1-wearable-device-integration
 - **web search**: /docs/architecture/AI_INTEGRATION.md#gemini-grounding--citations
 - **WSL2**: /docs/DATABASE_MIGRATIONS.md, /docs/ONBOARDING.md#local-api-development
 - **WSL2 performance**: /docs/ONBOARDING.md#local-api-development
+
+### Z
+
+- **zinc**: /docs/CHANGELOG.md#unreleased (dark mode palette)

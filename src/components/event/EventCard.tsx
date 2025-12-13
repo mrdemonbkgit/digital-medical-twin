@@ -35,44 +35,44 @@ interface EventCardProps {
 const typeConfig = {
   lab_result: {
     icon: FlaskConical,
-    bg: 'bg-red-50',
+    bg: 'bg-red-50 dark:bg-red-950',
     border: 'border-l-red-500',
-    iconColor: 'text-red-600',
+    iconColor: 'text-red-600 dark:text-red-400',
     label: 'Lab Result',
   },
   doctor_visit: {
     icon: Stethoscope,
-    bg: 'bg-blue-50',
+    bg: 'bg-blue-50 dark:bg-blue-950',
     border: 'border-l-blue-500',
-    iconColor: 'text-blue-600',
+    iconColor: 'text-blue-600 dark:text-blue-400',
     label: 'Doctor Visit',
   },
   medication: {
     icon: Pill,
-    bg: 'bg-green-50',
+    bg: 'bg-green-50 dark:bg-green-950',
     border: 'border-l-green-500',
-    iconColor: 'text-green-600',
+    iconColor: 'text-green-600 dark:text-green-400',
     label: 'Medication',
   },
   intervention: {
     icon: Sparkles,
-    bg: 'bg-amber-50',
+    bg: 'bg-amber-50 dark:bg-amber-950',
     border: 'border-l-amber-500',
-    iconColor: 'text-amber-600',
+    iconColor: 'text-amber-600 dark:text-amber-400',
     label: 'Intervention',
   },
   metric: {
     icon: Activity,
-    bg: 'bg-purple-50',
+    bg: 'bg-purple-50 dark:bg-purple-950',
     border: 'border-l-purple-500',
-    iconColor: 'text-purple-600',
+    iconColor: 'text-purple-600 dark:text-purple-400',
     label: 'Metric',
   },
   vice: {
     icon: EyeOff,
-    bg: 'bg-slate-50',
+    bg: 'bg-slate-50 dark:bg-zinc-700',
     border: 'border-l-slate-500',
-    iconColor: 'text-slate-600',
+    iconColor: 'text-slate-600 dark:text-zinc-400',
     label: 'Vice',
   },
 };
@@ -89,31 +89,31 @@ function LabResultDetails({ event }: { event: LabResult }) {
   return (
     <div className="space-y-3">
       {event.labName && (
-        <p className="text-sm text-gray-600">
+        <p className="text-sm text-gray-600 dark:text-zinc-400">
           <span className="font-medium">Lab:</span> {event.labName}
         </p>
       )}
       {event.orderingDoctor && (
-        <p className="text-sm text-gray-600">
+        <p className="text-sm text-gray-600 dark:text-zinc-400">
           <span className="font-medium">Ordered by:</span> {event.orderingDoctor}
         </p>
       )}
       {event.biomarkers.length > 0 && (
         <div>
-          <p className="text-sm font-medium text-gray-700 mb-2">Biomarkers:</p>
+          <p className="text-sm font-medium text-gray-700 dark:text-zinc-300 mb-2">Biomarkers:</p>
           <div className="space-y-1">
             {event.biomarkers.map((biomarker, idx) => (
               <div
                 key={idx}
-                className="flex items-center justify-between text-sm bg-white p-2 rounded"
+                className="flex items-center justify-between text-sm bg-white dark:bg-zinc-800 p-2 rounded"
               >
-                <span className="text-gray-700">{biomarker.name}</span>
+                <span className="text-gray-700 dark:text-zinc-300">{biomarker.name}</span>
                 <span
                   className={cn(
                     'font-medium',
-                    biomarker.flag === 'high' && 'text-red-600',
-                    biomarker.flag === 'low' && 'text-blue-600',
-                    biomarker.flag === 'normal' && 'text-green-600'
+                    biomarker.flag === 'high' && 'text-red-600 dark:text-red-400',
+                    biomarker.flag === 'low' && 'text-blue-600 dark:text-blue-400',
+                    biomarker.flag === 'normal' && 'text-green-600 dark:text-green-400'
                   )}
                 >
                   {biomarker.value} {biomarker.unit}
@@ -132,7 +132,7 @@ function LabResultDetails({ event }: { event: LabResult }) {
 
 function DoctorVisitDetails({ event }: { event: DoctorVisit }) {
   return (
-    <div className="space-y-2 text-sm text-gray-600">
+    <div className="space-y-2 text-sm text-gray-600 dark:text-zinc-400">
       <p>
         <span className="font-medium">Doctor:</span> {event.doctorName}
       </p>
@@ -162,7 +162,7 @@ function DoctorVisitDetails({ event }: { event: DoctorVisit }) {
 
 function MedicationDetails({ event }: { event: Medication }) {
   return (
-    <div className="space-y-2 text-sm text-gray-600">
+    <div className="space-y-2 text-sm text-gray-600 dark:text-zinc-400">
       <p>
         <span className="font-medium">Medication:</span> {event.medicationName}
       </p>
@@ -188,7 +188,7 @@ function MedicationDetails({ event }: { event: Medication }) {
       </p>
       <p>
         <span className="font-medium">Status:</span>{' '}
-        <span className={event.isActive ? 'text-green-600' : 'text-gray-500'}>
+        <span className={event.isActive ? 'text-green-600 dark:text-green-400' : 'text-gray-500 dark:text-zinc-400'}>
           {event.isActive ? 'Currently taking' : 'Discontinued'}
         </span>
       </p>
@@ -198,7 +198,7 @@ function MedicationDetails({ event }: { event: Medication }) {
 
 function InterventionDetails({ event }: { event: Intervention }) {
   return (
-    <div className="space-y-2 text-sm text-gray-600">
+    <div className="space-y-2 text-sm text-gray-600 dark:text-zinc-400">
       <p>
         <span className="font-medium">Intervention:</span> {event.interventionName}
       </p>
@@ -217,7 +217,7 @@ function InterventionDetails({ event }: { event: Intervention }) {
       )}
       <p>
         <span className="font-medium">Status:</span>{' '}
-        <span className={event.isOngoing ? 'text-green-600' : 'text-gray-500'}>
+        <span className={event.isOngoing ? 'text-green-600 dark:text-green-400' : 'text-gray-500 dark:text-zinc-400'}>
           {event.isOngoing ? 'Ongoing' : 'Completed'}
         </span>
       </p>
@@ -227,7 +227,7 @@ function InterventionDetails({ event }: { event: Intervention }) {
 
 function MetricDetails({ event }: { event: Metric }) {
   return (
-    <div className="space-y-2 text-sm text-gray-600">
+    <div className="space-y-2 text-sm text-gray-600 dark:text-zinc-400">
       <p>
         <span className="font-medium">Metric:</span> {event.metricName}
       </p>
@@ -251,7 +251,7 @@ function ViceDetails({ event }: { event: Vice }) {
   };
 
   return (
-    <div className="space-y-2 text-sm text-gray-600">
+    <div className="space-y-2 text-sm text-gray-600 dark:text-zinc-400">
       <p>
         <span className="font-medium">Category:</span> {categoryLabels[event.viceCategory]}
       </p>
@@ -317,7 +317,7 @@ export function EventCard({ event, onDelete, isDeleting, searchQuery }: EventCar
   return (
     <div
       className={cn(
-        'rounded-lg border border-gray-200 border-l-4 overflow-hidden transition-all',
+        'rounded-lg border border-gray-200 dark:border-zinc-700 border-l-4 overflow-hidden transition-all',
         config.border
       )}
     >
@@ -342,13 +342,13 @@ export function EventCard({ event, onDelete, isDeleting, searchQuery }: EventCar
             <Icon className={cn('w-5 h-5', config.iconColor)} />
           </div>
           <div>
-            <h3 className="font-semibold text-gray-900">
+            <h3 className="font-semibold text-gray-900 dark:text-zinc-100">
               {searchQuery ? highlightText(event.title, searchQuery) : event.title}
             </h3>
-            <div className="flex items-center gap-2 text-sm text-gray-500">
+            <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-zinc-400">
               <Calendar className="w-3.5 h-3.5" />
               <span>{formatDate(event.date)}</span>
-              <span className="text-gray-300">•</span>
+              <span className="text-gray-300 dark:text-zinc-500">•</span>
               <span>{config.label}</span>
             </div>
           </div>
@@ -367,26 +367,26 @@ export function EventCard({ event, onDelete, isDeleting, searchQuery }: EventCar
             size="sm"
             onClick={handleDelete}
             disabled={isDeleting}
-            className="p-2.5 min-w-[44px] min-h-[44px] text-red-600 hover:text-red-700 hover:bg-red-50"
+            className="p-2.5 min-w-[44px] min-h-[44px] text-red-600 hover:text-red-700 hover:bg-red-50 dark:text-red-400 dark:hover:text-red-300 dark:hover:bg-red-950"
           >
             <Trash2 className="w-4 h-4" />
           </Button>
           {isExpanded ? (
-            <ChevronUp className="w-5 h-5 text-gray-400" />
+            <ChevronUp className="w-5 h-5 text-gray-400 dark:text-zinc-400" />
           ) : (
-            <ChevronDown className="w-5 h-5 text-gray-400" />
+            <ChevronDown className="w-5 h-5 text-gray-400 dark:text-zinc-400" />
           )}
         </div>
       </div>
 
       {/* Expanded content */}
       {isExpanded && (
-        <div className={cn('p-4 border-t border-gray-200', config.bg)}>
+        <div className={cn('p-4 border-t border-gray-200 dark:border-zinc-700', config.bg)}>
           <EventDetails event={event} />
           {event.notes && (
-            <div className="mt-4 pt-4 border-t border-gray-200">
-              <p className="text-sm font-medium text-gray-700 mb-1">Notes:</p>
-              <p className="text-sm text-gray-600 whitespace-pre-wrap">
+            <div className="mt-4 pt-4 border-t border-gray-200 dark:border-zinc-700">
+              <p className="text-sm font-medium text-gray-700 dark:text-zinc-300 mb-1">Notes:</p>
+              <p className="text-sm text-gray-600 dark:text-zinc-400 whitespace-pre-wrap">
                 {searchQuery ? highlightText(event.notes, searchQuery) : event.notes}
               </p>
             </div>
@@ -396,7 +396,7 @@ export function EventCard({ event, onDelete, isDeleting, searchQuery }: EventCar
               {event.tags.map((tag, idx) => (
                 <span
                   key={idx}
-                  className="px-2 py-1 text-xs bg-white rounded-full text-gray-600 border border-gray-200"
+                  className="px-2 py-1 text-xs bg-white dark:bg-zinc-700 rounded-full text-gray-600 dark:text-zinc-300 border border-gray-200 dark:border-zinc-600"
                 >
                   {tag}
                 </span>

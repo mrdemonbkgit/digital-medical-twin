@@ -185,11 +185,21 @@ export function AIHistorianPage() {
   });
 
   const handleReasoningChange = async (value: OpenAIReasoningEffort) => {
+    // Update global settings
     await updateSettings({ openaiReasoningEffort: value });
+    // Also update override if in existing conversation
+    if (settingsOverride) {
+      setSettingsOverride({ ...settingsOverride, reasoningEffort: value });
+    }
   };
 
   const handleThinkingChange = async (value: GeminiThinkingLevel) => {
+    // Update global settings
     await updateSettings({ geminiThinkingLevel: value });
+    // Also update override if in existing conversation
+    if (settingsOverride) {
+      setSettingsOverride({ ...settingsOverride, thinkingLevel: value });
+    }
   };
 
   // Handle conversation selection from sidebar

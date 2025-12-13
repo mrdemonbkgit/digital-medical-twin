@@ -331,12 +331,12 @@ export function ChatMessage({
         )}
       </div>
 
-      {/* Actions menu - hidden on mobile (use swipe), appears on hover for desktop */}
+      {/* Actions menu - always visible on mobile, appears on hover for desktop */}
       <div
         ref={actionsRef}
         className={cn(
           'absolute top-2 right-2',
-          'hidden sm:block sm:opacity-0 sm:group-hover:opacity-100 transition-opacity'
+          'sm:opacity-0 sm:group-hover:opacity-100 transition-opacity'
         )}
       >
         <MessageActionsMenu

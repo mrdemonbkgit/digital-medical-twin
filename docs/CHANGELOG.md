@@ -55,6 +55,19 @@ Version history and release notes for Digital Medical Twin. Lists all notable ch
   - Header uses `bg-theme-tertiary` for visual separation from page content
   - Navigation links now use `whitespace-nowrap` to prevent text wrapping
   - Icons use `flex-shrink-0` for consistent sizing
+  - Responsive breakpoint changed from `sm` (640px) to `lg` (1024px)
+  - Mobile hamburger menu now shows on tablets and foldable devices
+
+- **Lab Result Color Redesign**
+  - Changed from red to teal for better UX
+  - Red had "danger/alert" connotation; teal has clinical/medical feel
+  - Light: `#0d9488` (teal-600), Dark: `#5eead4` (teal-300)
+
+### Fixed
+
+- Modal borders now visible in dark theme (`border-theme-secondary`)
+- Event type selector cards use theme-aware CSS variables instead of hardcoded colors
+- Header navigation no longer overflows on tablets and foldable devices
 
 ### Added (previous)
 

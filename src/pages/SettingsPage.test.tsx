@@ -1,6 +1,21 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
+
+// Mock supabase BEFORE importing components that use it
+vi.mock('@/lib/supabase', () => ({
+  supabase: {
+    auth: {
+      getSession: vi.fn().mockResolvedValue({ data: { session: null }, error: null }),
+      onAuthStateChange: vi.fn().mockReturnValue({ data: { subscription: { unsubscribe: vi.fn() } } }),
+    },
+    from: () => ({
+      select: () => ({ data: [], error: null }),
+      update: () => ({ error: null }),
+    }),
+  },
+}));
+
 import { SettingsPage } from './SettingsPage';
 import { ThemeProvider } from '@/context/ThemeContext';
 

@@ -53,7 +53,7 @@ Conversations are automatically saved and can be accessed from the sidebar.
 - **Auto-save**: Messages are saved automatically as you chat
 - **Conversation list**: ChatGPT-style sidebar showing all past conversations
 - **Continue anytime**: Click any conversation to continue where you left off
-- **Auto-title**: Conversations are titled from the first message
+- **AI-generated titles**: Conversations are automatically titled with a concise 3-5 word summary (e.g., "Cholesterol Levels Review" instead of "What are my cholesterol levels and how...")
 - **Rename**: Edit conversation titles inline
 - **Delete**: Remove conversations you no longer need
 - **URL sharing**: Each conversation has a unique URL (`/ai?c=<id>`)

@@ -8,6 +8,7 @@ import {
   deleteMessage,
   deleteMessagesAfter,
   updateMessage,
+  generateConversationTitle,
 } from '@/api/conversations';
 import type { ChatMessage } from '@/types/ai';
 import type { ConversationSettings } from '@/types/conversations';
@@ -400,6 +401,22 @@ export function useAIChat(options: UseAIChatOptions = {}): UseAIChatReturn {
         });
 
         setMessages((prev) => [...prev, savedAssistantMessage]);
+
+        // Generate AI title for new conversations (fire and forget)
+        // This is the first assistant response, so generate a concise title
+        if (!conversationId && currentConversationId) {
+          generateConversationTitle(currentConversationId, content.trim())
+            .then((title) => {
+              if (title) {
+                logger.debug('Generated conversation title', { title });
+                // Trigger sidebar refresh to show new title
+                options.onMessageSent?.();
+              }
+            })
+            .catch((err) => {
+              logger.warn('Title generation failed', { error: err instanceof Error ? err.message : String(err) });
+            });
+        }
       } catch (err) {
         // Handle abort (user stopped streaming)
         if (err instanceof Error && err.name === 'AbortError') {

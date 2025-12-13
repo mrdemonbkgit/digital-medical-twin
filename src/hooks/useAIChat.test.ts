@@ -12,11 +12,19 @@ global.fetch = mockFetch;
 const mockGetConversation = vi.fn();
 const mockCreateConversation = vi.fn();
 const mockAddMessage = vi.fn();
+const mockDeleteMessage = vi.fn();
+const mockDeleteMessagesAfter = vi.fn();
+const mockUpdateMessage = vi.fn();
+const mockGenerateConversationTitle = vi.fn();
 
 vi.mock('@/api/conversations', () => ({
   getConversation: (id: string) => mockGetConversation(id),
   createConversation: (input: unknown) => mockCreateConversation(input),
   addMessage: (convId: string, message: unknown) => mockAddMessage(convId, message),
+  deleteMessage: (convId: string, msgId: string) => mockDeleteMessage(convId, msgId),
+  deleteMessagesAfter: (convId: string, timestamp: string) => mockDeleteMessagesAfter(convId, timestamp),
+  updateMessage: (convId: string, msgId: string, content: string) => mockUpdateMessage(convId, msgId, content),
+  generateConversationTitle: (convId: string, message: string) => mockGenerateConversationTitle(convId, message),
 }));
 
 // Mock Supabase auth
@@ -35,6 +43,8 @@ vi.mock('@/lib/logger', () => ({
   logger: {
     error: vi.fn(),
     debug: vi.fn(),
+    warn: vi.fn(),
+    info: vi.fn(),
   },
 }));
 
@@ -89,6 +99,17 @@ describe('useAIChat', () => {
       ...message,
       timestamp: new Date(),
     }));
+
+    // Default mocks for other functions
+    mockDeleteMessage.mockResolvedValue(undefined);
+    mockDeleteMessagesAfter.mockResolvedValue(undefined);
+    mockUpdateMessage.mockImplementation((_, msgId, content) => ({
+      id: msgId,
+      role: 'user',
+      content,
+      timestamp: new Date(),
+    }));
+    mockGenerateConversationTitle.mockResolvedValue('Generated Title');
 
     // Default fetch response for AI chat (SSE format)
     const mockSSEResponse = {

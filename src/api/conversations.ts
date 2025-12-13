@@ -244,6 +244,44 @@ export async function updateMessage(
   return rowToMessage(data as MessageRow);
 }
 
+// Generate a concise title for a conversation using AI
+export async function generateConversationTitle(
+  conversationId: string,
+  message: string
+): Promise<string | null> {
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
+
+  if (!session?.access_token) {
+    logger.warn('Cannot generate title: not authenticated');
+    return null;
+  }
+
+  try {
+    const response = await fetch('/api/ai/generate-title', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${session.access_token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ message, conversationId }),
+    });
+
+    if (!response.ok) {
+      const error = await response.json();
+      logger.warn('Title generation failed', { error: error.error });
+      return null;
+    }
+
+    const data = await response.json();
+    return data.title || null;
+  } catch (err) {
+    logger.warn('Title generation request failed', { error: err instanceof Error ? err.message : String(err) });
+    return null;
+  }
+}
+
 // Add a message to a conversation
 export async function addMessage(
   conversationId: string,

@@ -187,6 +187,63 @@ export async function deleteConversation(id: string): Promise<void> {
   }
 }
 
+// Delete a message from a conversation
+export async function deleteMessage(
+  conversationId: string,
+  messageId: string
+): Promise<void> {
+  const { error } = await supabase
+    .from('ai_messages')
+    .delete()
+    .eq('id', messageId)
+    .eq('conversation_id', conversationId);
+
+  if (error) {
+    logger.error('Failed to delete message', error);
+    throw new Error(`Failed to delete message: ${error.message}`);
+  }
+}
+
+// Delete all messages after a given message (inclusive)
+// Used when editing a user message to remove all subsequent messages
+export async function deleteMessagesAfter(
+  conversationId: string,
+  afterTimestamp: string
+): Promise<void> {
+  const { error } = await supabase
+    .from('ai_messages')
+    .delete()
+    .eq('conversation_id', conversationId)
+    .gte('created_at', afterTimestamp);
+
+  if (error) {
+    logger.error('Failed to delete messages', error);
+    throw new Error(`Failed to delete messages: ${error.message}`);
+  }
+}
+
+// Update a message content
+export async function updateMessage(
+  conversationId: string,
+  messageId: string,
+  content: string
+): Promise<ChatMessage> {
+  const { data, error } = await supabase
+    .from('ai_messages')
+    .update({ content })
+    .eq('id', messageId)
+    .eq('conversation_id', conversationId)
+    .select()
+    .single();
+
+  if (error) {
+    logger.error('Failed to update message', error);
+    throw new Error(`Failed to update message: ${error.message}`);
+  }
+
+  return rowToMessage(data as MessageRow);
+}
+
 // Add a message to a conversation
 export async function addMessage(
   conversationId: string,

@@ -15,3 +15,8 @@ export { useUserProfile } from './useUserProfile';
 export { useRequireProfile, useProfileStatus } from './useRequireProfile';
 export { useBiomarkers } from './useBiomarkers';
 export { useConversations } from './useConversations';
+export { useAriaAnnounce } from './useAriaAnnounce';
+export { useKeyboardShortcuts } from './useKeyboardShortcuts';
+export type { KeyboardShortcutsConfig } from './useKeyboardShortcuts';
+export { useSwipe } from './useSwipe';
+export type { SwipeConfig, SwipeHandlers, SwipeState } from './useSwipe';

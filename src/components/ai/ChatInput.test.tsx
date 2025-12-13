@@ -5,8 +5,8 @@ import { ChatInput } from './ChatInput';
 
 // Mock Button
 vi.mock('@/components/common/Button', () => ({
-  Button: ({ children, onClick, disabled, className }: any) => (
-    <button onClick={onClick} disabled={disabled} className={className}>
+  Button: ({ children, onClick, disabled, className, 'aria-label': ariaLabel }: any) => (
+    <button onClick={onClick} disabled={disabled} className={className} aria-label={ariaLabel}>
       {children}
     </button>
   ),
@@ -159,6 +159,60 @@ describe('ChatInput', () => {
     it('starts with a single row', () => {
       render(<ChatInput onSend={mockOnSend} />);
       expect(screen.getByRole('textbox')).toHaveAttribute('rows', '1');
+    });
+  });
+
+  describe('streaming mode', () => {
+    const mockOnStop = vi.fn();
+
+    beforeEach(() => {
+      mockOnStop.mockClear();
+    });
+
+    it('shows stop button when streaming', () => {
+      render(<ChatInput onSend={mockOnSend} onStop={mockOnStop} isStreaming />);
+      expect(screen.getByLabelText('Stop generating')).toBeInTheDocument();
+    });
+
+    it('hides send button when streaming', () => {
+      render(<ChatInput onSend={mockOnSend} onStop={mockOnStop} isStreaming />);
+      expect(screen.queryByLabelText('Send message')).not.toBeInTheDocument();
+    });
+
+    it('calls onStop when stop button clicked', async () => {
+      const user = userEvent.setup();
+      render(<ChatInput onSend={mockOnSend} onStop={mockOnStop} isStreaming />);
+
+      await user.click(screen.getByLabelText('Stop generating'));
+      expect(mockOnStop).toHaveBeenCalledTimes(1);
+    });
+
+    it('disables textarea when streaming', () => {
+      render(<ChatInput onSend={mockOnSend} onStop={mockOnStop} isStreaming />);
+      expect(screen.getByRole('textbox')).toBeDisabled();
+    });
+
+    it('calls onStop when Escape pressed during streaming', () => {
+      render(<ChatInput onSend={mockOnSend} onStop={mockOnStop} isStreaming />);
+
+      const textarea = screen.getByRole('textbox');
+      fireEvent.keyDown(textarea, { key: 'Escape' });
+
+      expect(mockOnStop).toHaveBeenCalledTimes(1);
+    });
+
+    it('does not call onStop when Escape pressed but not streaming', () => {
+      render(<ChatInput onSend={mockOnSend} onStop={mockOnStop} />);
+
+      const textarea = screen.getByRole('textbox');
+      fireEvent.keyDown(textarea, { key: 'Escape' });
+
+      expect(mockOnStop).not.toHaveBeenCalled();
+    });
+
+    it('shows send button when not streaming', () => {
+      render(<ChatInput onSend={mockOnSend} onStop={mockOnStop} isStreaming={false} />);
+      expect(screen.getByLabelText('Send message')).toBeInTheDocument();
     });
   });
 });

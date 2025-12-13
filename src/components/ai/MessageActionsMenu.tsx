@@ -1,16 +1,24 @@
 import { useState, useRef, useEffect } from 'react';
-import { MoreHorizontal, Copy, Info, Check } from 'lucide-react';
+import { MoreHorizontal, Copy, Info, Check, RefreshCw, Pencil, Trash2 } from 'lucide-react';
 import type { ChatMessage } from '@/types/ai';
 
 interface MessageActionsMenuProps {
   message: ChatMessage;
   onShowDetails: () => void;
+  onRegenerate?: () => void;
+  onEdit?: () => void;
+  onDelete?: () => void;
+  isLoading?: boolean;
   className?: string;
 }
 
 export function MessageActionsMenu({
   message,
   onShowDetails,
+  onRegenerate,
+  onEdit,
+  onDelete,
+  isLoading = false,
   className = '',
 }: MessageActionsMenuProps) {
   const [isOpen, setIsOpen] = useState(false);
@@ -52,6 +60,24 @@ export function MessageActionsMenu({
     onShowDetails();
   };
 
+  const handleRegenerate = () => {
+    setIsOpen(false);
+    onRegenerate?.();
+  };
+
+  const handleEdit = () => {
+    setIsOpen(false);
+    onEdit?.();
+  };
+
+  const handleDelete = () => {
+    setIsOpen(false);
+    onDelete?.();
+  };
+
+  const isAssistant = message.role === 'assistant';
+  const isUser = message.role === 'user';
+
   return (
     <div ref={menuRef} className={`relative ${className}`}>
       {/* Trigger button */}
@@ -90,6 +116,36 @@ export function MessageActionsMenu({
             <Info className="w-4 h-4" />
             <span>Details</span>
           </button>
+          {isUser && onEdit && (
+            <button
+              onClick={handleEdit}
+              disabled={isLoading}
+              className="w-full flex items-center gap-2 px-3 py-2 text-sm text-theme-secondary hover:bg-theme-secondary transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <Pencil className="w-4 h-4" />
+              <span>Edit</span>
+            </button>
+          )}
+          {isAssistant && onRegenerate && (
+            <button
+              onClick={handleRegenerate}
+              disabled={isLoading}
+              className="w-full flex items-center gap-2 px-3 py-2 text-sm text-theme-secondary hover:bg-theme-secondary transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <RefreshCw className={`w-4 h-4 ${isLoading ? 'animate-spin' : ''}`} />
+              <span>{isLoading ? 'Regenerating...' : 'Regenerate'}</span>
+            </button>
+          )}
+          {isUser && onDelete && (
+            <button
+              onClick={handleDelete}
+              disabled={isLoading}
+              className="w-full flex items-center gap-2 px-3 py-2 text-sm text-danger hover:bg-danger-muted transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <Trash2 className="w-4 h-4" />
+              <span>Delete</span>
+            </button>
+          )}
         </div>
       )}
     </div>

@@ -1,9 +1,9 @@
-import { useState, useRef, useEffect, useMemo } from 'react';
+import { useState, useRef, useEffect, useMemo, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { Link } from 'react-router-dom';
-import { Bot, Settings, AlertCircle, Loader2, Trash2, Menu, X } from 'lucide-react';
+import { Bot, Settings, Loader2, Trash2, Menu } from 'lucide-react';
 import { PageWrapper } from '@/components/layout';
-import { Button } from '@/components/common';
+import { Button, BottomSheet } from '@/components/common';
 import {
   ChatMessage,
   ChatInput,
@@ -11,11 +11,14 @@ import {
   ReasoningLevelSelect,
   ConversationList,
   StreamingIndicator,
+  ErrorRecovery,
 } from '@/components/ai';
-import { useAIChat, useAISettings, useConversations } from '@/hooks';
+import type { ChatInputRef } from '@/components/ai';
+import { useAIChat, useAISettings, useConversations, useAriaAnnounce, useKeyboardShortcuts } from '@/hooks';
 import type { OpenAIReasoningEffort, GeminiThinkingLevel } from '@/types/ai';
 import type { ConversationSettings } from '@/types/conversations';
 import { cn } from '@/utils/cn';
+import { getToolLabel } from '@/constants';
 
 export function AIHistorianPage() {
   const [searchParams, setSearchParams] = useSearchParams();
@@ -26,6 +29,8 @@ export function AIHistorianPage() {
   const [settingsOverride, setSettingsOverride] = useState<ConversationSettings | null>(null);
   // Local agentic mode state for new conversations (before first message)
   const [localAgenticMode, setLocalAgenticMode] = useState<boolean | null>(null);
+  // ID of message to trigger edit mode (for keyboard shortcut)
+  const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
 
   const {
     conversations,
@@ -61,6 +66,11 @@ export function AIHistorianPage() {
     error,
     streamingStatus,
     sendMessage,
+    stopStreaming,
+    regenerateResponse,
+    editMessage,
+    deleteMessages,
+    clearError,
     loadConversation,
     startNewConversation,
   } = useAIChat({
@@ -79,6 +89,38 @@ export function AIHistorianPage() {
       setSettingsOverride(loadedSettings.provider ? loadedSettings : null);
     },
   });
+
+  // ARIA announcements for screen readers
+  const { announcement, announce } = useAriaAnnounce();
+  const prevStreamingRef = useRef(false);
+  const prevToolRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    // Announce streaming start
+    if (isLoading && !prevStreamingRef.current) {
+      announce('AI is thinking...');
+    }
+    // Announce streaming end
+    if (!isLoading && prevStreamingRef.current) {
+      announce('Response complete');
+    }
+    prevStreamingRef.current = isLoading;
+  }, [isLoading, announce]);
+
+  useEffect(() => {
+    // Announce tool changes with user-friendly labels
+    if (streamingStatus.currentTool && streamingStatus.currentTool !== prevToolRef.current) {
+      announce(getToolLabel(streamingStatus.currentTool));
+    }
+    prevToolRef.current = streamingStatus.currentTool;
+  }, [streamingStatus.currentTool, announce]);
+
+  useEffect(() => {
+    // Announce errors
+    if (error) {
+      announce(`Error: ${error}`);
+    }
+  }, [error, announce]);
 
   // Effective settings: use override if set, otherwise use global settings
   // When override exists, do NOT fall back to global settings for individual fields
@@ -101,6 +143,46 @@ export function AIHistorianPage() {
     return settings ? { ...settings, agenticMode } : null;
   }, [settingsOverride, conversationId, settings, localAgenticMode]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const chatInputRef = useRef<ChatInputRef>(null);
+
+  // Keyboard shortcuts handlers
+  const handleCopyLastResponse = useCallback(() => {
+    const lastAIMessage = [...messages].reverse().find((m) => m.role === 'assistant');
+    if (lastAIMessage) {
+      navigator.clipboard.writeText(lastAIMessage.content);
+      announce('Response copied to clipboard');
+    }
+  }, [messages, announce]);
+
+  const handleEditLastMessage = useCallback(() => {
+    // Get the last user message and trigger edit mode via state
+    const lastUserMessage = [...messages].reverse().find((m) => m.role === 'user');
+    if (lastUserMessage) {
+      setEditingMessageId(lastUserMessage.id);
+    }
+  }, [messages]);
+
+  const handleEditModeEntered = useCallback(() => {
+    // Clear the editing trigger after ChatMessage has entered edit mode
+    setEditingMessageId(null);
+  }, []);
+
+  const handleToggleSidebar = useCallback(() => {
+    setSidebarOpen((prev) => !prev);
+  }, []);
+
+  // Keyboard shortcuts
+  useKeyboardShortcuts({
+    inputRef: chatInputRef,
+    onStopStreaming: stopStreaming,
+    onToggleSidebar: handleToggleSidebar,
+    onCloseSidebar: () => setSidebarOpen(false),
+    onEditLastMessage: handleEditLastMessage,
+    onCopyLastResponse: handleCopyLastResponse,
+    isStreaming: isLoading,
+    sidebarOpen,
+    hasMessages: messages.length > 0,
+  });
 
   const handleReasoningChange = async (value: OpenAIReasoningEffort) => {
     await updateSettings({ openaiReasoningEffort: value });
@@ -139,6 +221,15 @@ export function AIHistorianPage() {
   // Handle rename conversation
   const handleRenameConversation = async (id: string, title: string) => {
     await renameConversation(id, title);
+  };
+
+  // Handle retry after error
+  const handleRetry = () => {
+    // Find the last user message and resend it
+    const lastUserMessage = [...messages].reverse().find((m) => m.role === 'user');
+    if (lastUserMessage) {
+      sendMessage(lastUserMessage.content);
+    }
   };
 
   // Auto-scroll to bottom when new messages arrive
@@ -188,44 +279,58 @@ export function AIHistorianPage() {
 
   return (
     <PageWrapper title="AI Historian" fullWidth>
+      {/* Skip link for keyboard navigation */}
+      <a
+        href="#chat-input"
+        className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:top-2 focus:left-2 focus:px-4 focus:py-2 focus:bg-theme-primary focus:text-info focus:rounded-md focus:outline-none focus:ring-2 focus:ring-info"
+        onClick={(e) => {
+          e.preventDefault();
+          chatInputRef.current?.focus();
+        }}
+      >
+        Skip to chat input
+      </a>
+
+      {/* ARIA live region for screen reader announcements */}
+      <div
+        role="status"
+        aria-live="polite"
+        aria-atomic="true"
+        className="sr-only"
+      >
+        {announcement}
+      </div>
+
       <div className="flex h-[calc(100vh-8rem)] max-h-[900px]">
-        {/* Mobile sidebar overlay */}
-        {sidebarOpen && (
-          <div
-            className="fixed inset-0 bg-black/50 z-40 lg:hidden"
-            onClick={() => setSidebarOpen(false)}
-          />
-        )}
-
-        {/* Sidebar */}
-        <div
-          className={cn(
-            'fixed lg:static inset-y-0 left-0 z-50 w-64 bg-theme-secondary border-r border-theme-primary transform transition-transform duration-200 ease-in-out lg:transform-none',
-            sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
-          )}
+        {/* Mobile bottom sheet sidebar */}
+        <BottomSheet
+          isOpen={sidebarOpen}
+          onClose={() => setSidebarOpen(false)}
+          title="Conversations"
+          snapPoints={[0.6, 0.9]}
         >
-          {/* Mobile close button */}
-          <div className="lg:hidden flex items-center justify-between p-3 border-b border-theme-primary">
-            <span className="font-medium text-theme-primary">Conversations</span>
-            <button
-              onClick={() => setSidebarOpen(false)}
-              className="p-1 hover:bg-theme-tertiary rounded"
-            >
-              <X className="h-5 w-5 text-theme-tertiary" />
-            </button>
-          </div>
+          <ConversationList
+            conversations={conversations}
+            activeId={conversationId}
+            onSelect={handleSelectConversation}
+            onNew={handleNewConversation}
+            onDelete={handleDeleteConversation}
+            onRename={handleRenameConversation}
+            isLoading={conversationsLoading}
+          />
+        </BottomSheet>
 
-          <div className="h-full lg:h-auto">
-            <ConversationList
-              conversations={conversations}
-              activeId={conversationId}
-              onSelect={handleSelectConversation}
-              onNew={handleNewConversation}
-              onDelete={handleDeleteConversation}
-              onRename={handleRenameConversation}
-              isLoading={conversationsLoading}
-            />
-          </div>
+        {/* Desktop Sidebar */}
+        <div className="hidden lg:block w-64 bg-theme-secondary border-r border-theme-primary">
+          <ConversationList
+            conversations={conversations}
+            activeId={conversationId}
+            onSelect={handleSelectConversation}
+            onNew={handleNewConversation}
+            onDelete={handleDeleteConversation}
+            onRename={handleRenameConversation}
+            isLoading={conversationsLoading}
+          />
         </div>
 
         {/* Main chat area */}
@@ -328,9 +433,18 @@ export function AIHistorianPage() {
             ) : (
               <>
                 {messages.map((message) => (
-                  <ChatMessage key={message.id} message={message} />
+                  <ChatMessage
+                    key={message.id}
+                    message={message}
+                    onRegenerate={regenerateResponse}
+                    onEdit={editMessage}
+                    onDelete={deleteMessages}
+                    isLoading={isLoading}
+                    triggerEditMode={editingMessageId === message.id}
+                    onEditModeEntered={handleEditModeEntered}
+                  />
                 ))}
-                {isLoading && <StreamingIndicator status={streamingStatus} />}
+                {isLoading && <StreamingIndicator status={streamingStatus} onStop={stopStreaming} />}
                 <div ref={messagesEndRef} />
               </>
             )}
@@ -338,17 +452,23 @@ export function AIHistorianPage() {
 
           {/* Error display */}
           {error && (
-            <div className="mx-4 mb-4 flex items-center gap-2 p-3 bg-danger-muted text-danger text-sm rounded-lg">
-              <AlertCircle className="h-4 w-4 flex-shrink-0" />
-              {error}
-            </div>
+            <ErrorRecovery
+              error={error}
+              onRetry={handleRetry}
+              onNewConversation={handleNewConversation}
+              onDismiss={clearError}
+              isLoading={isLoading}
+            />
           )}
 
           {/* Input area */}
-          <div className="px-4 py-3 border-t border-theme-primary bg-theme-primary">
+          <div id="chat-input" className="px-4 py-3 border-t border-theme-primary bg-theme-primary">
             <ChatInput
+              ref={chatInputRef}
               onSend={sendMessage}
-              disabled={isLoading}
+              onStop={stopStreaming}
+              disabled={!settings?.provider}
+              isStreaming={isLoading}
               placeholder="Ask about your health history..."
             />
             <p className="text-xs text-theme-muted mt-2 text-center">

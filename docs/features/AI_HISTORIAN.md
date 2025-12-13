@@ -1,6 +1,6 @@
 # AI Historian Feature
 
-> Last Updated: 2025-12-03
+> Last Updated: 2025-12-13
 
 ## Summary
 
@@ -15,6 +15,11 @@ The AI Historian is a RAG-powered chat interface that answers questions about th
 - [Feature Overview](#feature-overview)
 - [Chat History](#chat-history)
 - [Chat Interface](#chat-interface)
+- [Message Actions](#message-actions)
+- [Keyboard Shortcuts](#keyboard-shortcuts)
+- [Accessibility](#accessibility)
+- [Mobile Experience](#mobile-experience)
+- [Error Handling](#error-handling)
 - [Agentic vs One-Shot Mode](#agentic-vs-one-shot-mode)
 - [Query Types](#query-types)
 - [Example Queries](#example-queries)
@@ -129,6 +134,86 @@ Messages store rich metadata in JSONB including sources, reasoning traces, tool 
 - Activity timeline showing reasoning, tool calls, and web searches
 - Source indicator showing which events were used
 - Timestamp
+
+---
+
+## Message Actions
+
+Users can interact with messages through various actions:
+
+### AI Messages
+- **Copy**: Copy response text to clipboard
+- **Regenerate**: Re-run the query to get a new response
+- **View Details**: See full message metadata
+
+### User Messages
+- **Copy**: Copy message text to clipboard
+- **Edit**: Modify and re-send the message (deletes subsequent messages)
+- **Delete**: Remove message and all subsequent messages
+- **View Details**: See message metadata
+
+### Access Methods
+
+| Platform | Access Method |
+|----------|---------------|
+| Desktop | Hover over message → Click "..." menu |
+| Mobile | Swipe left on message → Tap action buttons |
+
+---
+
+## Keyboard Shortcuts
+
+Power users can navigate efficiently with keyboard shortcuts:
+
+| Shortcut | Action |
+|----------|--------|
+| `Cmd/Ctrl + /` | Focus chat input |
+| `Cmd/Ctrl + \` | Toggle conversation sidebar |
+| `Escape` | Stop streaming / Close sidebar |
+| `↑` (empty input) | Edit last user message |
+| `Cmd/Ctrl + Shift + O` | Copy last AI response |
+| `Enter` | Send message |
+| `Shift + Enter` | New line in message |
+
+---
+
+## Accessibility
+
+The AI Historian is designed for screen reader and keyboard users:
+
+- **ARIA Live Regions**: Announces streaming status, tool execution, and errors
+- **Skip Link**: "Skip to chat input" for keyboard navigation
+- **Focus Trap**: Modal dialogs trap focus until closed
+- **Keyboard Navigation**: Full functionality without mouse
+- **Touch Targets**: 44px minimum for mobile accessibility
+
+---
+
+## Mobile Experience
+
+### Bottom Sheet Sidebar
+On mobile devices, the conversation list appears as a bottom sheet:
+- Drag handle at top for intuitive closing
+- Swipe down to close
+- Smooth spring animation
+
+### Swipe Gestures
+- Swipe left on any message to reveal action buttons
+- Swipe right to hide actions
+- Actions: Copy, Edit/Regenerate, Delete, Details
+
+---
+
+## Error Handling
+
+When errors occur, the UI provides actionable recovery options:
+
+| Error Type | Recovery Options |
+|------------|------------------|
+| Network error | Retry, Start new conversation |
+| Rate limit | Wait and retry |
+| Server error | Retry, Copy error details |
+| Context too long | Start new conversation |
 
 ---
 

@@ -1,5 +1,5 @@
-import { useState, useRef } from 'react';
-import { Bot, User } from 'lucide-react';
+import { useState, useRef, useEffect } from 'react';
+import { Bot, User, Copy, Pencil, Trash2, RotateCcw, Info } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { cn } from '@/utils/cn';
@@ -12,6 +12,8 @@ import type {
 import { ActivityPanel } from './ActivityPanel';
 import { MessageActionsMenu } from './MessageActionsMenu';
 import { MessageDetailsModal } from './MessageDetailsModal';
+import { Modal } from '@/components/common';
+import { useSwipe } from '@/hooks';
 
 // Shared markdown config for GFM tables
 const remarkPlugins = [remarkGfm];
@@ -55,24 +57,202 @@ const markdownComponents = {
 
 interface ChatMessageProps {
   message: ChatMessageType;
+  onRegenerate?: (messageId: string) => void;
+  onEdit?: (messageId: string, newContent: string) => void;
+  onDelete?: (messageId: string) => void;
+  isLoading?: boolean;
+  /** When true, triggers edit mode for this message (used by keyboard shortcuts) */
+  triggerEditMode?: boolean;
+  /** Callback when edit mode is entered (to clear the trigger) */
+  onEditModeEntered?: () => void;
 }
 
-export function ChatMessage({ message }: ChatMessageProps) {
+export function ChatMessage({
+  message,
+  onRegenerate,
+  onEdit,
+  onDelete,
+  isLoading = false,
+  triggerEditMode = false,
+  onEditModeEntered,
+}: ChatMessageProps) {
   const [showDetails, setShowDetails] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editContent, setEditContent] = useState(message.content);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [swipeActionsRevealed, setSwipeActionsRevealed] = useState(false);
+  const [copyFeedback, setCopyFeedback] = useState(false);
   const actionsRef = useRef<HTMLDivElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
   const isAssistant = message.role === 'assistant';
+  const isUser = message.role === 'user';
+
+  // Swipe gesture support for mobile
+  const [swipeHandlers, swipeState] = useSwipe({
+    threshold: 50,
+    onSwipeLeft: () => setSwipeActionsRevealed(true),
+    onSwipeRight: () => setSwipeActionsRevealed(false),
+    enabled: !isEditing, // Disable swipe when editing
+  });
 
   // Build activity items from message metadata
   const activities = isAssistant ? buildActivityItems(message) : [];
 
+  // Focus textarea when entering edit mode
+  useEffect(() => {
+    if (isEditing && textareaRef.current) {
+      textareaRef.current.focus();
+      // Move cursor to end
+      textareaRef.current.selectionStart = textareaRef.current.value.length;
+    }
+  }, [isEditing]);
+
+  // Handle keyboard shortcut trigger for edit mode
+  useEffect(() => {
+    if (triggerEditMode && message.role === 'user' && onEdit && !isEditing) {
+      setEditContent(message.content);
+      setIsEditing(true);
+      onEditModeEntered?.();
+    }
+  }, [triggerEditMode, message.role, message.content, onEdit, isEditing, onEditModeEntered]);
+
+  const handleStartEdit = () => {
+    setEditContent(message.content);
+    setIsEditing(true);
+  };
+
+  const handleCancelEdit = () => {
+    setIsEditing(false);
+    setEditContent(message.content);
+  };
+
+  const handleSaveEdit = () => {
+    if (editContent.trim() && editContent.trim() !== message.content) {
+      onEdit?.(message.id, editContent.trim());
+    }
+    setIsEditing(false);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === 'Escape') {
+      handleCancelEdit();
+    } else if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSaveEdit();
+    }
+  };
+
+  const handleDeleteClick = () => {
+    setShowDeleteConfirm(true);
+  };
+
+  const handleConfirmDelete = () => {
+    onDelete?.(message.id);
+    setShowDeleteConfirm(false);
+  };
+
+  const handleCancelDelete = () => {
+    setShowDeleteConfirm(false);
+  };
+
+  const handleCopy = async () => {
+    await navigator.clipboard.writeText(message.content);
+    setCopyFeedback(true);
+    setTimeout(() => setCopyFeedback(false), 1500);
+    setSwipeActionsRevealed(false);
+  };
+
+  const handleSwipeAction = (action: () => void) => {
+    action();
+    setSwipeActionsRevealed(false);
+  };
+
+  // Calculate transform for swipe animation
+  const getSwipeTransform = () => {
+    if (swipeActionsRevealed && !swipeState.isSwiping) {
+      return 'translateX(-120px)';
+    }
+    if (swipeState.isSwiping && swipeState.offset < 0) {
+      // Swiping left - limit to -120px
+      return `translateX(${Math.max(swipeState.offset, -120)}px)`;
+    }
+    if (swipeState.isSwiping && swipeState.offset > 0 && swipeActionsRevealed) {
+      // Swiping right to close
+      return `translateX(${Math.min(swipeState.offset - 120, 0)}px)`;
+    }
+    return 'translateX(0)';
+  };
+
   return (
     <>
-      <div
-        className={cn(
-          'group flex gap-3 p-4 rounded-lg relative',
-          isAssistant ? 'bg-theme-secondary' : 'bg-theme-primary'
-        )}
-      >
+      {/* Outer container for swipe - overflow-hidden only on mobile for swipe, visible on desktop for menu */}
+      <div className="relative overflow-hidden sm:overflow-visible rounded-lg">
+        {/* Swipe action buttons (revealed when swiping left) - mobile only */}
+        <div
+          className={cn(
+            'absolute right-0 top-0 bottom-0 flex items-center gap-1 px-2',
+            'sm:hidden', // Only show on mobile
+            swipeActionsRevealed || swipeState.isSwiping ? 'opacity-100' : 'opacity-0'
+          )}
+          style={{ width: '120px' }}
+        >
+          <button
+            onClick={handleCopy}
+            className="flex flex-col items-center justify-center w-10 h-10 rounded-lg bg-info hover:bg-info/80 text-white transition-colors"
+            aria-label={copyFeedback ? 'Copied!' : 'Copy message'}
+          >
+            <Copy className="h-4 w-4" />
+          </button>
+          {isAssistant && onRegenerate && (
+            <button
+              onClick={() => handleSwipeAction(() => onRegenerate(message.id))}
+              disabled={isLoading}
+              className="flex flex-col items-center justify-center w-10 h-10 rounded-lg bg-warning hover:bg-warning/80 text-white transition-colors disabled:opacity-50"
+              aria-label="Regenerate response"
+            >
+              <RotateCcw className="h-4 w-4" />
+            </button>
+          )}
+          {isUser && onEdit && !isEditing && (
+            <button
+              onClick={() => handleSwipeAction(handleStartEdit)}
+              className="flex flex-col items-center justify-center w-10 h-10 rounded-lg bg-warning hover:bg-warning/80 text-white transition-colors"
+              aria-label="Edit message"
+            >
+              <Pencil className="h-4 w-4" />
+            </button>
+          )}
+          {isUser && onDelete && (
+            <button
+              onClick={() => handleSwipeAction(handleDeleteClick)}
+              className="flex flex-col items-center justify-center w-10 h-10 rounded-lg bg-danger hover:bg-danger/80 text-white transition-colors"
+              aria-label="Delete message"
+            >
+              <Trash2 className="h-4 w-4" />
+            </button>
+          )}
+          <button
+            onClick={() => handleSwipeAction(() => setShowDetails(true))}
+            className="flex flex-col items-center justify-center w-10 h-10 rounded-lg bg-theme-tertiary hover:bg-theme-secondary text-theme-secondary transition-colors"
+            aria-label="View details"
+          >
+            <Info className="h-4 w-4" />
+          </button>
+        </div>
+
+        {/* Message content (transforms on swipe) */}
+        <div
+          {...swipeHandlers}
+          className={cn(
+            'group flex gap-3 p-4 rounded-lg relative',
+            isAssistant ? 'bg-theme-secondary' : 'bg-theme-primary',
+            'sm:transform-none' // Disable transform on desktop
+          )}
+          style={{
+            transform: getSwipeTransform(),
+            transition: swipeState.isSwiping ? 'none' : 'transform 0.2s ease-out',
+          }}
+        >
         <div
           className={cn(
             'flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center',
@@ -100,6 +280,33 @@ export function ChatMessage({ message }: ChatMessageProps) {
               message.webSearchResults
             )}
           </div>
+        ) : isEditing ? (
+          <div className="space-y-2">
+            <textarea
+              ref={textareaRef}
+              value={editContent}
+              onChange={(e) => setEditContent(e.target.value)}
+              onKeyDown={handleKeyDown}
+              className="input-theme w-full px-3 py-2 text-sm rounded-lg resize-none min-h-[80px]"
+              rows={3}
+              aria-label="Edit message"
+            />
+            <div className="flex gap-2 justify-end">
+              <button
+                onClick={handleCancelEdit}
+                className="px-3 py-1.5 text-sm text-theme-secondary hover:bg-theme-tertiary rounded-md transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSaveEdit}
+                disabled={!editContent.trim() || editContent.trim() === message.content}
+                className="px-3 py-1.5 text-sm bg-accent text-white rounded-md hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Save & Submit
+              </button>
+            </div>
+          </div>
         ) : (
           <div className="text-sm text-theme-secondary whitespace-pre-wrap break-words">
             {message.content}
@@ -124,20 +331,25 @@ export function ChatMessage({ message }: ChatMessageProps) {
         )}
       </div>
 
-      {/* Actions menu - visible on mobile, appears on hover for desktop */}
+      {/* Actions menu - hidden on mobile (use swipe), appears on hover for desktop */}
       <div
         ref={actionsRef}
         className={cn(
           'absolute top-2 right-2',
-          'sm:opacity-0 sm:group-hover:opacity-100 transition-opacity'
+          'hidden sm:block sm:opacity-0 sm:group-hover:opacity-100 transition-opacity'
         )}
       >
         <MessageActionsMenu
           message={message}
           onShowDetails={() => setShowDetails(true)}
+          onRegenerate={onRegenerate ? () => onRegenerate(message.id) : undefined}
+          onEdit={isUser && onEdit && !isEditing ? handleStartEdit : undefined}
+          onDelete={isUser && onDelete ? handleDeleteClick : undefined}
+          isLoading={isLoading}
         />
       </div>
     </div>
+      </div>
 
       {/* Details modal */}
       <MessageDetailsModal
@@ -145,6 +357,32 @@ export function ChatMessage({ message }: ChatMessageProps) {
         onClose={() => setShowDetails(false)}
         message={message}
       />
+
+      {/* Delete confirmation dialog */}
+      <Modal
+        isOpen={showDeleteConfirm}
+        onClose={handleCancelDelete}
+        title="Delete message?"
+        size="sm"
+      >
+        <p className="text-sm text-theme-secondary mb-4">
+          This will also delete all messages after this one. This action cannot be undone.
+        </p>
+        <div className="flex gap-2 justify-end">
+          <button
+            onClick={handleCancelDelete}
+            className="px-3 py-1.5 text-sm text-theme-secondary hover:bg-theme-tertiary rounded-md transition-colors"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={handleConfirmDelete}
+            className="px-3 py-1.5 text-sm bg-danger text-white rounded-md hover:opacity-90 transition-opacity"
+          >
+            Delete
+          </button>
+        </div>
+      </Modal>
     </>
   );
 }

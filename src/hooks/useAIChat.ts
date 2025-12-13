@@ -5,6 +5,9 @@ import {
   getConversation,
   createConversation,
   addMessage,
+  deleteMessage,
+  deleteMessagesAfter,
+  updateMessage,
 } from '@/api/conversations';
 import type { ChatMessage } from '@/types/ai';
 import type { ConversationSettings } from '@/types/conversations';
@@ -26,13 +29,24 @@ interface ToolCallResultData {
   name: string;
   status: 'completed' | 'failed';
   resultLength?: number;
+  resultSummary?: string;  // e.g., "found 12 events"
+}
+
+// Completed tool info for rich streaming progress
+export interface CompletedTool {
+  id: string;
+  name: string;
+  status: 'completed' | 'failed';
+  resultSummary?: string;
 }
 
 // Streaming status exposed to components
 export interface StreamingStatus {
   active: boolean;
   currentTool: string | null;
+  currentToolArgs?: Record<string, unknown>;
   toolCallCount: number;
+  completedTools: CompletedTool[];
 }
 
 interface UseAIChatOptions {
@@ -51,7 +65,12 @@ interface UseAIChatReturn {
   conversationSettings: ConversationSettings | null;
   streamingStatus: StreamingStatus;
   sendMessage: (content: string) => Promise<void>;
+  stopStreaming: () => void;
+  regenerateResponse: (messageId: string) => Promise<void>;
+  editMessage: (messageId: string, newContent: string) => Promise<void>;
+  deleteMessages: (messageId: string) => Promise<void>;
   clearChat: () => void;
+  clearError: () => void;
   loadConversation: (id: string) => Promise<void>;
   startNewConversation: () => void;
 }
@@ -140,10 +159,17 @@ export function useAIChat(options: UseAIChatOptions = {}): UseAIChatReturn {
     active: false,
     currentTool: null,
     toolCallCount: 0,
+    completedTools: [],
   });
 
   // Ref to skip auto-loading when intentionally starting a new conversation
   const skipNextLoadRef = useRef(false);
+
+  // Ref to abort streaming requests
+  const abortControllerRef = useRef<AbortController | null>(null);
+
+  // Ref to track if streaming was stopped by user
+  const wasStoppedRef = useRef(false);
 
   // Load conversation if ID provided
   const loadConversation = useCallback(async (id: string) => {
@@ -206,8 +232,13 @@ export function useAIChat(options: UseAIChatOptions = {}): UseAIChatReturn {
 
       setError(null);
       setIsLoading(true);
+      wasStoppedRef.current = false;
+
+      // Create new abort controller for this request
+      abortControllerRef.current = new AbortController();
+
       // Set streaming status immediately so user sees "Analyzing..." right away
-      setStreamingStatus({ active: true, currentTool: null, toolCallCount: 0 });
+      setStreamingStatus({ active: true, currentTool: null, toolCallCount: 0, completedTools: [] });
 
       // Create conversation if needed
       let currentConversationId = conversationId;
@@ -232,7 +263,7 @@ export function useAIChat(options: UseAIChatOptions = {}): UseAIChatReturn {
           logger.error('Failed to create conversation', err instanceof Error ? err : undefined);
           setError('Failed to start conversation');
           setIsLoading(false);
-          setStreamingStatus({ active: false, currentTool: null, toolCallCount: 0 });
+          setStreamingStatus({ active: false, currentTool: null, toolCallCount: 0, completedTools: [] });
           return;
         }
       }
@@ -244,6 +275,8 @@ export function useAIChat(options: UseAIChatOptions = {}): UseAIChatReturn {
         content: content.trim(),
         timestamp: new Date(),
       };
+      // Track current message ID (will be updated after DB save)
+      let currentUserMessageId = tempUserMessage.id;
       setMessages((prev) => [...prev, tempUserMessage]);
 
       try {
@@ -253,7 +286,8 @@ export function useAIChat(options: UseAIChatOptions = {}): UseAIChatReturn {
           content: content.trim(),
         });
 
-        // Update optimistic message with real ID
+        // Update optimistic message with real ID and track it
+        currentUserMessageId = savedUserMessage.id;
         setMessages((prev) =>
           prev.map((m) => (m.id === tempUserMessage.id ? savedUserMessage : m))
         );
@@ -283,6 +317,7 @@ export function useAIChat(options: UseAIChatOptions = {}): UseAIChatReturn {
             history,
             conversationId: currentConversationId,
           }),
+          signal: abortControllerRef.current?.signal,
         });
 
         if (!response.ok) {
@@ -301,19 +336,31 @@ export function useAIChat(options: UseAIChatOptions = {}): UseAIChatReturn {
             case 'tool_call_start': {
               const toolData = event.data as ToolCallStartData;
               toolCallCount++;
-              setStreamingStatus({
+              setStreamingStatus((prev) => ({
+                ...prev,
                 active: true,
                 currentTool: toolData.name,
+                currentToolArgs: toolData.args,
                 toolCallCount,
-              });
+              }));
               break;
             }
             case 'tool_call_result': {
               const resultData = event.data as ToolCallResultData;
-              // Tool completed, waiting for next tool or final response
+              // Tool completed, add to completedTools and clear currentTool
               setStreamingStatus((prev) => ({
                 ...prev,
-                currentTool: null, // Clear current tool, may get another
+                currentTool: null,
+                currentToolArgs: undefined,
+                completedTools: [
+                  ...prev.completedTools,
+                  {
+                    id: resultData.id,
+                    name: resultData.name,
+                    status: resultData.status,
+                    resultSummary: resultData.resultSummary,
+                  },
+                ],
               }));
               logger.debug('Tool completed', { name: resultData.name, status: resultData.status });
               break;
@@ -321,18 +368,18 @@ export function useAIChat(options: UseAIChatOptions = {}): UseAIChatReturn {
             case 'complete':
               // Final response with all data
               data = event.data;
-              setStreamingStatus({ active: false, currentTool: null, toolCallCount: 0 });
+              setStreamingStatus({ active: false, currentTool: null, toolCallCount: 0, completedTools: [] });
               break;
             case 'error': {
               const errorData = event.data as { message: string };
-              setStreamingStatus({ active: false, currentTool: null, toolCallCount: 0 });
+              setStreamingStatus({ active: false, currentTool: null, toolCallCount: 0, completedTools: [] });
               throw new Error(errorData.message || 'AI request failed');
             }
           }
         }
 
         // Ensure streaming is marked as complete
-        setStreamingStatus({ active: false, currentTool: null, toolCallCount: 0 });
+        setStreamingStatus({ active: false, currentTool: null, toolCallCount: 0, completedTools: [] });
 
         if (!data) {
           throw new Error('No response received from AI');
@@ -354,17 +401,434 @@ export function useAIChat(options: UseAIChatOptions = {}): UseAIChatReturn {
 
         setMessages((prev) => [...prev, savedAssistantMessage]);
       } catch (err) {
+        // Handle abort (user stopped streaming)
+        if (err instanceof Error && err.name === 'AbortError') {
+          logger.info('Streaming stopped by user');
+          wasStoppedRef.current = true;
+          // Keep the user message, don't set error
+          // The partial response (if any) is handled in the streaming loop
+          return;
+        }
+
         logger.error('Failed to send chat message', err instanceof Error ? err : undefined);
         const message = err instanceof Error ? err.message : 'Failed to send message';
         setError(message);
 
-        // Remove the optimistic user message on failure
-        setMessages((prev) => prev.filter((m) => m.id !== tempUserMessage.id));
+        // Remove the user message on failure (use tracked ID which may have been updated after DB save)
+        setMessages((prev) => prev.filter((m) => m.id !== currentUserMessageId));
       } finally {
         setIsLoading(false);
+        abortControllerRef.current = null;
       }
     },
     [messages, conversationId, options]
+  );
+
+  const stopStreaming = useCallback(() => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+      abortControllerRef.current = null;
+    }
+    setStreamingStatus({ active: false, currentTool: null, toolCallCount: 0, completedTools: [] });
+    setIsLoading(false);
+  }, []);
+
+  const regenerateResponse = useCallback(
+    async (messageId: string) => {
+      // Don't allow regenerate while streaming
+      if (isLoading) return;
+
+      // Find the message to regenerate (must be assistant message)
+      const messageIndex = messages.findIndex((m) => m.id === messageId);
+      if (messageIndex === -1) {
+        setError('Message not found');
+        return;
+      }
+
+      const targetMessage = messages[messageIndex];
+      if (targetMessage.role !== 'assistant') {
+        setError('Can only regenerate AI responses');
+        return;
+      }
+
+      // Find the preceding user message
+      let userMessageIndex = messageIndex - 1;
+      while (userMessageIndex >= 0 && messages[userMessageIndex].role !== 'user') {
+        userMessageIndex--;
+      }
+
+      if (userMessageIndex < 0) {
+        setError('No user message found to regenerate from');
+        return;
+      }
+
+      const userMessage = messages[userMessageIndex];
+      const currentConversationId = conversationId;
+
+      if (!currentConversationId) {
+        setError('No active conversation');
+        return;
+      }
+
+      setError(null);
+      setIsLoading(true);
+      wasStoppedRef.current = false;
+
+      // Create new abort controller for this request
+      abortControllerRef.current = new AbortController();
+
+      // Set streaming status immediately
+      setStreamingStatus({ active: true, currentTool: null, toolCallCount: 0, completedTools: [] });
+
+      // Remove the assistant message from local state
+      setMessages((prev) => prev.filter((m) => m.id !== messageId));
+
+      try {
+        // Delete the assistant message from database
+        await deleteMessage(currentConversationId, messageId);
+
+        const token = await getAuthToken();
+
+        // Build history from messages before the user message
+        const history = messages.slice(0, userMessageIndex).map((m) => ({
+          role: m.role,
+          content: m.content,
+        }));
+
+        // Use SSE streaming for real-time tool execution status
+        const response = await fetch('/api/ai/chat', {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+            Accept: 'text/event-stream',
+          },
+          body: JSON.stringify({
+            message: userMessage.content,
+            history,
+            conversationId: currentConversationId,
+          }),
+          signal: abortControllerRef.current?.signal,
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || 'Failed to get AI response');
+        }
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        let data: any = null;
+        let toolCallCount = 0;
+
+        // Consume SSE stream
+        for await (const event of readSSEStream(response)) {
+          switch (event.type) {
+            case 'tool_call_start': {
+              const toolData = event.data as ToolCallStartData;
+              toolCallCount++;
+              setStreamingStatus((prev) => ({
+                ...prev,
+                active: true,
+                currentTool: toolData.name,
+                currentToolArgs: toolData.args,
+                toolCallCount,
+              }));
+              break;
+            }
+            case 'tool_call_result': {
+              const resultData = event.data as ToolCallResultData;
+              setStreamingStatus((prev) => ({
+                ...prev,
+                currentTool: null,
+                currentToolArgs: undefined,
+                completedTools: [
+                  ...prev.completedTools,
+                  {
+                    id: resultData.id,
+                    name: resultData.name,
+                    status: resultData.status,
+                    resultSummary: resultData.resultSummary,
+                  },
+                ],
+              }));
+              logger.debug('Tool completed', { name: resultData.name, status: resultData.status });
+              break;
+            }
+            case 'complete':
+              data = event.data;
+              setStreamingStatus({ active: false, currentTool: null, toolCallCount: 0, completedTools: [] });
+              break;
+            case 'error': {
+              const errorData = event.data as { message: string };
+              setStreamingStatus({ active: false, currentTool: null, toolCallCount: 0, completedTools: [] });
+              throw new Error(errorData.message || 'AI request failed');
+            }
+          }
+        }
+
+        setStreamingStatus({ active: false, currentTool: null, toolCallCount: 0, completedTools: [] });
+
+        if (!data) {
+          throw new Error('No response received from AI');
+        }
+
+        // Save new assistant message to database
+        const savedAssistantMessage = await addMessage(currentConversationId, {
+          role: 'assistant',
+          content: data.content,
+          sources: data.sources?.length > 0 ? data.sources : undefined,
+          reasoning: data.reasoning,
+          toolCalls: data.toolCalls,
+          webSearchResults: data.webSearchResults,
+          citations: data.citations,
+          elapsedTime: data.elapsedTime,
+          metadata: data.metadata,
+        });
+
+        setMessages((prev) => [...prev, savedAssistantMessage]);
+      } catch (err) {
+        // Handle abort (user stopped streaming)
+        if (err instanceof Error && err.name === 'AbortError') {
+          logger.info('Regeneration stopped by user');
+          wasStoppedRef.current = true;
+          return;
+        }
+
+        logger.error('Failed to regenerate response', err instanceof Error ? err : undefined);
+        const message = err instanceof Error ? err.message : 'Failed to regenerate response';
+        setError(message);
+      } finally {
+        setIsLoading(false);
+        abortControllerRef.current = null;
+      }
+    },
+    [messages, conversationId, isLoading]
+  );
+
+  const editMessage = useCallback(
+    async (messageId: string, newContent: string) => {
+      // Don't allow edit while streaming
+      if (isLoading) return;
+
+      if (!newContent.trim()) {
+        setError('Message content cannot be empty');
+        return;
+      }
+
+      // Find the message to edit (must be user message)
+      const messageIndex = messages.findIndex((m) => m.id === messageId);
+      if (messageIndex === -1) {
+        setError('Message not found');
+        return;
+      }
+
+      const targetMessage = messages[messageIndex];
+      if (targetMessage.role !== 'user') {
+        setError('Can only edit your own messages');
+        return;
+      }
+
+      const currentConversationId = conversationId;
+      if (!currentConversationId) {
+        setError('No active conversation');
+        return;
+      }
+
+      // Check if there are messages after this one
+      const hasSubsequentMessages = messageIndex < messages.length - 1;
+
+      setError(null);
+      setIsLoading(true);
+      wasStoppedRef.current = false;
+
+      // Create new abort controller for this request
+      abortControllerRef.current = new AbortController();
+
+      try {
+        if (hasSubsequentMessages) {
+          // Delete all subsequent messages from database
+          // Get the timestamp of the message right after the one being edited
+          const nextMessage = messages[messageIndex + 1];
+          const nextTimestamp = nextMessage.timestamp instanceof Date
+            ? nextMessage.timestamp.toISOString()
+            : nextMessage.timestamp;
+
+          await deleteMessagesAfter(currentConversationId, nextTimestamp);
+        }
+
+        // Update the message content in database
+        const updatedMessage = await updateMessage(currentConversationId, messageId, newContent.trim());
+
+        // Update local state: keep only messages up to and including the edited one
+        setMessages((prev) => {
+          const kept = prev.slice(0, messageIndex);
+          return [...kept, updatedMessage];
+        });
+
+        // Now send the edited message to get a new AI response
+        setStreamingStatus({ active: true, currentTool: null, toolCallCount: 0, completedTools: [] });
+
+        const token = await getAuthToken();
+
+        // Build history from messages before the edited message
+        const history = messages.slice(0, messageIndex).map((m) => ({
+          role: m.role,
+          content: m.content,
+        }));
+
+        // Use SSE streaming for real-time tool execution status
+        const response = await fetch('/api/ai/chat', {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+            Accept: 'text/event-stream',
+          },
+          body: JSON.stringify({
+            message: newContent.trim(),
+            history,
+            conversationId: currentConversationId,
+          }),
+          signal: abortControllerRef.current?.signal,
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || 'Failed to get AI response');
+        }
+
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        let data: any = null;
+        let toolCallCount = 0;
+
+        // Consume SSE stream
+        for await (const event of readSSEStream(response)) {
+          switch (event.type) {
+            case 'tool_call_start': {
+              const toolData = event.data as ToolCallStartData;
+              toolCallCount++;
+              setStreamingStatus((prev) => ({
+                ...prev,
+                active: true,
+                currentTool: toolData.name,
+                currentToolArgs: toolData.args,
+                toolCallCount,
+              }));
+              break;
+            }
+            case 'tool_call_result': {
+              const resultData = event.data as ToolCallResultData;
+              setStreamingStatus((prev) => ({
+                ...prev,
+                currentTool: null,
+                currentToolArgs: undefined,
+                completedTools: [
+                  ...prev.completedTools,
+                  {
+                    id: resultData.id,
+                    name: resultData.name,
+                    status: resultData.status,
+                    resultSummary: resultData.resultSummary,
+                  },
+                ],
+              }));
+              logger.debug('Tool completed', { name: resultData.name, status: resultData.status });
+              break;
+            }
+            case 'complete':
+              data = event.data;
+              setStreamingStatus({ active: false, currentTool: null, toolCallCount: 0, completedTools: [] });
+              break;
+            case 'error': {
+              const errorData = event.data as { message: string };
+              setStreamingStatus({ active: false, currentTool: null, toolCallCount: 0, completedTools: [] });
+              throw new Error(errorData.message || 'AI request failed');
+            }
+          }
+        }
+
+        setStreamingStatus({ active: false, currentTool: null, toolCallCount: 0, completedTools: [] });
+
+        if (!data) {
+          throw new Error('No response received from AI');
+        }
+
+        // Save new assistant message to database
+        const savedAssistantMessage = await addMessage(currentConversationId, {
+          role: 'assistant',
+          content: data.content,
+          sources: data.sources?.length > 0 ? data.sources : undefined,
+          reasoning: data.reasoning,
+          toolCalls: data.toolCalls,
+          webSearchResults: data.webSearchResults,
+          citations: data.citations,
+          elapsedTime: data.elapsedTime,
+          metadata: data.metadata,
+        });
+
+        setMessages((prev) => [...prev, savedAssistantMessage]);
+      } catch (err) {
+        // Handle abort (user stopped streaming)
+        if (err instanceof Error && err.name === 'AbortError') {
+          logger.info('Edit stopped by user');
+          wasStoppedRef.current = true;
+          return;
+        }
+
+        logger.error('Failed to edit message', err instanceof Error ? err : undefined);
+        const message = err instanceof Error ? err.message : 'Failed to edit message';
+        setError(message);
+      } finally {
+        setIsLoading(false);
+        abortControllerRef.current = null;
+      }
+    },
+    [messages, conversationId, isLoading]
+  );
+
+  const deleteMessages = useCallback(
+    async (messageId: string) => {
+      // Don't allow delete while streaming
+      if (isLoading) return;
+
+      // Find the message to delete (must be user message)
+      const messageIndex = messages.findIndex((m) => m.id === messageId);
+      if (messageIndex === -1) {
+        setError('Message not found');
+        return;
+      }
+
+      const targetMessage = messages[messageIndex];
+      if (targetMessage.role !== 'user') {
+        setError('Can only delete your own messages');
+        return;
+      }
+
+      const currentConversationId = conversationId;
+      if (!currentConversationId) {
+        setError('No active conversation');
+        return;
+      }
+
+      setError(null);
+
+      try {
+        // Delete this message and all subsequent messages from database
+        const messageTimestamp = targetMessage.timestamp instanceof Date
+          ? targetMessage.timestamp.toISOString()
+          : targetMessage.timestamp;
+
+        await deleteMessagesAfter(currentConversationId, messageTimestamp);
+
+        // Update local state: keep only messages before the deleted one
+        setMessages((prev) => prev.slice(0, messageIndex));
+      } catch (err) {
+        logger.error('Failed to delete messages', err instanceof Error ? err : undefined);
+        const message = err instanceof Error ? err.message : 'Failed to delete messages';
+        setError(message);
+      }
+    },
+    [messages, conversationId, isLoading]
   );
 
   const clearChat = useCallback(() => {
@@ -384,6 +848,10 @@ export function useAIChat(options: UseAIChatOptions = {}): UseAIChatReturn {
     setError(null);
   }, []);
 
+  const clearError = useCallback(() => {
+    setError(null);
+  }, []);
+
   return {
     conversationId,
     messages,
@@ -392,7 +860,12 @@ export function useAIChat(options: UseAIChatOptions = {}): UseAIChatReturn {
     conversationSettings,
     streamingStatus,
     sendMessage,
+    stopStreaming,
+    regenerateResponse,
+    editMessage,
+    deleteMessages,
     clearChat,
+    clearError,
     loadConversation,
     startNewConversation,
   };

@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { ActivityPanel } from './ActivityPanel';
-import type { ActivityItem } from '@/types/ai';
+import type { ActivityItem, ToolCall } from '@/types/ai';
 
 // Mock ActivityTimeline
 vi.mock('./ActivityTimeline', () => ({
@@ -21,9 +21,17 @@ vi.mock('@/utils/cn', () => ({
 }));
 
 describe('ActivityPanel', () => {
+  const mockToolCall: ToolCall = {
+    id: 'tool-1',
+    type: 'function',
+    name: 'search',
+    arguments: {},
+    status: 'completed',
+  };
+
   const mockActivities: ActivityItem[] = [
-    { type: 'tool_call', timestamp: '2024-01-01T10:00:00Z', toolCall: { name: 'search', arguments: {} } },
-    { type: 'thinking', timestamp: '2024-01-01T10:00:01Z', content: 'Analyzing data...' },
+    { id: 'act-1', type: 'tool_call', title: 'Searching', toolCall: mockToolCall },
+    { id: 'act-2', type: 'thinking', title: 'Analyzing', content: 'Analyzing data...' },
   ];
 
   beforeEach(() => {
@@ -36,19 +44,56 @@ describe('ActivityPanel', () => {
       expect(container.firstChild).toBeNull();
     });
 
-    it('renders activity toggle button', () => {
+    it('renders activity toggle button with tool count', () => {
       render(<ActivityPanel activities={mockActivities} />);
-      expect(screen.getByText('Activity')).toBeInTheDocument();
+      expect(screen.getByText('1 tool used')).toBeInTheDocument();
+    });
+
+    it('renders plural tools used for multiple tool calls', () => {
+      const multiToolActivities: ActivityItem[] = [
+        { id: 'act-1', type: 'tool_call', title: 'Search', toolCall: mockToolCall },
+        { id: 'act-2', type: 'tool_call', title: 'Fetch', toolCall: { ...mockToolCall, id: 'tool-2' } },
+      ];
+      render(<ActivityPanel activities={multiToolActivities} />);
+      expect(screen.getByText('2 tools used')).toBeInTheDocument();
     });
 
     it('displays elapsed time when provided', () => {
       render(<ActivityPanel activities={mockActivities} elapsedTime="2.5s" />);
-      expect(screen.getByText('· 2.5s')).toBeInTheDocument();
+      expect(screen.getByText('2.5s')).toBeInTheDocument();
     });
 
     it('does not display elapsed time when not provided', () => {
       render(<ActivityPanel activities={mockActivities} />);
-      expect(screen.queryByText(/·/)).not.toBeInTheDocument();
+      expect(screen.queryByText('2.5s')).not.toBeInTheDocument();
+    });
+  });
+
+  describe('summary generation', () => {
+    it('shows result summary when tool has matching result', () => {
+      const activitiesWithResult: ActivityItem[] = [
+        {
+          id: 'act-1',
+          type: 'tool_call',
+          title: 'Search',
+          toolCall: { ...mockToolCall, result: 'Found 12 events matching the query' },
+        },
+      ];
+      render(<ActivityPanel activities={activitiesWithResult} />);
+      expect(screen.getByText('found 12 events')).toBeInTheDocument();
+    });
+
+    it('shows "no results" message when applicable', () => {
+      const activitiesNoResults: ActivityItem[] = [
+        {
+          id: 'act-1',
+          type: 'tool_call',
+          title: 'Search',
+          toolCall: { ...mockToolCall, result: 'No results found for the query' },
+        },
+      ];
+      render(<ActivityPanel activities={activitiesNoResults} />);
+      expect(screen.getByText('no results')).toBeInTheDocument();
     });
   });
 
@@ -67,7 +112,7 @@ describe('ActivityPanel', () => {
       const user = userEvent.setup();
       render(<ActivityPanel activities={mockActivities} />);
 
-      await user.click(screen.getByText('Activity'));
+      await user.click(screen.getByText('1 tool used'));
       expect(screen.getByTestId('activity-timeline')).toBeInTheDocument();
     });
 
@@ -75,7 +120,7 @@ describe('ActivityPanel', () => {
       const user = userEvent.setup();
       render(<ActivityPanel activities={mockActivities} defaultExpanded />);
 
-      await user.click(screen.getByText('Activity'));
+      await user.click(screen.getByText('1 tool used'));
       expect(screen.queryByTestId('activity-timeline')).not.toBeInTheDocument();
     });
 
@@ -84,7 +129,7 @@ describe('ActivityPanel', () => {
       render(<ActivityPanel activities={mockActivities} />);
 
       // Click to expand
-      await user.click(screen.getByText('Activity'));
+      await user.click(screen.getByText('1 tool used'));
 
       // The chevron svg should have the rotate class applied by cn()
       const chevron = document.querySelector('svg');
@@ -98,7 +143,7 @@ describe('ActivityPanel', () => {
       const user = userEvent.setup();
       render(<ActivityPanel activities={mockActivities} />);
 
-      await user.click(screen.getByText('Activity'));
+      await user.click(screen.getByText('1 tool used'));
 
       const activityItems = screen.getAllByTestId('activity-item');
       expect(activityItems).toHaveLength(2);

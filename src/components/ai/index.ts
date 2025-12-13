@@ -1,6 +1,7 @@
 export { AISettingsForm } from './AISettingsForm';
 export { ChatMessage } from './ChatMessage';
 export { ChatInput } from './ChatInput';
+export type { ChatInputRef } from './ChatInput';
 export { SuggestedQuestions } from './SuggestedQuestions';
 export { ActivityPanel } from './ActivityPanel';
 export { ActivityTimeline } from './ActivityTimeline';
@@ -10,3 +11,4 @@ export { WebSearchStep } from './WebSearchStep';
 export { ReasoningLevelSelect } from './ReasoningLevelSelect';
 export { ConversationList } from './ConversationList';
 export { StreamingIndicator } from './StreamingIndicator';
+export { ErrorRecovery } from './ErrorRecovery';

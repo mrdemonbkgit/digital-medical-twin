@@ -26,6 +26,31 @@ Version history and release notes for Digital Medical Twin. Lists all notable ch
 
 ### Added
 
+- **AI Chat UX Improvements**
+  - Stop streaming button with AbortController support
+  - Regenerate AI response action
+  - Edit user messages inline with textarea UI
+  - Delete messages with confirmation dialog
+  - Copy message with visual feedback ("Copied!")
+  - Rich streaming progress with step-by-step tool execution visibility
+  - Activity panel summary line (always visible when collapsed)
+  - Error recovery UI with retry, new conversation, and dismiss actions
+  - ARIA live regions for screen reader announcements
+  - Keyboard shortcuts: Cmd/Ctrl+/ (focus input), Cmd/Ctrl+\ (toggle sidebar), Escape (stop/close), Arrow Up (edit last), Cmd/Ctrl+Shift+O (copy response)
+  - Skip link for keyboard navigation
+  - Conversation search with debounced filtering
+  - Date groupings in conversation list (Today, Yesterday, Previous 7 days, This month, Older)
+  - Bottom sheet sidebar on mobile (drag-to-close)
+  - Swipe gestures on chat messages (swipe left to reveal actions)
+  - Shared tool labels constants for consistent naming
+
+- **New Components**
+  - `ErrorRecovery` - Actionable error display with retry options
+  - `BottomSheet` - Mobile-friendly draggable bottom sheet
+  - `useAriaAnnounce` - Hook for screen reader announcements
+  - `useKeyboardShortcuts` - Hook for global keyboard shortcuts
+  - `useSwipe` - Hook for touch swipe gesture detection
+
 - **Multi-Theme System (4 Themes)**
   - New theme selector in Settings page: Light, Dark, Ocean, Forest, System
   - System mode follows OS preferences via `prefers-color-scheme`

@@ -16,14 +16,26 @@ vi.mock('react-router-dom', async () => {
 const mockSendMessage = vi.fn();
 const mockLoadConversation = vi.fn();
 const mockStartNewConversation = vi.fn();
+const mockStopStreaming = vi.fn();
+const mockRegenerateResponse = vi.fn();
+const mockEditMessage = vi.fn();
+const mockDeleteMessages = vi.fn();
+const mockClearError = vi.fn();
+const mockAnnounce = vi.fn();
 vi.mock('@/hooks', () => ({
   useAIChat: vi.fn(() => ({
     conversationId: null,
     messages: [],
     isLoading: false,
     error: null,
-    streamingStatus: null,
+    conversationSettings: null,
+    streamingStatus: { active: false, currentTool: null, toolCallCount: 0, completedTools: [] },
     sendMessage: mockSendMessage,
+    stopStreaming: mockStopStreaming,
+    regenerateResponse: mockRegenerateResponse,
+    editMessage: mockEditMessage,
+    deleteMessages: mockDeleteMessages,
+    clearError: mockClearError,
     loadConversation: mockLoadConversation,
     startNewConversation: mockStartNewConversation,
   })),
@@ -39,6 +51,11 @@ vi.mock('@/hooks', () => ({
     rename: vi.fn(),
     refetch: vi.fn(),
   })),
+  useAriaAnnounce: vi.fn(() => ({
+    announcement: '',
+    announce: mockAnnounce,
+  })),
+  useKeyboardShortcuts: vi.fn(),
 }));
 
 vi.mock('@/components/layout', () => ({
@@ -55,24 +72,34 @@ vi.mock('@/components/common', () => ({
       {children}
     </button>
   ),
+  BottomSheet: ({ children, isOpen, onClose, title }: any) =>
+    isOpen ? (
+      <div data-testid="bottom-sheet" data-title={title}>
+        <button onClick={onClose} data-testid="close-bottom-sheet">Close</button>
+        {children}
+      </div>
+    ) : null,
 }));
 
 vi.mock('@/components/ai', () => ({
   ChatMessage: ({ message }: any) => (
     <div data-testid={`chat-message-${message.id}`}>{message.content}</div>
   ),
-  ChatInput: ({ onSend, disabled, placeholder }: any) => (
+  ChatInput: ({ onSend, onStop, disabled, isStreaming, placeholder }: any) => (
     <div data-testid="chat-input">
       <input
         data-testid="message-input"
         placeholder={placeholder}
-        disabled={disabled}
+        disabled={disabled || isStreaming}
         onKeyDown={(e) => {
           if (e.key === 'Enter') {
             onSend((e.target as HTMLInputElement).value);
           }
         }}
       />
+      {isStreaming && onStop && (
+        <button data-testid="stop-button" onClick={onStop}>Stop</button>
+      )}
     </div>
   ),
   SuggestedQuestions: ({ onSelect }: any) => (
@@ -107,8 +134,19 @@ vi.mock('@/components/ai', () => ({
       ))}
     </div>
   ),
-  StreamingIndicator: ({ status }: any) => (
-    <div data-testid="streaming-indicator">{status}</div>
+  StreamingIndicator: ({ status, onStop }: any) => (
+    <div data-testid="streaming-indicator">
+      {status?.active ? 'Streaming...' : ''}
+      {onStop && <button data-testid="stop-streaming" onClick={onStop}>Stop</button>}
+    </div>
+  ),
+  ErrorRecovery: ({ error, onRetry, onNewConversation, onDismiss }: any) => (
+    <div data-testid="error-recovery">
+      <span data-testid="error-message">{error}</span>
+      <button data-testid="retry-button" onClick={onRetry}>Retry</button>
+      <button data-testid="new-conversation-button" onClick={onNewConversation}>New</button>
+      <button data-testid="dismiss-button" onClick={onDismiss}>Dismiss</button>
+    </div>
   ),
 }));
 
@@ -199,8 +237,14 @@ describe('AIHistorianPage', () => {
         messages: [],
         isLoading: false,
         error: null,
-        streamingStatus: null,
+        conversationSettings: null,
+        streamingStatus: { active: false, currentTool: null, toolCallCount: 0, completedTools: [] },
         sendMessage: mockSendMessage,
+        stopStreaming: mockStopStreaming,
+        regenerateResponse: mockRegenerateResponse,
+        editMessage: mockEditMessage,
+        deleteMessages: mockDeleteMessages,
+        clearError: mockClearError,
         loadConversation: mockLoadConversation,
         startNewConversation: mockStartNewConversation,
       });
@@ -283,8 +327,14 @@ describe('AIHistorianPage', () => {
         ],
         isLoading: false,
         error: null,
-        streamingStatus: null,
+        conversationSettings: null,
+        streamingStatus: { active: false, currentTool: null, toolCallCount: 0, completedTools: [] },
         sendMessage: mockSendMessage,
+        stopStreaming: mockStopStreaming,
+        regenerateResponse: mockRegenerateResponse,
+        editMessage: mockEditMessage,
+        deleteMessages: mockDeleteMessages,
+        clearError: mockClearError,
         loadConversation: mockLoadConversation,
         startNewConversation: mockStartNewConversation,
       });
@@ -335,8 +385,14 @@ describe('AIHistorianPage', () => {
         messages: [],
         isLoading: false,
         error: 'Failed to send message',
-        streamingStatus: null,
+        conversationSettings: null,
+        streamingStatus: { active: false, currentTool: null, toolCallCount: 0, completedTools: [] },
         sendMessage: mockSendMessage,
+        stopStreaming: mockStopStreaming,
+        regenerateResponse: mockRegenerateResponse,
+        editMessage: mockEditMessage,
+        deleteMessages: mockDeleteMessages,
+        clearError: mockClearError,
         loadConversation: mockLoadConversation,
         startNewConversation: mockStartNewConversation,
       });
@@ -364,8 +420,14 @@ describe('AIHistorianPage', () => {
         messages: [{ id: 'msg-1', role: 'user', content: 'Hello', timestamp: '2024-06-15T10:00:00Z' }],
         isLoading: true,
         error: null,
-        streamingStatus: 'Thinking...',
+        conversationSettings: null,
+        streamingStatus: { active: true, currentTool: null, toolCallCount: 0, completedTools: [] },
         sendMessage: mockSendMessage,
+        stopStreaming: mockStopStreaming,
+        regenerateResponse: mockRegenerateResponse,
+        editMessage: mockEditMessage,
+        deleteMessages: mockDeleteMessages,
+        clearError: mockClearError,
         loadConversation: mockLoadConversation,
         startNewConversation: mockStartNewConversation,
       });
@@ -391,8 +453,14 @@ describe('AIHistorianPage', () => {
         messages: [],
         isLoading: true,
         error: null,
-        streamingStatus: null,
+        conversationSettings: null,
+        streamingStatus: { active: true, currentTool: null, toolCallCount: 0, completedTools: [] },
         sendMessage: mockSendMessage,
+        stopStreaming: mockStopStreaming,
+        regenerateResponse: mockRegenerateResponse,
+        editMessage: mockEditMessage,
+        deleteMessages: mockDeleteMessages,
+        clearError: mockClearError,
         loadConversation: mockLoadConversation,
         startNewConversation: mockStartNewConversation,
       });
@@ -420,8 +488,14 @@ describe('AIHistorianPage', () => {
         messages: [],
         isLoading: false,
         error: null,
-        streamingStatus: null,
+        conversationSettings: null,
+        streamingStatus: { active: false, currentTool: null, toolCallCount: 0, completedTools: [] },
         sendMessage: mockSendMessage,
+        stopStreaming: mockStopStreaming,
+        regenerateResponse: mockRegenerateResponse,
+        editMessage: mockEditMessage,
+        deleteMessages: mockDeleteMessages,
+        clearError: mockClearError,
         loadConversation: mockLoadConversation,
         startNewConversation: mockStartNewConversation,
       });
@@ -472,8 +546,14 @@ describe('AIHistorianPage', () => {
         messages: [],
         isLoading: false,
         error: null,
-        streamingStatus: null,
+        conversationSettings: null,
+        streamingStatus: { active: false, currentTool: null, toolCallCount: 0, completedTools: [] },
         sendMessage: mockSendMessage,
+        stopStreaming: mockStopStreaming,
+        regenerateResponse: mockRegenerateResponse,
+        editMessage: mockEditMessage,
+        deleteMessages: mockDeleteMessages,
+        clearError: mockClearError,
         loadConversation: mockLoadConversation,
         startNewConversation: mockStartNewConversation,
       });
@@ -483,6 +563,77 @@ describe('AIHistorianPage', () => {
       // Gemini always shows One-Shot mode
       expect(screen.getByText('One-Shot')).toBeInTheDocument();
       expect(screen.getByText(/Gemini/)).toBeInTheDocument();
+    });
+  });
+
+  describe('accessibility', () => {
+    it('has skip link to chat input', () => {
+      vi.mocked(useAISettings).mockReturnValue({
+        settings: {
+          provider: 'openai',
+          model: 'gpt-4o',
+        },
+        isLoading: false,
+        updateSettings: vi.fn(),
+        error: null,
+      });
+
+      vi.mocked(useAIChat).mockReturnValue({
+        conversationId: null,
+        messages: [],
+        isLoading: false,
+        error: null,
+        conversationSettings: null,
+        streamingStatus: { active: false, currentTool: null, toolCallCount: 0, completedTools: [] },
+        sendMessage: mockSendMessage,
+        stopStreaming: mockStopStreaming,
+        regenerateResponse: mockRegenerateResponse,
+        editMessage: mockEditMessage,
+        deleteMessages: mockDeleteMessages,
+        clearError: mockClearError,
+        loadConversation: mockLoadConversation,
+        startNewConversation: mockStartNewConversation,
+      });
+
+      renderWithRouter();
+
+      const skipLink = screen.getByText('Skip to chat input');
+      expect(skipLink).toBeInTheDocument();
+      expect(skipLink).toHaveAttribute('href', '#chat-input');
+    });
+
+    it('has ARIA live region for announcements', () => {
+      vi.mocked(useAISettings).mockReturnValue({
+        settings: {
+          provider: 'openai',
+          model: 'gpt-4o',
+        },
+        isLoading: false,
+        updateSettings: vi.fn(),
+        error: null,
+      });
+
+      vi.mocked(useAIChat).mockReturnValue({
+        conversationId: null,
+        messages: [],
+        isLoading: false,
+        error: null,
+        conversationSettings: null,
+        streamingStatus: { active: false, currentTool: null, toolCallCount: 0, completedTools: [] },
+        sendMessage: mockSendMessage,
+        stopStreaming: mockStopStreaming,
+        regenerateResponse: mockRegenerateResponse,
+        editMessage: mockEditMessage,
+        deleteMessages: mockDeleteMessages,
+        clearError: mockClearError,
+        loadConversation: mockLoadConversation,
+        startNewConversation: mockStartNewConversation,
+      });
+
+      renderWithRouter();
+
+      const liveRegion = document.querySelector('[role="status"][aria-live="polite"]');
+      expect(liveRegion).toBeInTheDocument();
     });
   });
 });

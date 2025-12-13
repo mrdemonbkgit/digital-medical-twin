@@ -6,8 +6,8 @@ import type { Conversation } from '@/types/conversations';
 
 // Mock common components
 vi.mock('@/components/common', () => ({
-  Button: ({ children, onClick, className, size }: any) => (
-    <button onClick={onClick} className={className} data-size={size}>
+  Button: ({ children, onClick, className, size, ...props }: any) => (
+    <button onClick={onClick} className={className} data-size={size} {...props}>
       {children}
     </button>
   ),
@@ -16,6 +16,11 @@ vi.mock('@/components/common', () => ({
 // Mock cn utility
 vi.mock('@/utils/cn', () => ({
   cn: (...args: any[]) => args.filter(Boolean).join(' '),
+}));
+
+// Mock useDebouncedValue to return value immediately for tests
+vi.mock('@/hooks', () => ({
+  useDebouncedValue: (value: string) => value,
 }));
 
 // Mock window.confirm
@@ -117,7 +122,7 @@ describe('ConversationList', () => {
       expect(screen.getByText('Lab Results Discussion')).toBeInTheDocument();
     });
 
-    it('renders date labels', () => {
+    it('renders date group headers', () => {
       render(
         <ConversationList
           conversations={mockConversations}
@@ -128,6 +133,7 @@ describe('ConversationList', () => {
           onRename={mockOnRename}
         />
       );
+      // Group headers for conversations from different time periods
       expect(screen.getByText('Today')).toBeInTheDocument();
       expect(screen.getByText('Yesterday')).toBeInTheDocument();
     });
@@ -417,8 +423,8 @@ describe('ConversationList', () => {
     });
   });
 
-  describe('date formatting', () => {
-    it('shows "Today" for today conversations', () => {
+  describe('date groupings', () => {
+    it('shows "TODAY" group header for today conversations', () => {
       const todayConv: Conversation[] = [{
         id: 'today',
         userId: 'user-1',
@@ -440,7 +446,7 @@ describe('ConversationList', () => {
       expect(screen.getByText('Today')).toBeInTheDocument();
     });
 
-    it('shows "Yesterday" for yesterday conversations', () => {
+    it('shows "YESTERDAY" group header for yesterday conversations', () => {
       const yesterdayConv: Conversation[] = [{
         id: 'yesterday',
         userId: 'user-1',
@@ -462,7 +468,7 @@ describe('ConversationList', () => {
       expect(screen.getByText('Yesterday')).toBeInTheDocument();
     });
 
-    it('shows "X days ago" for recent conversations', () => {
+    it('shows "PREVIOUS 7 DAYS" group header for recent conversations', () => {
       const threeDaysAgoConv: Conversation[] = [{
         id: 'three-days',
         userId: 'user-1',
@@ -481,7 +487,176 @@ describe('ConversationList', () => {
           onRename={mockOnRename}
         />
       );
-      expect(screen.getByText('3 days ago')).toBeInTheDocument();
+      expect(screen.getByText('Previous 7 days')).toBeInTheDocument();
+    });
+
+    it('groups conversations into multiple categories', () => {
+      render(
+        <ConversationList
+          conversations={mockConversations}
+          activeId={null}
+          onSelect={mockOnSelect}
+          onNew={mockOnNew}
+          onDelete={mockOnDelete}
+          onRename={mockOnRename}
+        />
+      );
+      // Should show Today (first conv), Yesterday (second), Previous 7 days (third)
+      expect(screen.getByText('Today')).toBeInTheDocument();
+      expect(screen.getByText('Yesterday')).toBeInTheDocument();
+      expect(screen.getByText('Previous 7 days')).toBeInTheDocument();
+    });
+
+    it('shows "OLDER" group header for old conversations', () => {
+      const oldConv: Conversation[] = [{
+        id: 'old',
+        userId: 'user-1',
+        title: 'Old Chat',
+        createdAt: new Date(Date.now() - 60 * 86400000).toISOString(), // 60 days ago
+        updatedAt: new Date(Date.now() - 60 * 86400000).toISOString(),
+      }];
+
+      render(
+        <ConversationList
+          conversations={oldConv}
+          activeId={null}
+          onSelect={mockOnSelect}
+          onNew={mockOnNew}
+          onDelete={mockOnDelete}
+          onRename={mockOnRename}
+        />
+      );
+      expect(screen.getByText('Older')).toBeInTheDocument();
+    });
+  });
+
+  describe('search functionality', () => {
+    it('shows search input when conversations exist', () => {
+      render(
+        <ConversationList
+          conversations={mockConversations}
+          activeId={null}
+          onSelect={mockOnSelect}
+          onNew={mockOnNew}
+          onDelete={mockOnDelete}
+          onRename={mockOnRename}
+        />
+      );
+      expect(screen.getByPlaceholderText('Search conversations...')).toBeInTheDocument();
+    });
+
+    it('does not show search input when no conversations', () => {
+      render(
+        <ConversationList
+          conversations={[]}
+          activeId={null}
+          onSelect={mockOnSelect}
+          onNew={mockOnNew}
+          onDelete={mockOnDelete}
+          onRename={mockOnRename}
+        />
+      );
+      expect(screen.queryByPlaceholderText('Search conversations...')).not.toBeInTheDocument();
+    });
+
+    it('filters conversations by search query', async () => {
+      const user = userEvent.setup();
+      render(
+        <ConversationList
+          conversations={mockConversations}
+          activeId={null}
+          onSelect={mockOnSelect}
+          onNew={mockOnNew}
+          onDelete={mockOnDelete}
+          onRename={mockOnRename}
+        />
+      );
+
+      const searchInput = screen.getByPlaceholderText('Search conversations...');
+      await user.type(searchInput, 'Health');
+
+      expect(screen.getByText('Health Questions')).toBeInTheDocument();
+      expect(screen.queryByText('Lab Results Discussion')).not.toBeInTheDocument();
+    });
+
+    it('shows no results message when search has no matches', async () => {
+      const user = userEvent.setup();
+      render(
+        <ConversationList
+          conversations={mockConversations}
+          activeId={null}
+          onSelect={mockOnSelect}
+          onNew={mockOnNew}
+          onDelete={mockOnDelete}
+          onRename={mockOnRename}
+        />
+      );
+
+      const searchInput = screen.getByPlaceholderText('Search conversations...');
+      await user.type(searchInput, 'nonexistent');
+
+      expect(screen.getByText('No conversations matching "nonexistent"')).toBeInTheDocument();
+    });
+
+    it('shows clear button when search has value', async () => {
+      const user = userEvent.setup();
+      render(
+        <ConversationList
+          conversations={mockConversations}
+          activeId={null}
+          onSelect={mockOnSelect}
+          onNew={mockOnNew}
+          onDelete={mockOnDelete}
+          onRename={mockOnRename}
+        />
+      );
+
+      const searchInput = screen.getByPlaceholderText('Search conversations...');
+      await user.type(searchInput, 'test');
+
+      expect(screen.getByLabelText('Clear search')).toBeInTheDocument();
+    });
+
+    it('clears search when clear button clicked', async () => {
+      const user = userEvent.setup();
+      render(
+        <ConversationList
+          conversations={mockConversations}
+          activeId={null}
+          onSelect={mockOnSelect}
+          onNew={mockOnNew}
+          onDelete={mockOnDelete}
+          onRename={mockOnRename}
+        />
+      );
+
+      const searchInput = screen.getByPlaceholderText('Search conversations...');
+      await user.type(searchInput, 'test');
+      await user.click(screen.getByLabelText('Clear search'));
+
+      expect(searchInput).toHaveValue('');
+      // All conversations should be visible again
+      expect(screen.getByText('Health Questions')).toBeInTheDocument();
+      expect(screen.getByText('Lab Results Discussion')).toBeInTheDocument();
+    });
+
+    it('search is case-insensitive', async () => {
+      const user = userEvent.setup();
+      render(
+        <ConversationList
+          conversations={mockConversations}
+          activeId={null}
+          onSelect={mockOnSelect}
+          onNew={mockOnNew}
+          onDelete={mockOnDelete}
+          onRename={mockOnRename}
+        />
+      );
+
+      const searchInput = screen.getByPlaceholderText('Search conversations...');
+      await user.type(searchInput, 'HEALTH');
+
+      expect(screen.getByText('Health Questions')).toBeInTheDocument();
     });
   });
 });

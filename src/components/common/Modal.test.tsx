@@ -2,11 +2,16 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { Modal } from './Modal';
 
+// Mock focus-trap-react to avoid focus-trap issues in tests
+vi.mock('focus-trap-react', () => ({
+  default: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+}));
+
 describe('Modal', () => {
   const defaultProps = {
     isOpen: true,
     onClose: vi.fn(),
-    children: <div>Modal Content</div>,
+    children: <button type="button">Modal Content</button>,
   };
 
   beforeEach(() => {
@@ -177,7 +182,7 @@ describe('Modal', () => {
     it('applies base styling classes', () => {
       render(<Modal {...defaultProps} />);
       const dialog = screen.getByRole('dialog');
-      expect(dialog).toHaveClass('bg-white', 'rounded-lg', 'shadow-xl');
+      expect(dialog).toHaveClass('bg-theme-primary', 'rounded-lg', 'shadow-xl');
     });
   });
 

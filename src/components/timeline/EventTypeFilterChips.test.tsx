@@ -74,8 +74,8 @@ describe('EventTypeFilterChips', () => {
       );
 
       const labButton = screen.getByText('Labs').closest('button');
-      expect(labButton?.className).toContain('bg-red-100');
-      expect(labButton?.className).toContain('text-red-700');
+      expect(labButton?.className).toContain('bg-event-lab');
+      expect(labButton?.className).toContain('text-event-lab');
     });
 
     it('applies inactive classes to unselected types', () => {
@@ -88,8 +88,8 @@ describe('EventTypeFilterChips', () => {
       );
 
       const labButton = screen.getByText('Labs').closest('button');
-      expect(labButton?.className).toContain('bg-gray-50');
-      expect(labButton?.className).toContain('text-gray-600');
+      expect(labButton?.className).toContain('bg-theme-secondary');
+      expect(labButton?.className).toContain('text-theme-secondary');
     });
 
     it('supports multiple selections', () => {
@@ -249,11 +249,11 @@ describe('EventTypeFilterChips', () => {
         />
       );
 
-      expect(screen.getByText('Labs').closest('button')?.className).toContain('bg-red-100');
-      expect(screen.getByText('Visits').closest('button')?.className).toContain('bg-blue-100');
-      expect(screen.getByText('Meds').closest('button')?.className).toContain('bg-green-100');
-      expect(screen.getByText('Interventions').closest('button')?.className).toContain('bg-amber-100');
-      expect(screen.getByText('Metrics').closest('button')?.className).toContain('bg-purple-100');
+      expect(screen.getByText('Labs').closest('button')?.className).toContain('bg-event-lab');
+      expect(screen.getByText('Visits').closest('button')?.className).toContain('bg-info-muted');
+      expect(screen.getByText('Meds').closest('button')?.className).toContain('bg-success-muted');
+      expect(screen.getByText('Interventions').closest('button')?.className).toContain('bg-warning-muted');
+      expect(screen.getByText('Metrics').closest('button')?.className).toContain('bg-event-metric');
     });
   });
 });

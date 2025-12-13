@@ -44,7 +44,7 @@ export function InsightsPage() {
       <PageWrapper title="Insights">
         <Card>
           <CardContent>
-            <p className="py-8 text-center text-red-600">{error}</p>
+            <p className="py-8 text-center text-danger">{error}</p>
           </CardContent>
         </Card>
       </PageWrapper>

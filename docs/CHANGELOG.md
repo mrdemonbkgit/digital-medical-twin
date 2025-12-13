@@ -69,6 +69,41 @@ Version history and release notes for Digital Medical Twin. Lists all notable ch
 - Event type selector cards use theme-aware CSS variables instead of hardcoded colors
 - Header navigation no longer overflows on tablets and foldable devices
 
+### Theme System Cleanup & Polish
+
+- **Accessibility Improvements**
+  - Added `aria-label` attributes to ChatInput textarea and send button
+  - Installed `focus-trap-react` for modal keyboard accessibility
+  - Modal now traps focus when open, preventing tab navigation escape
+  - TagInput touch target increased to 44px minimum
+
+- **Component Theme Fixes**
+  - LoadingSpinner: `text-blue-600` → `text-accent`
+  - ErrorBoundary: hardcoded red/gray → semantic `bg-danger-muted`, `text-danger`
+  - AddEventFAB: `hover:opacity-90` → `hover:bg-accent-hover` for semantic hover
+  - TimelineConnector: hardcoded event colors → `bg-event-*` semantic classes
+  - EventTypeFilterChips: Labs/Metrics colors → `bg-event-lab`, `bg-event-metric`
+  - TimelinePage delete button: `text-red-600` → `text-danger`
+  - Document components: hardcoded colors → theme utility classes
+  - LabUpload components: gray backgrounds → `bg-theme-secondary`
+  - InsightsPage: hardcoded colors → semantic theme classes
+
+- **Chart Theme Integration**
+  - TrendChart now uses CSS variables directly in Recharts SVG props
+  - CartesianGrid: `stroke="var(--border-primary)"`
+  - Axis labels: `stroke="var(--text-muted)"`
+  - Reference areas: `fill="var(--status-success)"`
+  - Data lines: `stroke="var(--accent-primary)"`
+
+- **CSS Additions**
+  - Added `bg-accent-muted` (20% opacity) and `bg-accent-subtle` (10% opacity) via `color-mix()`
+
+- **Test Suite Updates**
+  - Updated 30+ test files to use semantic color classes instead of hardcoded Tailwind colors
+  - Added focus-trap-react mocks for Modal, ExtractionPreview, and LabUploadList tests
+  - Fixed silent test passes in EventCard delete tests with proper assertions
+  - All 2,948 tests passing
+
 ### Added (previous)
 
 - **Insights Page Search Bar**

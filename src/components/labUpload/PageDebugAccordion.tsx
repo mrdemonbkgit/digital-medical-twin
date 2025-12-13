@@ -64,7 +64,7 @@ function PageRow({ page, isExpanded, onToggle }: PageRowProps) {
         <div className="border-t border-theme-primary bg-theme-secondary p-3 space-y-3">
           {/* Extraction */}
           <div className="flex items-start gap-3">
-            <div className="w-2 h-2 rounded-full bg-blue-500 mt-1.5" />
+            <div className="w-2 h-2 rounded-full bg-accent mt-1.5" />
             <div className="flex-1">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-medium text-theme-secondary">

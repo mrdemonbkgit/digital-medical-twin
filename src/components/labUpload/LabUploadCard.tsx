@@ -193,7 +193,7 @@ export function LabUploadCard({
                 : upload.processingStage ? stageMessages[upload.processingStage] : 'Processing...'}
             </span>
             {upload.startedAt && (
-              <span className={`font-mono text-xs ${isStuck ? 'text-amber-500' : 'text-blue-500'}`}>
+              <span className={`font-mono text-xs ${isStuck ? 'text-amber-500' : 'text-accent'}`}>
                 {formatElapsed(elapsed)}
               </span>
             )}
@@ -209,9 +209,9 @@ export function LabUploadCard({
                   {Math.round(((upload.currentPage || 1) / upload.totalPages) * 100)}%
                 </span>
               </div>
-              <div className={`w-full h-1.5 rounded-full ${isStuck ? 'bg-amber-200' : 'bg-blue-200'}`}>
+              <div className={`w-full h-1.5 rounded-full ${isStuck ? 'bg-amber-200' : 'bg-theme-tertiary'}`}>
                 <div
-                  className={`h-1.5 rounded-full transition-all duration-300 ${isStuck ? 'bg-amber-500' : 'bg-blue-500'}`}
+                  className={`h-1.5 rounded-full transition-all duration-300 ${isStuck ? 'bg-amber-500' : 'bg-accent'}`}
                   style={{ width: `${((upload.currentPage || 1) / upload.totalPages) * 100}%` }}
                 />
               </div>

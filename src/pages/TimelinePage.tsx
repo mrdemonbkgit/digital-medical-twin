@@ -341,7 +341,7 @@ export function TimelinePage() {
                 variant="secondary"
                 onClick={handleClearEvents}
                 disabled={isClearing}
-                className="text-red-600 hover:text-red-700"
+                className="text-danger hover:opacity-80"
               >
                 <Trash2 className="w-3 h-3 mr-1" />
                 {isClearing ? 'Clearing...' : 'Clear All'}

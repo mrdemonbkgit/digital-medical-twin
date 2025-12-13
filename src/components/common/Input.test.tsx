@@ -41,13 +41,13 @@ describe('Input', () => {
   it('applies error styling when error is present', () => {
     render(<Input error="Invalid input" />);
     const input = screen.getByRole('textbox');
-    expect(input).toHaveClass('border-red-500');
+    expect(input).toHaveClass('border-danger');
   });
 
   it('does not show error styling when no error', () => {
     render(<Input />);
     const input = screen.getByRole('textbox');
-    expect(input).not.toHaveClass('border-red-500');
+    expect(input).not.toHaveClass('border-danger');
   });
 
   it('handles value changes', () => {
@@ -77,7 +77,7 @@ describe('Input', () => {
   it('applies disabled styling', () => {
     render(<Input disabled />);
     const input = screen.getByRole('textbox');
-    expect(input).toHaveClass('disabled:bg-gray-50');
+    expect(input).toHaveClass('disabled:opacity-50');
   });
 
   it('applies custom className', () => {
@@ -116,15 +116,15 @@ describe('Input', () => {
     expect(input).toHaveClass('block', 'w-full', 'rounded-lg');
   });
 
-  it('applies focus styling classes', () => {
+  it('applies input-theme class for focus styling', () => {
     render(<Input />);
     const input = screen.getByRole('textbox');
-    expect(input).toHaveClass('focus:border-blue-500', 'focus:ring-blue-500');
+    expect(input).toHaveClass('input-theme');
   });
 
   it('applies error focus styling when error present', () => {
     render(<Input error="Error" />);
     const input = screen.getByRole('textbox');
-    expect(input).toHaveClass('focus:border-red-500', 'focus:ring-red-500');
+    expect(input).toHaveClass('focus:border-danger', 'focus:ring-danger');
   });
 });

@@ -328,14 +328,13 @@ describe('EventCard', () => {
 
       renderEventCard(labResultEvent, { onDelete: mockOnDelete });
 
-      // Find delete button - it has text-red-600 class
+      // Find delete button - it has text-danger class
       const buttons = screen.getAllByRole('button');
-      const deleteButton = buttons.find(btn => btn.classList.contains('text-red-600'));
+      const deleteButton = buttons.find(btn => btn.classList.contains('text-danger'));
+      expect(deleteButton).toBeDefined();
 
-      if (deleteButton) {
-        await user.click(deleteButton);
-        expect(mockOnDelete).toHaveBeenCalledWith('lab-1');
-      }
+      await user.click(deleteButton!);
+      expect(mockOnDelete).toHaveBeenCalledWith('lab-1');
     });
 
     it('does not call onDelete when cancelled', async () => {
@@ -346,11 +345,10 @@ describe('EventCard', () => {
       renderEventCard(labResultEvent, { onDelete: mockOnDelete });
 
       const buttons = screen.getAllByRole('button');
-      const deleteButton = buttons.find(btn => btn.classList.contains('text-red-600'));
+      const deleteButton = buttons.find(btn => btn.classList.contains('text-danger'));
+      expect(deleteButton).toBeDefined();
 
-      if (deleteButton) {
-        await user.click(deleteButton);
-      }
+      await user.click(deleteButton!);
 
       expect(mockOnDelete).not.toHaveBeenCalled();
     });
@@ -362,12 +360,11 @@ describe('EventCard', () => {
       renderEventCard(labResultEvent, { onDelete: vi.fn() });
 
       const buttons = screen.getAllByRole('button');
-      const deleteButton = buttons.find(btn => btn.classList.contains('text-red-600'));
+      const deleteButton = buttons.find(btn => btn.classList.contains('text-danger'));
+      expect(deleteButton).toBeDefined();
 
-      if (deleteButton) {
-        await user.click(deleteButton);
-        expect(confirmSpy).toHaveBeenCalledWith('Are you sure you want to delete this event?');
-      }
+      await user.click(deleteButton!);
+      expect(confirmSpy).toHaveBeenCalledWith('Are you sure you want to delete this event?');
     });
   });
 
@@ -395,19 +392,19 @@ describe('EventCard', () => {
     it('applies correct border color for lab result', () => {
       const { container } = renderEventCard(labResultEvent);
       const card = container.firstChild;
-      expect(card).toHaveClass('border-l-red-500');
+      expect(card).toHaveClass('border-event-lab');
     });
 
     it('applies correct border color for doctor visit', () => {
       const { container } = renderEventCard(doctorVisitEvent);
       const card = container.firstChild;
-      expect(card).toHaveClass('border-l-blue-500');
+      expect(card).toHaveClass('border-event-visit');
     });
 
     it('applies correct border color for medication', () => {
       const { container } = renderEventCard(medicationEvent);
       const card = container.firstChild;
-      expect(card).toHaveClass('border-l-green-500');
+      expect(card).toHaveClass('border-event-medication');
     });
   });
 });

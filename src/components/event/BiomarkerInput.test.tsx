@@ -220,7 +220,7 @@ describe('BiomarkerInput', () => {
 
       // Find and click the first remove button
       const removeButtons = screen.getAllByRole('button').filter(btn =>
-        btn.className.includes('text-red-600')
+        btn.className.includes('text-danger')
       );
       fireEvent.click(removeButtons[0]);
 

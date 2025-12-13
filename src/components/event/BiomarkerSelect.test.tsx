@@ -173,8 +173,8 @@ describe('BiomarkerSelect', () => {
 
       await user.click(screen.getByRole('button'));
 
-      // Aliases are shown in parentheses with ml-2 class (unit spans have font-mono)
-      const aliasElements = container.querySelectorAll('.ml-2.text-xs.text-gray-400');
+      // Aliases are shown in parentheses with ml-2 class
+      const aliasElements = container.querySelectorAll('.ml-2.text-xs.text-theme-muted');
       const aliasTexts = Array.from(aliasElements).map((el) => el.textContent);
       // Verify aliases are rendered for biomarkers that have them
       expect(aliasTexts.length).toBeGreaterThan(0);
@@ -322,7 +322,7 @@ describe('BiomarkerSelect', () => {
 
       await user.click(screen.getByRole('button'));
 
-      // The selected option in the dropdown should have bg-blue-50 class
+      // The selected option in the dropdown should have bg-info-muted class
       // Find the option button inside the dropdown's scrollable area
       const dropdown = container.querySelector('.overflow-y-auto');
       const optionButtons = dropdown?.querySelectorAll('button[type="button"]');
@@ -330,7 +330,7 @@ describe('BiomarkerSelect', () => {
         btn.textContent?.includes('Glucose')
       );
 
-      expect(glucoseButton).toHaveClass('bg-blue-50');
+      expect(glucoseButton).toHaveClass('bg-info-muted');
     });
 
     it('clears selection when clear button is clicked', async () => {
@@ -365,7 +365,7 @@ describe('BiomarkerSelect', () => {
 
     it('applies disabled styling', () => {
       render(<BiomarkerSelect {...defaultProps} disabled />);
-      expect(screen.getByRole('button')).toHaveClass('bg-gray-50');
+      expect(screen.getByRole('button')).toHaveClass('bg-theme-secondary');
       expect(screen.getByRole('button')).toHaveClass('cursor-not-allowed');
     });
 
@@ -395,7 +395,7 @@ describe('BiomarkerSelect', () => {
 
     it('applies error styling to button', () => {
       render(<BiomarkerSelect {...defaultProps} error="Error" />);
-      expect(screen.getByRole('button')).toHaveClass('border-red-500');
+      expect(screen.getByRole('button')).toHaveClass('border-danger');
     });
   });
 

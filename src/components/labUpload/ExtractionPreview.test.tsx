@@ -4,6 +4,11 @@ import { BrowserRouter } from 'react-router-dom';
 import { ExtractionPreview } from './ExtractionPreview';
 import type { LabUpload, ProcessedBiomarker } from '@/types';
 
+// Mock focus-trap-react to avoid focus-trap issues in tests
+vi.mock('focus-trap-react', () => ({
+  default: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+}));
+
 const mockProcessedBiomarkers: ProcessedBiomarker[] = [
   {
     originalName: 'LDL Cholesterol',

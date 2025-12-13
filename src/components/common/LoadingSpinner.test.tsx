@@ -21,10 +21,10 @@ describe('LoadingSpinner', () => {
       expect(icon).toHaveClass('animate-spin');
     });
 
-    it('has blue color', () => {
+    it('has accent color', () => {
       render(<LoadingSpinner />);
       const icon = document.querySelector('svg');
-      expect(icon).toHaveClass('text-blue-600');
+      expect(icon).toHaveClass('text-accent');
     });
   });
 

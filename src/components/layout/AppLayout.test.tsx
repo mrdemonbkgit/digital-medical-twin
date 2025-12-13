@@ -56,11 +56,11 @@ describe('AppLayout', () => {
   });
 
   describe('styling', () => {
-    it('applies min-height screen and gray background', () => {
+    it('applies min-height screen and theme background', () => {
       const { container } = renderWithRouter();
 
       const wrapper = container.firstChild as HTMLElement;
-      expect(wrapper).toHaveClass('min-h-screen', 'bg-gray-50');
+      expect(wrapper).toHaveClass('min-h-screen', 'bg-theme-secondary');
     });
   });
 

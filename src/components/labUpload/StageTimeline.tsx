@@ -39,7 +39,7 @@ function StageCard({ name, icon, durationMs, totalMs, details, skipped }: StageC
       {!skipped && !isInstant && (
         <div className="h-2 bg-theme-tertiary rounded-full overflow-hidden mb-2">
           <div
-            className="h-full bg-blue-500 rounded-full transition-all duration-300"
+            className="h-full bg-accent rounded-full transition-all duration-300"
             style={{ width: `${percentage}%` }}
           />
         </div>

@@ -57,7 +57,7 @@ describe('PageWrapper', () => {
       );
 
       const title = screen.getByRole('heading');
-      expect(title).toHaveClass('text-2xl', 'font-bold', 'text-gray-900');
+      expect(title).toHaveClass('text-2xl', 'font-bold', 'text-theme-primary');
     });
   });
 

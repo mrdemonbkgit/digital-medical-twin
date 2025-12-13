@@ -96,8 +96,8 @@ describe('TagFilter', () => {
       );
 
       const dietButton = screen.getByText('diet').closest('button');
-      expect(dietButton?.className).toContain('bg-blue-100');
-      expect(dietButton?.className).toContain('text-blue-800');
+      expect(dietButton?.className).toContain('bg-info-muted');
+      expect(dietButton?.className).toContain('text-accent');
     });
 
     it('applies unselected styles to unselected tags', () => {
@@ -109,8 +109,8 @@ describe('TagFilter', () => {
       );
 
       const exerciseButton = screen.getByText('exercise').closest('button');
-      expect(exerciseButton?.className).toContain('bg-gray-100');
-      expect(exerciseButton?.className).toContain('text-gray-700');
+      expect(exerciseButton?.className).toContain('bg-theme-tertiary');
+      expect(exerciseButton?.className).toContain('text-theme-secondary');
     });
 
     it('shows X icon on selected tags', () => {
@@ -138,8 +138,8 @@ describe('TagFilter', () => {
       const dietButton = screen.getByText('diet').closest('button');
       const sleepButton = screen.getByText('sleep').closest('button');
 
-      expect(dietButton?.className).toContain('bg-blue-100');
-      expect(sleepButton?.className).toContain('bg-blue-100');
+      expect(dietButton?.className).toContain('bg-info-muted');
+      expect(sleepButton?.className).toContain('bg-info-muted');
     });
   });
 

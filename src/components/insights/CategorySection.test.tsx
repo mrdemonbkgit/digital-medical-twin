@@ -182,7 +182,7 @@ describe('CategorySection', () => {
       const { container } = render(<CategorySection {...defaultProps} />);
 
       const section = container.firstChild as HTMLElement;
-      expect(section).toHaveClass('rounded-lg', 'border', 'border-gray-200');
+      expect(section).toHaveClass('rounded-lg', 'border', 'border-theme-primary');
     });
 
     it('renders header button with full width', () => {

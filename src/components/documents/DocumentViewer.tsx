@@ -77,7 +77,7 @@ export function DocumentViewer({ document, isOpen, onClose }: DocumentViewerProp
         <div className="relative bg-theme-tertiary rounded-lg overflow-hidden" style={{ minHeight: '400px' }}>
           {isLoading && (
             <div className="absolute inset-0 flex items-center justify-center">
-              <Loader2 className="h-8 w-8 text-blue-500 animate-spin" />
+              <Loader2 className="h-8 w-8 text-accent animate-spin" />
             </div>
           )}
 

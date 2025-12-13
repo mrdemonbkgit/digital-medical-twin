@@ -119,8 +119,8 @@ describe('PDFUpload', () => {
 
       fireEvent.dragOver(dropZone!);
 
-      expect(dropZone).toHaveClass('border-blue-500');
-      expect(dropZone).toHaveClass('bg-blue-50');
+      expect(dropZone).toHaveClass('border-accent');
+      expect(dropZone).toHaveClass('bg-info-muted');
     });
 
     it('removes drag state when leaving', () => {
@@ -130,7 +130,7 @@ describe('PDFUpload', () => {
       fireEvent.dragOver(dropZone!);
       fireEvent.dragLeave(dropZone!);
 
-      expect(dropZone).not.toHaveClass('border-blue-500');
+      expect(dropZone).not.toHaveClass('border-accent');
     });
 
     it('triggers upload on drop', async () => {
@@ -178,7 +178,7 @@ describe('PDFUpload', () => {
 
     it('shows progress bar', () => {
       const { container } = render(<PDFUpload {...defaultProps} isUploading uploadProgress={60} />);
-      const progressBar = container.querySelector('.bg-blue-600');
+      const progressBar = container.querySelector('.bg-accent');
       expect(progressBar).toHaveStyle({ width: '60%' });
     });
 
@@ -198,9 +198,9 @@ describe('PDFUpload', () => {
     it('shows error with alert icon', () => {
       const { container } = render(<PDFUpload {...defaultProps} error="Upload failed" />);
       expect(screen.getByText('Upload failed')).toBeInTheDocument();
-      // Check for red text styling
+      // Check for danger text styling
       const errorDiv = screen.getByText('Upload failed').closest('div');
-      expect(errorDiv).toHaveClass('text-red-600');
+      expect(errorDiv).toHaveClass('text-danger');
     });
   });
 
@@ -332,11 +332,11 @@ describe('ExtractionStatus', () => {
       expect(screen.getByText('Extraction failed')).toBeInTheDocument();
     });
 
-    it('has red styling for error', () => {
+    it('has danger styling for error', () => {
       render(<ExtractionStatus extractionStage="error" />);
       const errorDiv = screen.getByText('Extraction failed').closest('div');
-      expect(errorDiv).toHaveClass('text-red-600');
-      expect(errorDiv).toHaveClass('bg-red-50');
+      expect(errorDiv).toHaveClass('text-danger');
+      expect(errorDiv).toHaveClass('bg-danger-muted');
     });
   });
 
@@ -400,7 +400,7 @@ describe('ExtractionStatus', () => {
       expect(screen.getByText(/1 fix\)/)).toBeInTheDocument();
     });
 
-    it('has amber styling for corrections', () => {
+    it('has warning styling for corrections', () => {
       render(
         <ExtractionStatus
           extractionStage="complete"
@@ -409,11 +409,11 @@ describe('ExtractionStatus', () => {
         />
       );
       const correctionDiv = screen.getByText(/corrected/i).closest('div');
-      expect(correctionDiv).toHaveClass('text-amber-600');
-      expect(correctionDiv).toHaveClass('bg-amber-50');
+      expect(correctionDiv).toHaveClass('text-warning');
+      expect(correctionDiv).toHaveClass('bg-warning-muted');
     });
 
-    it('has green styling for successful verification', () => {
+    it('has success styling for successful verification', () => {
       render(
         <ExtractionStatus
           extractionStage="complete"
@@ -422,8 +422,8 @@ describe('ExtractionStatus', () => {
         />
       );
       const successDiv = screen.getByText(/verified successfully/).closest('div');
-      expect(successDiv).toHaveClass('text-green-600');
-      expect(successDiv).toHaveClass('bg-green-50');
+      expect(successDiv).toHaveClass('text-success');
+      expect(successDiv).toHaveClass('bg-success-muted');
     });
   });
 });

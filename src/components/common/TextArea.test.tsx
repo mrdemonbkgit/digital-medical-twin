@@ -53,7 +53,7 @@ describe('TextArea', () => {
     it('has proper label styling', () => {
       render(<TextArea label="Label" />);
       const label = screen.getByText('Label');
-      expect(label).toHaveClass('text-sm', 'font-medium', 'text-gray-700');
+      expect(label).toHaveClass('text-sm', 'font-medium', 'text-theme-secondary');
     });
   });
 
@@ -97,20 +97,20 @@ describe('TextArea', () => {
     it('applies error styling to textarea', () => {
       render(<TextArea error="Error" />);
       const textarea = screen.getByRole('textbox');
-      expect(textarea.className).toContain('border-red-500');
+      expect(textarea.className).toContain('border-danger');
     });
 
-    it('error message has red text', () => {
+    it('error message has danger text', () => {
       render(<TextArea error="Error message" />);
       const error = screen.getByText('Error message');
-      expect(error).toHaveClass('text-red-600');
+      expect(error).toHaveClass('text-danger');
     });
 
     it('has error focus styles', () => {
       render(<TextArea error="Error" />);
       const textarea = screen.getByRole('textbox');
-      expect(textarea.className).toContain('focus:border-red-500');
-      expect(textarea.className).toContain('focus:ring-red-500');
+      expect(textarea.className).toContain('focus:border-danger');
+      expect(textarea.className).toContain('focus:ring-danger');
     });
   });
 
@@ -123,8 +123,7 @@ describe('TextArea', () => {
     it('applies disabled styling', () => {
       render(<TextArea disabled />);
       const textarea = screen.getByRole('textbox');
-      expect(textarea.className).toContain('disabled:bg-gray-50');
-      expect(textarea.className).toContain('disabled:text-gray-500');
+      expect(textarea.className).toContain('disabled:opacity-50');
     });
   });
 
@@ -142,14 +141,13 @@ describe('TextArea', () => {
     it('has border styling', () => {
       render(<TextArea />);
       const textarea = screen.getByRole('textbox');
-      expect(textarea).toHaveClass('border', 'border-gray-300');
+      expect(textarea).toHaveClass('border');
     });
 
-    it('has focus styles', () => {
+    it('has input-theme class for focus styles', () => {
       render(<TextArea />);
       const textarea = screen.getByRole('textbox');
-      expect(textarea.className).toContain('focus:border-blue-500');
-      expect(textarea.className).toContain('focus:ring-1');
+      expect(textarea.className).toContain('input-theme');
     });
 
     it('has padding', () => {
@@ -162,9 +160,9 @@ describe('TextArea', () => {
       expect(screen.getByRole('textbox')).toHaveClass('resize-y');
     });
 
-    it('has placeholder color', () => {
+    it('has placeholder styling', () => {
       render(<TextArea />);
-      expect(screen.getByRole('textbox')).toHaveClass('placeholder-gray-400');
+      expect(screen.getByRole('textbox')).toHaveClass('input-theme');
     });
 
     it('applies custom className', () => {

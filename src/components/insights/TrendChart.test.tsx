@@ -183,10 +183,10 @@ describe('TrendChart', () => {
   });
 
   describe('line styling', () => {
-    it('uses blue stroke color for data line', () => {
+    it('uses accent stroke color for data line', () => {
       render(<TrendChart biomarker={normalBiomarker} />);
       const line = screen.getByTestId('line');
-      expect(line).toHaveAttribute('data-stroke', '#3B82F6');
+      expect(line).toHaveAttribute('data-stroke', 'var(--accent-primary)');
     });
 
     it('uses stroke width of 2', () => {

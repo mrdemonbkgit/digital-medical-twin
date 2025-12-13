@@ -140,7 +140,7 @@ describe('LoginForm', () => {
       expect(screen.getByText('Invalid credentials')).toBeInTheDocument();
     });
 
-    it('shows error in red error box', () => {
+    it('shows error in danger error box', () => {
       mockUseAuth.mockReturnValue({
         login: mockLogin,
         isLoading: false,
@@ -150,7 +150,7 @@ describe('LoginForm', () => {
       renderLoginForm();
 
       const errorBox = screen.getByText('Invalid credentials').closest('div');
-      expect(errorBox).toHaveClass('bg-red-50');
+      expect(errorBox).toHaveClass('bg-danger-muted');
     });
   });
 

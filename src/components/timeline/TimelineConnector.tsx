@@ -4,12 +4,12 @@ import { cn } from '@/utils';
 
 // Event type to color mapping for dots
 const eventTypeColors: Record<EventType, string> = {
-  lab_result: 'bg-red-500',
-  doctor_visit: 'bg-blue-500',
-  medication: 'bg-green-500',
-  intervention: 'bg-amber-500',
-  metric: 'bg-purple-500',
-  vice: 'bg-slate-500',
+  lab_result: 'bg-event-lab',
+  doctor_visit: 'bg-event-visit',
+  medication: 'bg-event-medication',
+  intervention: 'bg-event-intervention',
+  metric: 'bg-event-metric',
+  vice: 'bg-event-vice',
 };
 
 interface TimelineGroupProps {

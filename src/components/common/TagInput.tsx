@@ -77,7 +77,7 @@ export function TagInput({
 
       <div
         className={cn(
-          'flex flex-wrap gap-2 p-2 border rounded-lg min-h-[42px] cursor-text',
+          'flex flex-wrap gap-2 p-2 border rounded-lg min-h-[44px] cursor-text',
           'focus-within:border-accent focus-within:ring-1 focus-within:ring-accent',
           error ? 'border-danger' : 'border-theme-primary'
         )}

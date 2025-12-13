@@ -156,10 +156,10 @@ describe('CategoryFilter', () => {
 
       fireEvent.click(screen.getByText('Categories (1/3)'));
 
-      // The checked category button should have the blue styling
+      // The checked category button should have the accent styling
       const metabolicButton = screen.getByText('Metabolic').closest('button');
       const checkbox = metabolicButton?.querySelector('div');
-      expect(checkbox?.className).toContain('bg-blue-600');
+      expect(checkbox?.className).toContain('bg-accent');
     });
   });
 

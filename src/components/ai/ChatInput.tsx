@@ -50,6 +50,7 @@ export function ChatInput({ onSend, disabled, placeholder }: ChatInputProps) {
           placeholder={placeholder || 'Ask about your health history...'}
           disabled={disabled}
           rows={1}
+          aria-label="Message input"
           className="input-theme w-full px-4 py-3 pr-12 text-sm rounded-lg resize-none disabled:opacity-50 disabled:cursor-not-allowed"
         />
       </div>
@@ -57,6 +58,7 @@ export function ChatInput({ onSend, disabled, placeholder }: ChatInputProps) {
         onClick={handleSend}
         disabled={!value.trim() || disabled}
         className="flex-shrink-0"
+        aria-label="Send message"
       >
         <Send className="h-4 w-4" />
       </Button>

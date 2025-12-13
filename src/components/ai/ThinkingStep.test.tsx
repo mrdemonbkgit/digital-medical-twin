@@ -63,7 +63,7 @@ describe('ThinkingStep', () => {
       render(<ThinkingStep activity={activity} />);
 
       const title = screen.getByText('Analysis complete');
-      expect(title).toHaveClass('font-medium', 'text-gray-800');
+      expect(title).toHaveClass('font-medium', 'text-theme-primary');
     });
 
     it('applies correct content styling', () => {
@@ -72,7 +72,7 @@ describe('ThinkingStep', () => {
       render(<ThinkingStep activity={activity} />);
 
       const content = screen.getByText('Details here');
-      expect(content).toHaveClass('text-gray-500');
+      expect(content).toHaveClass('text-theme-tertiary');
     });
   });
 });

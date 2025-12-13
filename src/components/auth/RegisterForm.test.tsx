@@ -172,7 +172,7 @@ describe('RegisterForm', () => {
       expect(screen.getByText('Email already in use')).toBeInTheDocument();
     });
 
-    it('shows error in red error box', () => {
+    it('shows error in danger error box', () => {
       mockUseAuth.mockReturnValue({
         register: mockRegister,
         isLoading: false,
@@ -182,7 +182,7 @@ describe('RegisterForm', () => {
       renderRegisterForm();
 
       const errorBox = screen.getByText('Email already in use').closest('div');
-      expect(errorBox).toHaveClass('bg-red-50');
+      expect(errorBox).toHaveClass('bg-danger-muted');
     });
   });
 

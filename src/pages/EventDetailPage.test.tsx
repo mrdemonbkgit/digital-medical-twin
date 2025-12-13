@@ -415,7 +415,7 @@ describe('EventDetailPage', () => {
       expect(screen.getByTestId('loading-spinner')).toBeInTheDocument();
       // The delete button (with loading spinner) should be disabled
       const buttons = screen.getAllByRole('button');
-      const deleteButton = buttons.find(btn => btn.className.includes('red'));
+      const deleteButton = buttons.find(btn => btn.className.includes('danger'));
       expect(deleteButton).toBeDisabled();
     });
   });

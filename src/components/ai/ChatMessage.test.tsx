@@ -144,8 +144,8 @@ describe('ChatMessage', () => {
 
     it('renders user icon', () => {
       const { container } = render(<ChatMessage message={userMessage} />);
-      // User messages have gray background for icon
-      const iconContainer = container.querySelector('.bg-gray-100');
+      // User messages have theme tertiary background for icon
+      const iconContainer = container.querySelector('.bg-theme-tertiary');
       expect(iconContainer).toBeInTheDocument();
     });
 
@@ -160,9 +160,9 @@ describe('ChatMessage', () => {
       expect(screen.queryByTestId('activity-panel')).not.toBeInTheDocument();
     });
 
-    it('applies white background for user messages', () => {
+    it('applies theme background for user messages', () => {
       const { container } = render(<ChatMessage message={userMessage} />);
-      const messageDiv = container.querySelector('.bg-white');
+      const messageDiv = container.querySelector('.bg-theme-primary');
       expect(messageDiv).toBeInTheDocument();
     });
   });
@@ -182,14 +182,14 @@ describe('ChatMessage', () => {
 
     it('renders bot icon', () => {
       const { container } = render(<ChatMessage message={assistantMessage} />);
-      // Assistant messages have blue background for icon
-      const iconContainer = container.querySelector('.bg-blue-100');
+      // Assistant messages have info muted background for icon
+      const iconContainer = container.querySelector('.bg-info-muted');
       expect(iconContainer).toBeInTheDocument();
     });
 
-    it('applies gray background for assistant messages', () => {
+    it('applies theme secondary background for assistant messages', () => {
       const { container } = render(<ChatMessage message={assistantMessage} />);
-      const messageDiv = container.querySelector('.bg-gray-50');
+      const messageDiv = container.querySelector('.bg-theme-secondary');
       expect(messageDiv).toBeInTheDocument();
     });
 

@@ -232,6 +232,10 @@
 .border-accent { border-color: var(--accent-primary); }
 .ring-accent { --tw-ring-color: var(--accent-primary); }
 
+/* Accent opacity variants */
+.bg-accent-muted { background-color: color-mix(in srgb, var(--accent-primary) 20%, transparent); }
+.bg-accent-subtle { background-color: color-mix(in srgb, var(--accent-primary) 10%, transparent); }
+
 /* Status */
 .text-success { color: var(--status-success); }
 .bg-success { background-color: var(--status-success); }

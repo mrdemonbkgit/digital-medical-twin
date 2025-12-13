@@ -55,7 +55,7 @@ describe('TagInput', () => {
 
     it('applies error styling when error present', () => {
       render(<TagInput {...defaultProps} error="Error" />);
-      const container = document.querySelector('.border-red-500');
+      const container = document.querySelector('.border-danger');
       expect(container).toBeInTheDocument();
     });
   });
@@ -313,14 +313,14 @@ describe('TagInput', () => {
   describe('styling', () => {
     it('applies focus styling to container', () => {
       render(<TagInput {...defaultProps} />);
-      const container = document.querySelector('.focus-within\\:border-blue-500');
+      const container = document.querySelector('.focus-within\\:border-accent');
       expect(container).toBeInTheDocument();
     });
 
     it('renders tags with correct styling', () => {
       render(<TagInput {...defaultProps} tags={['tag1']} />);
       const tagSpan = screen.getByText('tag1').closest('span');
-      expect(tagSpan).toHaveClass('bg-blue-100', 'text-blue-800', 'rounded-full');
+      expect(tagSpan).toHaveClass('bg-info-muted', 'text-accent', 'rounded-full');
     });
   });
 });

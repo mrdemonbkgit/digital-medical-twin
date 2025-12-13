@@ -103,19 +103,19 @@ export function TrendChart({ biomarker }: TrendChartProps) {
           data={chartData}
           margin={{ top: 10, right: 10, left: 10, bottom: 10 }}
         >
-          <CartesianGrid strokeDasharray="3 3" stroke="#E5E7EB" />
+          <CartesianGrid strokeDasharray="3 3" stroke="var(--border-primary)" />
 
           <XAxis
             dataKey="date"
             tickFormatter={formatXAxis}
-            stroke="#9CA3AF"
+            stroke="var(--text-muted)"
             fontSize={12}
             tickLine={false}
           />
 
           <YAxis
             domain={[yMin, yMax]}
-            stroke="#9CA3AF"
+            stroke="var(--text-muted)"
             fontSize={12}
             tickLine={false}
             width={50}
@@ -128,9 +128,9 @@ export function TrendChart({ biomarker }: TrendChartProps) {
             <ReferenceArea
               y1={biomarker.referenceMin}
               y2={biomarker.referenceMax}
-              fill="#10B981"
+              fill="var(--status-success)"
               fillOpacity={0.1}
-              stroke="#10B981"
+              stroke="var(--status-success)"
               strokeOpacity={0.3}
               strokeDasharray="3 3"
             />
@@ -140,12 +140,12 @@ export function TrendChart({ biomarker }: TrendChartProps) {
           {biomarker.referenceMin !== undefined && (
             <ReferenceLine
               y={biomarker.referenceMin}
-              stroke="#10B981"
+              stroke="var(--status-success)"
               strokeDasharray="5 5"
               label={{
                 value: `Min: ${biomarker.referenceMin}`,
                 position: 'right',
-                fill: '#10B981',
+                fill: 'var(--status-success)',
                 fontSize: 11,
               }}
             />
@@ -153,12 +153,12 @@ export function TrendChart({ biomarker }: TrendChartProps) {
           {biomarker.referenceMax !== undefined && (
             <ReferenceLine
               y={biomarker.referenceMax}
-              stroke="#10B981"
+              stroke="var(--status-success)"
               strokeDasharray="5 5"
               label={{
                 value: `Max: ${biomarker.referenceMax}`,
                 position: 'right',
-                fill: '#10B981',
+                fill: 'var(--status-success)',
                 fontSize: 11,
               }}
             />
@@ -168,15 +168,15 @@ export function TrendChart({ biomarker }: TrendChartProps) {
           <Line
             type="monotone"
             dataKey="value"
-            stroke="#3B82F6"
+            stroke="var(--accent-primary)"
             strokeWidth={2}
             dot={{
-              fill: '#3B82F6',
+              fill: 'var(--accent-primary)',
               strokeWidth: 2,
               r: 4,
             }}
             activeDot={{
-              fill: '#3B82F6',
+              fill: 'var(--accent-primary)',
               strokeWidth: 0,
               r: 6,
             }}

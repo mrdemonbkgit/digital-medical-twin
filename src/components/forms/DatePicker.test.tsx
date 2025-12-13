@@ -52,14 +52,14 @@ describe('DatePicker', () => {
       render(<DatePicker data-testid="date-picker" error="Invalid date" />);
 
       const input = screen.getByTestId('date-picker');
-      expect(input).toHaveClass('border-red-500');
+      expect(input).toHaveClass('border-danger');
     });
 
     it('does not show error when not provided', () => {
       render(<DatePicker data-testid="date-picker" />);
 
       const input = screen.getByTestId('date-picker');
-      expect(input).not.toHaveClass('border-red-500');
+      expect(input).not.toHaveClass('border-danger');
     });
   });
 

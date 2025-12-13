@@ -161,11 +161,11 @@ export function DocumentUploadDropzone({
       >
         {isUploading ? (
           <div className="space-y-3">
-            <Loader2 className="h-10 w-10 text-blue-500 animate-spin mx-auto" />
+            <Loader2 className="h-10 w-10 text-accent animate-spin mx-auto" />
             <p className="text-sm text-theme-secondary">Uploading... {uploadProgress}%</p>
             <div className="w-full bg-theme-tertiary rounded-full h-2 max-w-xs mx-auto">
               <div
-                className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                className="bg-accent h-2 rounded-full transition-all duration-300"
                 style={{ width: `${uploadProgress}%` }}
               />
             </div>

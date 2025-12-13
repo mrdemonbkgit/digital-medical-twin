@@ -99,7 +99,7 @@ describe('MatchDetailsTable', () => {
       expect(screen.getByText('No match')).toBeInTheDocument();
     });
 
-    it('applies amber background styling to unmatched rows', () => {
+    it('applies warning background styling to unmatched rows', () => {
       const unmatched = createMatchDetail({
         matchedCode: null,
         matchedName: null,
@@ -108,7 +108,7 @@ describe('MatchDetailsTable', () => {
       const { container } = render(<MatchDetailsTable matchDetails={[unmatched]} />);
 
       const row = container.querySelector('tbody tr');
-      expect(row).toHaveClass('bg-amber-50/50');
+      expect(row).toHaveClass('bg-warning-muted/50');
     });
   });
 

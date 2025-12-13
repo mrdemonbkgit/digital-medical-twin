@@ -29,7 +29,7 @@ describe('TimelineGroup', () => {
 
       const line = container.querySelector('[aria-hidden="true"]');
       expect(line).toBeInTheDocument();
-      expect(line?.className).toContain('bg-gray-200');
+      expect(line?.className).toContain('bg-theme-tertiary');
     });
 
     it('applies left padding for timeline offset', () => {
@@ -92,7 +92,7 @@ describe('TimelineEvent', () => {
   });
 
   describe('event type colors', () => {
-    it('applies red color for lab_result', () => {
+    it('applies event-lab color for lab_result', () => {
       const { container } = render(
         <TimelineEvent eventType="lab_result">
           <div>Content</div>
@@ -100,10 +100,10 @@ describe('TimelineEvent', () => {
       );
 
       const dot = container.querySelector('[aria-hidden="true"]');
-      expect(dot?.className).toContain('bg-red-500');
+      expect(dot?.className).toContain('bg-event-lab');
     });
 
-    it('applies blue color for doctor_visit', () => {
+    it('applies event-visit color for doctor_visit', () => {
       const { container } = render(
         <TimelineEvent eventType="doctor_visit">
           <div>Content</div>
@@ -111,10 +111,10 @@ describe('TimelineEvent', () => {
       );
 
       const dot = container.querySelector('[aria-hidden="true"]');
-      expect(dot?.className).toContain('bg-blue-500');
+      expect(dot?.className).toContain('bg-event-visit');
     });
 
-    it('applies green color for medication', () => {
+    it('applies event-medication color for medication', () => {
       const { container } = render(
         <TimelineEvent eventType="medication">
           <div>Content</div>
@@ -122,10 +122,10 @@ describe('TimelineEvent', () => {
       );
 
       const dot = container.querySelector('[aria-hidden="true"]');
-      expect(dot?.className).toContain('bg-green-500');
+      expect(dot?.className).toContain('bg-event-medication');
     });
 
-    it('applies amber color for intervention', () => {
+    it('applies event-intervention color for intervention', () => {
       const { container } = render(
         <TimelineEvent eventType="intervention">
           <div>Content</div>
@@ -133,10 +133,10 @@ describe('TimelineEvent', () => {
       );
 
       const dot = container.querySelector('[aria-hidden="true"]');
-      expect(dot?.className).toContain('bg-amber-500');
+      expect(dot?.className).toContain('bg-event-intervention');
     });
 
-    it('applies purple color for metric', () => {
+    it('applies event-metric color for metric', () => {
       const { container } = render(
         <TimelineEvent eventType="metric">
           <div>Content</div>
@@ -144,10 +144,10 @@ describe('TimelineEvent', () => {
       );
 
       const dot = container.querySelector('[aria-hidden="true"]');
-      expect(dot?.className).toContain('bg-purple-500');
+      expect(dot?.className).toContain('bg-event-metric');
     });
 
-    it('applies slate color for vice', () => {
+    it('applies event-vice color for vice', () => {
       const { container } = render(
         <TimelineEvent eventType="vice">
           <div>Content</div>
@@ -155,7 +155,7 @@ describe('TimelineEvent', () => {
       );
 
       const dot = container.querySelector('[aria-hidden="true"]');
-      expect(dot?.className).toContain('bg-slate-500');
+      expect(dot?.className).toContain('bg-event-vice');
     });
   });
 
@@ -183,7 +183,7 @@ describe('TimelineEvent', () => {
       expect(hiddenElements.length).toBe(1);
     });
 
-    it('line hider has white background', () => {
+    it('line hider has theme background', () => {
       const { container } = render(
         <TimelineEvent eventType="lab_result" isLast>
           <div>Content</div>
@@ -192,7 +192,7 @@ describe('TimelineEvent', () => {
 
       const hiddenElements = container.querySelectorAll('[aria-hidden="true"]');
       const lineHider = hiddenElements[1];
-      expect(lineHider?.className).toContain('bg-white');
+      expect(lineHider?.className).toContain('bg-theme-primary');
     });
   });
 
@@ -228,7 +228,7 @@ describe('TimelineEvent', () => {
       expect(dot?.className).toContain('h-3');
       expect(dot?.className).toContain('w-3');
       expect(dot?.className).toContain('border-2');
-      expect(dot?.className).toContain('border-white');
+      expect(dot?.className).toContain('border-theme-primary');
     });
   });
 });
@@ -290,8 +290,8 @@ describe('TimelineDateHeader', () => {
 
       const circle = container.querySelector('[aria-hidden="true"]');
       expect(circle?.className).toContain('border-2');
-      expect(circle?.className).toContain('border-gray-300');
-      expect(circle?.className).toContain('bg-white');
+      expect(circle?.className).toContain('border-theme-primary');
+      expect(circle?.className).toContain('bg-theme-primary');
     });
   });
 });

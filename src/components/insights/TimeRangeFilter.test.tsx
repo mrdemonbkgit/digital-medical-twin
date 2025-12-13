@@ -36,36 +36,36 @@ describe('TimeRangeFilter', () => {
       render(<TimeRangeFilter {...defaultProps} value="3m" />);
 
       const button = screen.getByText('3M');
-      expect(button).toHaveClass('bg-white', 'text-gray-900', 'shadow-sm');
+      expect(button).toHaveClass('bg-theme-primary', 'text-theme-primary', 'shadow-sm');
     });
 
     it('highlights 6M when selected', () => {
       render(<TimeRangeFilter {...defaultProps} value="6m" />);
 
       const button = screen.getByText('6M');
-      expect(button).toHaveClass('bg-white', 'text-gray-900', 'shadow-sm');
+      expect(button).toHaveClass('bg-theme-primary', 'text-theme-primary', 'shadow-sm');
     });
 
     it('highlights 1Y when selected', () => {
       render(<TimeRangeFilter {...defaultProps} value="1y" />);
 
       const button = screen.getByText('1Y');
-      expect(button).toHaveClass('bg-white', 'text-gray-900', 'shadow-sm');
+      expect(button).toHaveClass('bg-theme-primary', 'text-theme-primary', 'shadow-sm');
     });
 
     it('highlights All when selected', () => {
       render(<TimeRangeFilter {...defaultProps} value="all" />);
 
       const button = screen.getByText('All');
-      expect(button).toHaveClass('bg-white', 'text-gray-900', 'shadow-sm');
+      expect(button).toHaveClass('bg-theme-primary', 'text-theme-primary', 'shadow-sm');
     });
 
     it('does not highlight unselected options', () => {
       render(<TimeRangeFilter {...defaultProps} value="3m" />);
 
       const sixMonth = screen.getByText('6M');
-      expect(sixMonth).not.toHaveClass('bg-white');
-      expect(sixMonth).toHaveClass('text-gray-600');
+      expect(sixMonth).not.toHaveClass('bg-theme-primary');
+      expect(sixMonth).toHaveClass('text-theme-secondary');
     });
   });
 
@@ -121,7 +121,7 @@ describe('TimeRangeFilter', () => {
       const { container } = render(<TimeRangeFilter {...defaultProps} />);
 
       const wrapper = container.firstChild as HTMLElement;
-      expect(wrapper).toHaveClass('border', 'border-gray-200');
+      expect(wrapper).toHaveClass('border', 'border-theme-primary');
     });
 
     it('renders buttons with rounded-md', () => {

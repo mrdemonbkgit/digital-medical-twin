@@ -21,7 +21,7 @@ describe('EventCardSkeleton', () => {
       const { container } = render(<EventCardSkeleton />);
 
       const skeleton = container.firstChild as HTMLElement;
-      expect(skeleton).toHaveClass('rounded-lg', 'border', 'border-gray-200');
+      expect(skeleton).toHaveClass('rounded-lg', 'border', 'border-theme-primary');
     });
   });
 

@@ -125,8 +125,8 @@ describe('RawResponseSection', () => {
 
       const { container } = render(<RawResponseSection debugInfo={debugInfo} />);
 
-      // The no-response container has bg-gray-50 styling
-      const noResponseContainer = container.querySelector('.bg-gray-50');
+      // The no-response container has bg-theme-secondary styling
+      const noResponseContainer = container.querySelector('.bg-theme-secondary');
       expect(noResponseContainer).toBeInTheDocument();
       expect(screen.getByText('(no response)')).toBeInTheDocument();
     });

@@ -67,7 +67,7 @@ describe('Select', () => {
     it('has proper label styling', () => {
       render(<Select options={mockOptions} label="Label" />);
       const label = screen.getByText('Label');
-      expect(label).toHaveClass('text-sm', 'font-medium', 'text-gray-700');
+      expect(label).toHaveClass('text-sm', 'font-medium', 'text-theme-secondary');
     });
   });
 
@@ -99,13 +99,13 @@ describe('Select', () => {
     it('applies error styling to select', () => {
       render(<Select options={mockOptions} error="Error" />);
       const select = screen.getByRole('combobox');
-      expect(select.className).toContain('border-red-500');
+      expect(select.className).toContain('border-danger');
     });
 
-    it('error message has red text', () => {
+    it('error message has danger text', () => {
       render(<Select options={mockOptions} error="Error message" />);
       const error = screen.getByText('Error message');
-      expect(error).toHaveClass('text-red-600');
+      expect(error).toHaveClass('text-danger');
     });
   });
 
@@ -156,7 +156,7 @@ describe('Select', () => {
     it('applies disabled styling', () => {
       render(<Select options={mockOptions} disabled />);
       const select = screen.getByRole('combobox');
-      expect(select.className).toContain('disabled:bg-gray-50');
+      expect(select.className).toContain('disabled:opacity-50');
     });
   });
 
@@ -171,11 +171,10 @@ describe('Select', () => {
       expect(screen.getByRole('combobox')).toHaveClass('rounded-lg');
     });
 
-    it('has focus styles', () => {
+    it('has input-theme class for focus styles', () => {
       render(<Select options={mockOptions} />);
       const select = screen.getByRole('combobox');
-      expect(select.className).toContain('focus:border-blue-500');
-      expect(select.className).toContain('focus:ring-1');
+      expect(select.className).toContain('input-theme');
     });
 
     it('has minimum height for touch', () => {

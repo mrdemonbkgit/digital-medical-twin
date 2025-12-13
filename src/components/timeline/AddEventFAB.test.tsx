@@ -54,7 +54,7 @@ describe('AddEventFAB', () => {
     it('has primary color classes', () => {
       renderWithRouter(<AddEventFAB />);
       const link = screen.getByRole('link');
-      expect(link.className).toContain('bg-blue-600');
+      expect(link.className).toContain('bg-accent');
       expect(link.className).toContain('text-white');
     });
 
@@ -96,7 +96,7 @@ describe('AddEventFAB', () => {
     it('has hover color change class', () => {
       renderWithRouter(<AddEventFAB />);
       const link = screen.getByRole('link');
-      expect(link.className).toContain('hover:bg-blue-700');
+      expect(link.className).toContain('hover:bg-accent-hover');
     });
   });
 
@@ -105,7 +105,7 @@ describe('AddEventFAB', () => {
       renderWithRouter(<AddEventFAB />);
       const link = screen.getByRole('link');
       expect(link.className).toContain('focus:ring-2');
-      expect(link.className).toContain('focus:ring-blue-500');
+      expect(link.className).toContain('focus:ring-accent');
     });
   });
 

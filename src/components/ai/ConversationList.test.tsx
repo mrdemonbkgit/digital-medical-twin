@@ -145,7 +145,7 @@ describe('ConversationList', () => {
       );
       // Find the clickable container which has the highlight class
       const convItems = document.querySelectorAll('[class*="cursor-pointer"]');
-      const activeConv = Array.from(convItems).find(el => el.className.includes('bg-blue-100'));
+      const activeConv = Array.from(convItems).find(el => el.className.includes('bg-info-muted'));
       expect(activeConv).toBeTruthy();
     });
   });

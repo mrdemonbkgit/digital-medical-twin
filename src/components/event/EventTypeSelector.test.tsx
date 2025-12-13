@@ -132,22 +132,22 @@ describe('EventTypeSelector', () => {
     it('applies correct color classes for lab_result', () => {
       renderWithRouter(<EventTypeSelector />);
       const labButton = screen.getByText('Lab Result').closest('button');
-      expect(labButton?.className).toContain('bg-red-50');
-      expect(labButton?.className).toContain('border-red-200');
+      expect(labButton?.className).toContain('bg-event-lab');
+      expect(labButton?.className).toContain('border-event-lab');
     });
 
     it('applies correct color classes for doctor_visit', () => {
       renderWithRouter(<EventTypeSelector />);
       const doctorButton = screen.getByText('Doctor Visit').closest('button');
-      expect(doctorButton?.className).toContain('bg-blue-50');
-      expect(doctorButton?.className).toContain('border-blue-200');
+      expect(doctorButton?.className).toContain('bg-event-visit');
+      expect(doctorButton?.className).toContain('border-event-visit');
     });
 
     it('applies correct color classes for medication', () => {
       renderWithRouter(<EventTypeSelector />);
       const medButton = screen.getByText('Medication').closest('button');
-      expect(medButton?.className).toContain('bg-green-50');
-      expect(medButton?.className).toContain('border-green-200');
+      expect(medButton?.className).toContain('bg-event-medication');
+      expect(medButton?.className).toContain('border-event-medication');
     });
   });
 });

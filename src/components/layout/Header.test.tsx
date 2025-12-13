@@ -64,7 +64,7 @@ describe('Header', () => {
   describe('rendering', () => {
     it('renders app logo', () => {
       renderWithRouter(<Header />);
-      expect(screen.getByText('Digital Medical Twin')).toBeInTheDocument();
+      expect(screen.getByText('MedTwin')).toBeInTheDocument();
     });
 
     it('renders mobile nav component', () => {
@@ -101,49 +101,49 @@ describe('Header', () => {
     it('highlights active dashboard link', () => {
       renderWithRouter(<Header />, { route: '/dashboard' });
       const dashboardLink = screen.getByText('Dashboard').closest('a');
-      expect(dashboardLink?.className).toContain('bg-blue-50');
+      expect(dashboardLink?.className).toContain('bg-info-muted');
     });
 
     it('highlights active timeline link', () => {
       renderWithRouter(<Header />, { route: '/timeline' });
       const timelineLink = screen.getByText('Timeline').closest('a');
-      expect(timelineLink?.className).toContain('bg-blue-50');
+      expect(timelineLink?.className).toContain('bg-info-muted');
     });
 
     it('highlights active AI chat link', () => {
       renderWithRouter(<Header />, { route: '/ai' });
       const aiLink = screen.getByText('AI Historian').closest('a');
-      expect(aiLink?.className).toContain('bg-blue-50');
+      expect(aiLink?.className).toContain('bg-info-muted');
     });
 
     it('highlights labs link for lab uploads route', () => {
       renderWithRouter(<Header />, { route: '/labs' });
       const labsLink = screen.getByText('Labs').closest('a');
-      expect(labsLink?.className).toContain('bg-blue-50');
+      expect(labsLink?.className).toContain('bg-info-muted');
     });
 
     it('highlights labs link for biomarkers route', () => {
       renderWithRouter(<Header />, { route: '/biomarkers' });
       const labsLink = screen.getByText('Labs').closest('a');
-      expect(labsLink?.className).toContain('bg-blue-50');
+      expect(labsLink?.className).toContain('bg-info-muted');
     });
 
     it('highlights insights link', () => {
       renderWithRouter(<Header />, { route: '/insights' });
       const insightsLink = screen.getByText('Insights').closest('a');
-      expect(insightsLink?.className).toContain('bg-blue-50');
+      expect(insightsLink?.className).toContain('bg-info-muted');
     });
 
     it('highlights settings link', () => {
       renderWithRouter(<Header />, { route: '/settings' });
       const settingsLink = screen.getByText('Settings').closest('a');
-      expect(settingsLink?.className).toContain('bg-blue-50');
+      expect(settingsLink?.className).toContain('bg-info-muted');
     });
 
     it('highlights profile link', () => {
       renderWithRouter(<Header />, { route: '/profile' });
       const profileLink = screen.getByText('Test User').closest('a');
-      expect(profileLink?.className).toContain('bg-blue-50');
+      expect(profileLink?.className).toContain('bg-info-muted');
     });
   });
 
@@ -231,7 +231,7 @@ describe('Header', () => {
 
     it('logo links to dashboard', () => {
       renderWithRouter(<Header />);
-      const logoLink = screen.getByText('Digital Medical Twin').closest('a');
+      const logoLink = screen.getByText('MedTwin').closest('a');
       expect(logoLink).toHaveAttribute('href', '/dashboard');
     });
   });

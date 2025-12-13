@@ -137,18 +137,18 @@ describe('SparklineCard', () => {
   });
 
   describe('styling', () => {
-    it('applies red styling for high values', () => {
+    it('applies danger styling for high values', () => {
       renderWithRouter(highBiomarker);
       const button = screen.getByRole('button');
-      expect(button.className).toContain('border-red-200');
-      expect(button.className).toContain('bg-red-50');
+      expect(button.className).toContain('border-danger');
+      expect(button.className).toContain('bg-danger-muted');
     });
 
     it('applies normal styling for normal values', () => {
       renderWithRouter(normalBiomarker);
       const button = screen.getByRole('button');
-      expect(button.className).toContain('border-gray-200');
-      expect(button.className).toContain('bg-white');
+      expect(button.className).toContain('border-theme-primary');
+      expect(button.className).toContain('bg-theme-secondary');
     });
   });
 

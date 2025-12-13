@@ -102,12 +102,12 @@ export function DocumentList({
                 className={`
                   px-3 py-1.5 rounded-full text-sm font-medium transition-colors
                   ${isActive
-                    ? 'bg-blue-600 text-white'
+                    ? 'bg-accent text-white'
                     : 'bg-theme-tertiary text-theme-secondary hover:bg-theme-secondary'}
                 `}
               >
                 {tab.label}
-                <span className={`ml-1.5 ${isActive ? 'text-blue-200' : 'text-theme-tertiary'}`}>
+                <span className={`ml-1.5 ${isActive ? 'text-white/70' : 'text-theme-tertiary'}`}>
                   {count}
                 </span>
               </button>

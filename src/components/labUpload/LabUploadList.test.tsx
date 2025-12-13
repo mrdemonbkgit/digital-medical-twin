@@ -3,6 +3,11 @@ import { render, screen, fireEvent, waitFor, within } from '@testing-library/rea
 import { BrowserRouter } from 'react-router-dom';
 import type { LabUpload } from '@/types';
 
+// Mock focus-trap-react to avoid focus-trap issues in tests
+vi.mock('focus-trap-react', () => ({
+  default: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+}));
+
 // Mock supabase BEFORE importing any components that use it
 vi.mock('@/lib/supabase', () => ({
   supabase: {

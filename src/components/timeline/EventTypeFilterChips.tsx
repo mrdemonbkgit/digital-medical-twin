@@ -22,7 +22,7 @@ const eventTypeConfigs: EventTypeConfig[] = [
     type: 'lab_result',
     label: 'Labs',
     icon: FlaskConical,
-    activeClasses: 'bg-danger-muted text-danger border-danger',
+    activeClasses: 'bg-event-lab text-event-lab border-event-lab',
     inactiveClasses: 'bg-theme-secondary text-theme-secondary border-theme-primary hover:bg-theme-tertiary',
   },
   {
@@ -50,7 +50,7 @@ const eventTypeConfigs: EventTypeConfig[] = [
     type: 'metric',
     label: 'Metrics',
     icon: Activity,
-    activeClasses: 'bg-purple-100 text-purple-700 border-purple-300',
+    activeClasses: 'bg-event-metric text-event-metric border-event-metric',
     inactiveClasses: 'bg-theme-secondary text-theme-secondary border-theme-primary hover:bg-theme-tertiary',
   },
 ];

@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { MemoryRouter } from 'react-router-dom';
 import { SettingsPage } from './SettingsPage';
+import { ThemeProvider } from '@/context/ThemeContext';
 
 // Mock hooks
 vi.mock('@/hooks', () => ({
@@ -48,9 +49,11 @@ const mockUseExportEvents = vi.mocked(useExportEvents);
 
 const renderWithRouter = () => {
   return render(
-    <MemoryRouter>
-      <SettingsPage />
-    </MemoryRouter>
+    <ThemeProvider>
+      <MemoryRouter>
+        <SettingsPage />
+      </MemoryRouter>
+    </ThemeProvider>
   );
 };
 
@@ -90,10 +93,12 @@ describe('SettingsPage', () => {
   });
 
   describe('Appearance section', () => {
-    it('shows coming soon message', () => {
+    it('shows theme selection options', () => {
       renderWithRouter();
 
-      expect(screen.getByText('Theme settings coming soon.')).toBeInTheDocument();
+      expect(screen.getByText('Choose your preferred theme for the application.')).toBeInTheDocument();
+      expect(screen.getByText('Light')).toBeInTheDocument();
+      expect(screen.getByText('Dark')).toBeInTheDocument();
     });
   });
 

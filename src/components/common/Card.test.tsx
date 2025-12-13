@@ -38,12 +38,12 @@ describe('Card', () => {
     it('has border styling', () => {
       const { container } = render(<Card>Content</Card>);
       expect(container.firstChild).toHaveClass('border');
-      expect(container.firstChild).toHaveClass('border-gray-200');
+      expect(container.firstChild).toHaveClass('border-theme-primary');
     });
 
-    it('has white background', () => {
+    it('has theme background', () => {
       const { container } = render(<Card>Content</Card>);
-      expect(container.firstChild).toHaveClass('bg-white');
+      expect(container.firstChild).toHaveClass('bg-theme-primary');
     });
 
     it('has padding', () => {
@@ -136,9 +136,9 @@ describe('CardTitle', () => {
       expect(container.firstChild).toHaveClass('font-semibold');
     });
 
-    it('has dark text color', () => {
+    it('has theme primary text color', () => {
       const { container } = render(<CardTitle>Title</CardTitle>);
-      expect(container.firstChild).toHaveClass('text-gray-900');
+      expect(container.firstChild).toHaveClass('text-theme-primary');
     });
 
     it('applies custom className', () => {

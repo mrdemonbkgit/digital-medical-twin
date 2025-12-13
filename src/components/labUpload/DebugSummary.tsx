@@ -78,7 +78,7 @@ export function DebugSummary({ debugInfo }: DebugSummaryProps) {
           ) : stage2.verificationPassed ? (
             <CheckCircle className="h-4 w-4 text-green-500" />
           ) : (
-            <XCircle className="h-4 w-4 text-red-500" />
+            <XCircle className="h-4 w-4 text-danger" />
           )}
           <div>
             <div className="text-theme-tertiary text-xs">Verification</div>

@@ -13,13 +13,13 @@ describe('FlagsBanner', () => {
       expect(screen.getByText('All biomarkers within normal range')).toBeInTheDocument();
     });
 
-    it('renders with green background when all normal', () => {
+    it('renders with success background when all normal', () => {
       const flagCounts: FlagCounts = { high: 0, low: 0 };
 
       const { container } = render(<FlagsBanner flagCounts={flagCounts} />);
 
       const banner = container.firstChild as HTMLElement;
-      expect(banner).toHaveClass('bg-green-50');
+      expect(banner).toHaveClass('bg-success-muted');
     });
 
     it('does not show high or low badges when none', () => {
@@ -49,12 +49,12 @@ describe('FlagsBanner', () => {
       expect(screen.queryByText(/Low/)).not.toBeInTheDocument();
     });
 
-    it('renders high badge with red styling', () => {
+    it('renders high badge with danger styling', () => {
       const flagCounts: FlagCounts = { high: 1, low: 0 };
 
       const { container } = render(<FlagsBanner flagCounts={flagCounts} />);
 
-      const badge = container.querySelector('.bg-red-100');
+      const badge = container.querySelector('.bg-danger-muted');
       expect(badge).toBeInTheDocument();
     });
   });
@@ -76,12 +76,12 @@ describe('FlagsBanner', () => {
       expect(screen.queryByText(/High/)).not.toBeInTheDocument();
     });
 
-    it('renders low badge with amber styling', () => {
+    it('renders low badge with warning styling', () => {
       const flagCounts: FlagCounts = { high: 0, low: 1 };
 
       const { container } = render(<FlagsBanner flagCounts={flagCounts} />);
 
-      const badge = container.querySelector('.bg-amber-100');
+      const badge = container.querySelector('.bg-warning-muted');
       expect(badge).toBeInTheDocument();
     });
   });
@@ -101,8 +101,8 @@ describe('FlagsBanner', () => {
 
       const { container } = render(<FlagsBanner flagCounts={flagCounts} />);
 
-      expect(container.querySelector('.bg-red-100')).toBeInTheDocument();
-      expect(container.querySelector('.bg-amber-100')).toBeInTheDocument();
+      expect(container.querySelector('.bg-danger-muted')).toBeInTheDocument();
+      expect(container.querySelector('.bg-warning-muted')).toBeInTheDocument();
     });
   });
 

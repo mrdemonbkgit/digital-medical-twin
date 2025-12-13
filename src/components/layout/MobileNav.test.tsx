@@ -153,7 +153,7 @@ describe('MobileNav', () => {
       await user.click(screen.getByLabelText('Open menu'));
 
       const dashboardLink = screen.getByText('Dashboard').closest('a');
-      expect(dashboardLink?.className).toContain('bg-blue-50');
+      expect(dashboardLink?.className).toContain('bg-info-muted');
     });
 
     it('closes drawer when profile link clicked', async () => {

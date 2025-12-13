@@ -44,6 +44,7 @@ Users log health events (bloodwork, doctor visits, medications, interventions, m
 | Styling | Tailwind CSS | 4.x |
 | Icons | Lucide React | latest |
 | Build | Vite | latest |
+| PWA | vite-plugin-pwa | latest |
 | Database | Supabase (PostgreSQL) | latest |
 | Auth | Supabase Auth | latest |
 | Hosting | Vercel | latest |

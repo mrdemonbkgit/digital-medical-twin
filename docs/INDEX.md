@@ -1,6 +1,6 @@
 # Documentation Index
 
-> Last Updated: 2025-12-13 (Multi-theme system with 4 themes)
+> Last Updated: 2025-12-13 (PWA support added)
 
 ## Summary
 

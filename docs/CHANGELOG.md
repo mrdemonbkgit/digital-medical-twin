@@ -26,6 +26,19 @@ Version history and release notes for Digital Medical Twin. Lists all notable ch
 
 ### Added
 
+- **Progressive Web App (PWA)**
+  - App is now installable on desktop (Chrome) and mobile (iOS Safari, Android Chrome)
+  - Web app manifest with app metadata and icons
+  - Service worker for precaching static assets (fast loading)
+  - Standalone display mode (no browser UI when installed)
+  - Auto-generated app icons (192x192, 512x512, maskable)
+  - Apple-specific meta tags for iOS home screen support
+
+- **AI-Generated Conversation Titles**
+  - Conversations now get concise 3-5 word AI-generated titles
+  - Uses GPT-4o-mini (OpenAI) or Gemini 2.5 Flash (Google)
+  - Replaces truncated first message with descriptive titles like "Cholesterol Levels Review"
+
 - **AI Chat UX Improvements**
   - Stop streaming button with AbortController support
   - Regenerate AI response action

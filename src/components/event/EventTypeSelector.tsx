@@ -30,10 +30,10 @@ const eventTypes: EventTypeOption[] = [
     description: 'Blood tests, biomarkers, and diagnostic results',
     icon: FlaskConical,
     colors: {
-      bg: 'bg-red-50',
-      border: 'border-red-200',
-      hover: 'hover:border-red-400 hover:bg-red-100',
-      icon: 'text-red-600',
+      bg: 'bg-event-lab',
+      border: 'border-event-lab',
+      hover: 'hover:opacity-80',
+      icon: 'text-event-lab',
     },
   },
   {
@@ -42,10 +42,10 @@ const eventTypes: EventTypeOption[] = [
     description: 'Appointments, consultations, and check-ups',
     icon: Stethoscope,
     colors: {
-      bg: 'bg-blue-50',
-      border: 'border-blue-200',
-      hover: 'hover:border-blue-400 hover:bg-blue-100',
-      icon: 'text-blue-600',
+      bg: 'bg-event-visit',
+      border: 'border-event-visit',
+      hover: 'hover:opacity-80',
+      icon: 'text-event-visit',
     },
   },
   {
@@ -54,10 +54,10 @@ const eventTypes: EventTypeOption[] = [
     description: 'Prescriptions, supplements, and treatments',
     icon: Pill,
     colors: {
-      bg: 'bg-green-50',
-      border: 'border-green-200',
-      hover: 'hover:border-green-400 hover:bg-green-100',
-      icon: 'text-green-600',
+      bg: 'bg-event-medication',
+      border: 'border-event-medication',
+      hover: 'hover:opacity-80',
+      icon: 'text-event-medication',
     },
   },
   {
@@ -66,10 +66,10 @@ const eventTypes: EventTypeOption[] = [
     description: 'Lifestyle changes, diet, exercise, and protocols',
     icon: Sparkles,
     colors: {
-      bg: 'bg-amber-50',
-      border: 'border-amber-200',
-      hover: 'hover:border-amber-400 hover:bg-amber-100',
-      icon: 'text-amber-600',
+      bg: 'bg-event-intervention',
+      border: 'border-event-intervention',
+      hover: 'hover:opacity-80',
+      icon: 'text-event-intervention',
     },
   },
   {
@@ -78,10 +78,10 @@ const eventTypes: EventTypeOption[] = [
     description: 'Health measurements from devices or manual entry',
     icon: Activity,
     colors: {
-      bg: 'bg-purple-50',
-      border: 'border-purple-200',
-      hover: 'hover:border-purple-400 hover:bg-purple-100',
-      icon: 'text-purple-600',
+      bg: 'bg-event-metric',
+      border: 'border-event-metric',
+      hover: 'hover:opacity-80',
+      icon: 'text-event-metric',
     },
   },
   {
@@ -90,10 +90,10 @@ const eventTypes: EventTypeOption[] = [
     description: 'Private tracking of alcohol, smoking, and other habits',
     icon: EyeOff,
     colors: {
-      bg: 'bg-slate-50',
-      border: 'border-slate-200',
-      hover: 'hover:border-slate-400 hover:bg-slate-100',
-      icon: 'text-slate-600',
+      bg: 'bg-event-vice',
+      border: 'border-event-vice',
+      hover: 'hover:opacity-80',
+      icon: 'text-event-vice',
     },
   },
 ];

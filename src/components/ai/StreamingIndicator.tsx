@@ -25,11 +25,11 @@ export function StreamingIndicator({ status }: StreamingIndicatorProps) {
     : 'Analyzing your question...';
 
   return (
-    <div className="flex items-center gap-3 px-4 py-3 text-sm text-gray-600 bg-gray-50 rounded-lg border border-gray-100">
-      <Loader2 className="h-4 w-4 animate-spin text-blue-500 flex-shrink-0" />
+    <div className="flex items-center gap-3 px-4 py-3 text-sm text-theme-secondary bg-theme-secondary rounded-lg border border-theme-primary">
+      <Loader2 className="h-4 w-4 animate-spin text-accent flex-shrink-0" />
       <span>{message}</span>
       {status.toolCallCount > 1 && (
-        <span className="text-xs text-gray-400">
+        <span className="text-xs text-theme-muted">
           ({status.toolCallCount} tools used)
         </span>
       )}

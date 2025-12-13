@@ -36,9 +36,9 @@ function FlagBadge({ flag }: { flag: 'high' | 'low' | 'normal' | null }) {
   if (!flag) return null;
 
   const colors = {
-    high: 'bg-red-100 text-red-700',
-    low: 'bg-blue-100 text-blue-700',
-    normal: 'bg-green-100 text-green-700',
+    high: 'bg-danger-muted text-danger',
+    low: 'bg-info-muted text-accent',
+    normal: 'bg-success-muted text-success',
   };
 
   return (
@@ -50,12 +50,12 @@ function FlagBadge({ flag }: { flag: 'high' | 'low' | 'normal' | null }) {
 
 function MatchBadge({ matched }: { matched: boolean }) {
   return matched ? (
-    <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-xs font-medium bg-green-100 text-green-700">
+    <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-xs font-medium bg-success-muted text-success">
       <Link2 className="h-3 w-3" />
       Matched
     </span>
   ) : (
-    <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-xs font-medium bg-amber-100 text-amber-700">
+    <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-xs font-medium bg-warning-muted text-warning">
       <Link2Off className="h-3 w-3" />
       Unmatched
     </span>
@@ -64,14 +64,14 @@ function MatchBadge({ matched }: { matched: boolean }) {
 
 function ProcessedBiomarkerRow({ biomarker }: { biomarker: ProcessedBiomarker }) {
   return (
-    <tr className={`hover:bg-gray-50 ${!biomarker.matched ? 'bg-amber-50/50' : ''}`}>
+    <tr className={`hover:bg-theme-secondary ${!biomarker.matched ? 'bg-warning-muted/50' : ''}`}>
       {/* Name column with original and standard names */}
       <td className="px-2 py-2">
-        <div className="text-sm text-gray-900 truncate" title={biomarker.matched ? biomarker.standardName || '' : biomarker.originalName}>
+        <div className="text-sm text-theme-primary truncate" title={biomarker.matched ? biomarker.standardName || '' : biomarker.originalName}>
           {biomarker.matched ? biomarker.standardName : biomarker.originalName}
         </div>
         {biomarker.standardCode && (
-          <div className="text-xs text-gray-400 font-mono truncate">
+          <div className="text-xs text-theme-muted font-mono truncate">
             {biomarker.standardCode}
           </div>
         )}
@@ -79,7 +79,7 @@ function ProcessedBiomarkerRow({ biomarker }: { biomarker: ProcessedBiomarker })
 
       {/* Value column with original and standardized */}
       <td className="px-2 py-2 text-right">
-        <div className="text-sm text-gray-900 font-mono">
+        <div className="text-sm text-theme-primary font-mono">
           {biomarker.matched && biomarker.standardValue !== null
             ? typeof biomarker.standardValue === 'number'
               ? biomarker.standardValue.toFixed(1)
@@ -89,19 +89,19 @@ function ProcessedBiomarkerRow({ biomarker }: { biomarker: ProcessedBiomarker })
         {biomarker.matched &&
           biomarker.standardValue !== null &&
           biomarker.standardValue !== biomarker.originalValue && (
-            <div className="text-xs text-gray-500 truncate" title={`Original: ${biomarker.originalValue} ${biomarker.originalUnit}`}>
+            <div className="text-xs text-theme-tertiary truncate" title={`Original: ${biomarker.originalValue} ${biomarker.originalUnit}`}>
               was {biomarker.originalValue}
             </div>
           )}
       </td>
 
       {/* Unit column */}
-      <td className="px-2 py-2 text-sm text-gray-500 truncate">
+      <td className="px-2 py-2 text-sm text-theme-tertiary truncate">
         {biomarker.matched ? biomarker.standardUnit : biomarker.originalUnit}
       </td>
 
       {/* Reference range column */}
-      <td className="px-2 py-2 text-sm text-gray-500 text-center">
+      <td className="px-2 py-2 text-sm text-theme-tertiary text-center">
         {biomarker.referenceMin !== null || biomarker.referenceMax !== null
           ? `${biomarker.referenceMin ?? '-'}-${biomarker.referenceMax ?? '-'}`
           : '-'}
@@ -123,13 +123,13 @@ function ProcessedBiomarkerRow({ biomarker }: { biomarker: ProcessedBiomarker })
 function RawBiomarkerRow({ biomarker }: { biomarker: Biomarker }) {
   const flag = getBiomarkerFlag(biomarker);
   return (
-    <tr className="hover:bg-gray-50">
-      <td className="px-2 py-2 text-sm text-gray-900 truncate" title={biomarker.name}>{biomarker.name}</td>
-      <td className="px-2 py-2 text-sm text-gray-900 text-right font-mono">
+    <tr className="hover:bg-theme-secondary">
+      <td className="px-2 py-2 text-sm text-theme-primary truncate" title={biomarker.name}>{biomarker.name}</td>
+      <td className="px-2 py-2 text-sm text-theme-primary text-right font-mono">
         {biomarker.value}
       </td>
-      <td className="px-2 py-2 text-sm text-gray-500 truncate">{biomarker.unit}</td>
-      <td className="px-2 py-2 text-sm text-gray-500 text-center">
+      <td className="px-2 py-2 text-sm text-theme-tertiary truncate">{biomarker.unit}</td>
+      <td className="px-2 py-2 text-sm text-theme-tertiary text-center">
         {biomarker.referenceMin !== undefined || biomarker.referenceMax !== undefined
           ? `${biomarker.referenceMin ?? '-'}-${biomarker.referenceMax ?? '-'}`
           : '-'}
@@ -149,17 +149,17 @@ function ProcessedBiomarkersTable({ biomarkers }: { biomarkers: ProcessedBiomark
     <div className="space-y-4">
       {/* Summary bar */}
       <div className="flex items-center justify-between">
-        <h4 className="text-sm font-medium text-gray-700 flex items-center gap-2">
+        <h4 className="text-sm font-medium text-theme-secondary flex items-center gap-2">
           <FlaskConical className="h-4 w-4" />
           Biomarkers ({biomarkers.length})
         </h4>
         <div className="flex items-center gap-3 text-xs">
-          <span className="text-green-600">
+          <span className="text-success">
             <Link2 className="h-3 w-3 inline mr-1" />
             {matched.length} matched
           </span>
           {unmatched.length > 0 && (
-            <span className="text-amber-600">
+            <span className="text-warning">
               <Link2Off className="h-3 w-3 inline mr-1" />
               {unmatched.length} unmatched
             </span>
@@ -168,31 +168,31 @@ function ProcessedBiomarkersTable({ biomarkers }: { biomarkers: ProcessedBiomark
       </div>
 
       {/* Processed biomarkers table */}
-      <div className="border border-gray-200 rounded-lg overflow-x-auto">
-        <table className="w-full min-w-[500px] table-fixed divide-y divide-gray-200">
-          <thead className="bg-gray-50">
+      <div className="border border-theme-primary rounded-lg overflow-x-auto">
+        <table className="w-full min-w-[500px] table-fixed divide-y divide-theme-primary">
+          <thead className="bg-theme-secondary">
             <tr>
-              <th className="w-[30%] px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+              <th className="w-[30%] px-2 py-2 text-left text-xs font-medium text-theme-tertiary uppercase">
                 Name
               </th>
-              <th className="w-[12%] px-2 py-2 text-right text-xs font-medium text-gray-500 uppercase">
+              <th className="w-[12%] px-2 py-2 text-right text-xs font-medium text-theme-tertiary uppercase">
                 Value
               </th>
-              <th className="w-[12%] px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+              <th className="w-[12%] px-2 py-2 text-left text-xs font-medium text-theme-tertiary uppercase">
                 Unit
               </th>
-              <th className="w-[16%] px-2 py-2 text-center text-xs font-medium text-gray-500 uppercase">
+              <th className="w-[16%] px-2 py-2 text-center text-xs font-medium text-theme-tertiary uppercase">
                 Ref
               </th>
-              <th className="w-[12%] px-2 py-2 text-center text-xs font-medium text-gray-500 uppercase">
+              <th className="w-[12%] px-2 py-2 text-center text-xs font-medium text-theme-tertiary uppercase">
                 Flag
               </th>
-              <th className="w-[18%] px-2 py-2 text-center text-xs font-medium text-gray-500 uppercase">
+              <th className="w-[18%] px-2 py-2 text-center text-xs font-medium text-theme-tertiary uppercase">
                 Status
               </th>
             </tr>
           </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
+          <tbody className="bg-theme-primary divide-y divide-theme-primary">
             {biomarkers.map((biomarker, index) => (
               <ProcessedBiomarkerRow key={index} biomarker={biomarker} />
             ))}
@@ -202,12 +202,12 @@ function ProcessedBiomarkersTable({ biomarkers }: { biomarkers: ProcessedBiomark
 
       {/* Unmatched biomarkers notice */}
       {unmatched.length > 0 && (
-        <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
+        <div className="bg-warning-muted border border-amber-200 rounded-lg p-3">
           <h5 className="text-sm font-medium text-amber-800 mb-2 flex items-center gap-2">
             <AlertCircle className="h-4 w-4" />
             Unmatched Biomarkers Need Review
           </h5>
-          <p className="text-xs text-amber-700">
+          <p className="text-xs text-warning">
             {unmatched.length} biomarker{unmatched.length !== 1 ? 's' : ''} could not be matched
             to our standard library. These will be saved with their original names and values.
             You may want to manually review them after creating the event.
@@ -221,33 +221,33 @@ function ProcessedBiomarkersTable({ biomarkers }: { biomarkers: ProcessedBiomark
 function RawBiomarkersTable({ biomarkers }: { biomarkers: Biomarker[] }) {
   return (
     <div>
-      <h4 className="text-sm font-medium text-gray-700 mb-3 flex items-center gap-2">
+      <h4 className="text-sm font-medium text-theme-secondary mb-3 flex items-center gap-2">
         <FlaskConical className="h-4 w-4" />
         Biomarkers ({biomarkers.length})
-        <span className="text-xs font-normal text-gray-500">(raw extraction)</span>
+        <span className="text-xs font-normal text-theme-tertiary">(raw extraction)</span>
       </h4>
-      <div className="border border-gray-200 rounded-lg overflow-x-auto">
-        <table className="w-full min-w-[400px] table-fixed divide-y divide-gray-200">
-          <thead className="bg-gray-50">
+      <div className="border border-theme-primary rounded-lg overflow-x-auto">
+        <table className="w-full min-w-[400px] table-fixed divide-y divide-theme-primary">
+          <thead className="bg-theme-secondary">
             <tr>
-              <th className="w-[35%] px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+              <th className="w-[35%] px-2 py-2 text-left text-xs font-medium text-theme-tertiary uppercase">
                 Name
               </th>
-              <th className="w-[15%] px-2 py-2 text-right text-xs font-medium text-gray-500 uppercase">
+              <th className="w-[15%] px-2 py-2 text-right text-xs font-medium text-theme-tertiary uppercase">
                 Value
               </th>
-              <th className="w-[15%] px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+              <th className="w-[15%] px-2 py-2 text-left text-xs font-medium text-theme-tertiary uppercase">
                 Unit
               </th>
-              <th className="w-[20%] px-2 py-2 text-center text-xs font-medium text-gray-500 uppercase">
+              <th className="w-[20%] px-2 py-2 text-center text-xs font-medium text-theme-tertiary uppercase">
                 Ref
               </th>
-              <th className="w-[15%] px-2 py-2 text-center text-xs font-medium text-gray-500 uppercase">
+              <th className="w-[15%] px-2 py-2 text-center text-xs font-medium text-theme-tertiary uppercase">
                 Flag
               </th>
             </tr>
           </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
+          <tbody className="bg-theme-primary divide-y divide-theme-primary">
             {biomarkers.map((biomarker, index) => (
               <RawBiomarkerRow key={index} biomarker={biomarker} />
             ))}
@@ -274,8 +274,8 @@ function TabButton({
       onClick={onClick}
       className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
         active
-          ? 'border-blue-500 text-blue-600'
-          : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+          ? 'border-blue-500 text-info'
+          : 'border-transparent text-theme-tertiary hover:text-theme-secondary hover:border-theme-primary'
       }`}
     >
       {children}
@@ -290,7 +290,7 @@ export function ExtractionPreview({ upload, onClose }: ExtractionPreviewProps) {
   if (!data) {
     return (
       <Modal isOpen={true} onClose={onClose} title="Extraction Preview" size="lg">
-        <p className="text-gray-500">No extracted data available.</p>
+        <p className="text-theme-tertiary">No extracted data available.</p>
       </Modal>
     );
   }
@@ -301,7 +301,7 @@ export function ExtractionPreview({ upload, onClose }: ExtractionPreviewProps) {
     <Modal isOpen={true} onClose={onClose} title="Extraction Preview" size="xl">
       <div className="flex flex-col max-h-[70vh]">
         {/* Tab Navigation */}
-        <div className="flex border-b border-gray-200 -mx-6 px-6 flex-shrink-0">
+        <div className="flex border-b border-theme-primary -mx-6 px-6 flex-shrink-0">
           <TabButton
             active={activeTab === 'biomarkers'}
             onClick={() => setActiveTab('biomarkers')}
@@ -325,18 +325,18 @@ export function ExtractionPreview({ upload, onClose }: ExtractionPreviewProps) {
               {/* Verification Status */}
               <div className="flex items-center gap-2">
                 {upload.verificationPassed ? (
-                  <span className="inline-flex items-center gap-1 text-sm text-green-600">
+                  <span className="inline-flex items-center gap-1 text-sm text-success">
                     <CheckCircle className="h-4 w-4" />
                     Verified by GPT
                   </span>
                 ) : (
-                  <span className="inline-flex items-center gap-1 text-sm text-amber-600">
+                  <span className="inline-flex items-center gap-1 text-sm text-warning">
                     <AlertCircle className="h-4 w-4" />
                     {upload.skipVerification ? 'Verification skipped' : 'Unverified'}
                   </span>
                 )}
                 {upload.extractionConfidence && (
-                  <span className="text-sm text-gray-500">
+                  <span className="text-sm text-theme-tertiary">
                     • {Math.round(upload.extractionConfidence * 100)}% confidence
                   </span>
                 )}
@@ -344,9 +344,9 @@ export function ExtractionPreview({ upload, onClose }: ExtractionPreviewProps) {
 
               {/* Corrections */}
               {upload.corrections && upload.corrections.length > 0 && (
-                <div className="bg-amber-50 border border-amber-200 rounded-lg p-3">
+                <div className="bg-warning-muted border border-amber-200 rounded-lg p-3">
                   <h4 className="text-sm font-medium text-amber-800 mb-2">Corrections Applied</h4>
-                  <ul className="text-sm text-amber-700 list-disc list-inside space-y-1">
+                  <ul className="text-sm text-warning list-disc list-inside space-y-1">
                     {upload.corrections.map((correction, i) => (
                       <li key={i}>{correction}</li>
                     ))}
@@ -358,20 +358,20 @@ export function ExtractionPreview({ upload, onClose }: ExtractionPreviewProps) {
               <div className="grid gap-4 sm:grid-cols-3 text-sm">
                 {data.labName && (
                   <div className="flex items-center gap-2">
-                    <Building2 className="h-4 w-4 text-gray-400" />
-                    <span className="text-gray-900">{data.labName}</span>
+                    <Building2 className="h-4 w-4 text-theme-muted" />
+                    <span className="text-theme-primary">{data.labName}</span>
                   </div>
                 )}
                 {data.orderingDoctor && (
                   <div className="flex items-center gap-2">
-                    <Stethoscope className="h-4 w-4 text-gray-400" />
-                    <span className="text-gray-900">{data.orderingDoctor}</span>
+                    <Stethoscope className="h-4 w-4 text-theme-muted" />
+                    <span className="text-theme-primary">{data.orderingDoctor}</span>
                   </div>
                 )}
                 {data.testDate && (
                   <div className="flex items-center gap-2">
-                    <Calendar className="h-4 w-4 text-gray-400" />
-                    <span className="text-gray-900">{data.testDate}</span>
+                    <Calendar className="h-4 w-4 text-theme-muted" />
+                    <span className="text-theme-primary">{data.testDate}</span>
                   </div>
                 )}
               </div>
@@ -389,7 +389,7 @@ export function ExtractionPreview({ upload, onClose }: ExtractionPreviewProps) {
         </div>
 
         {/* Actions */}
-        <div className="flex justify-end gap-3 pt-4 border-t border-gray-200 flex-shrink-0">
+        <div className="flex justify-end gap-3 pt-4 border-t border-theme-primary flex-shrink-0">
           <Button variant="secondary" onClick={onClose}>
             Close
           </Button>

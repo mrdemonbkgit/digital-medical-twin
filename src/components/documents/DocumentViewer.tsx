@@ -57,8 +57,8 @@ export function DocumentViewer({ document, isOpen, onClose }: DocumentViewerProp
     <Modal isOpen={isOpen} onClose={onClose} size="xl" title={document.title || document.filename}>
       <div className="space-y-4">
         {/* Document metadata */}
-        <div className="flex flex-wrap gap-4 text-sm text-gray-600">
-          <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-gray-100 text-gray-700 font-medium">
+        <div className="flex flex-wrap gap-4 text-sm text-theme-secondary">
+          <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-theme-tertiary text-theme-secondary font-medium">
             {DOCUMENT_CATEGORY_LABELS[document.category]}
           </span>
           {document.documentDate && (
@@ -68,13 +68,13 @@ export function DocumentViewer({ document, isOpen, onClose }: DocumentViewerProp
         </div>
 
         {document.description && (
-          <p className="text-sm text-gray-600 bg-gray-50 rounded-lg p-3">
+          <p className="text-sm text-theme-secondary bg-theme-secondary rounded-lg p-3">
             {document.description}
           </p>
         )}
 
         {/* Content area */}
-        <div className="relative bg-gray-100 rounded-lg overflow-hidden" style={{ minHeight: '400px' }}>
+        <div className="relative bg-theme-tertiary rounded-lg overflow-hidden" style={{ minHeight: '400px' }}>
           {isLoading && (
             <div className="absolute inset-0 flex items-center justify-center">
               <Loader2 className="h-8 w-8 text-blue-500 animate-spin" />
@@ -82,7 +82,7 @@ export function DocumentViewer({ document, isOpen, onClose }: DocumentViewerProp
           )}
 
           {error && (
-            <div className="absolute inset-0 flex flex-col items-center justify-center text-red-600">
+            <div className="absolute inset-0 flex flex-col items-center justify-center text-danger">
               <AlertCircle className="h-8 w-8 mb-2" />
               <p className="text-sm">{error}</p>
             </div>
@@ -107,7 +107,7 @@ export function DocumentViewer({ document, isOpen, onClose }: DocumentViewerProp
               )}
 
               {!isImage && !isPdf && (
-                <div className="flex flex-col items-center justify-center py-12 text-gray-500">
+                <div className="flex flex-col items-center justify-center py-12 text-theme-tertiary">
                   <p className="text-sm">Preview not available for this file type</p>
                   <Button variant="secondary" size="sm" onClick={handleOpenInNewTab} className="mt-3">
                     <ExternalLink className="h-4 w-4 mr-2" />

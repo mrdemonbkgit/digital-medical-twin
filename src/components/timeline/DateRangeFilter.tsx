@@ -50,13 +50,13 @@ export function DateRangeFilter({
     <div className={cn('space-y-3', className)}>
       {/* Quick presets */}
       <div className="flex flex-wrap items-center gap-2">
-        <span className="text-xs font-medium text-gray-500">Quick:</span>
+        <span className="text-xs font-medium text-theme-tertiary">Quick:</span>
         {presets.map(({ label, days }) => (
           <button
             key={days}
             type="button"
             onClick={() => handlePresetClick(days)}
-            className="rounded border border-gray-200 bg-gray-50 px-2 py-1 text-xs font-medium text-gray-600 transition-colors hover:bg-gray-100"
+            className="rounded border border-theme-primary bg-theme-secondary px-2 py-1 text-xs font-medium text-theme-secondary transition-colors hover:bg-theme-tertiary"
           >
             {label}
           </button>
@@ -65,7 +65,7 @@ export function DateRangeFilter({
           <button
             type="button"
             onClick={handleClear}
-            className="inline-flex items-center gap-1 rounded border border-gray-200 bg-gray-50 px-2 py-1 text-xs font-medium text-gray-500 transition-colors hover:bg-gray-100"
+            className="inline-flex items-center gap-1 rounded border border-theme-primary bg-theme-secondary px-2 py-1 text-xs font-medium text-theme-tertiary transition-colors hover:bg-theme-tertiary"
             aria-label="Clear date filter"
           >
             <X className="h-3 w-3" />
@@ -77,23 +77,23 @@ export function DateRangeFilter({
       {/* Date inputs */}
       <div className="flex flex-wrap items-center gap-2">
         <div className="flex items-center gap-2">
-          <Calendar className="h-4 w-4 text-gray-400" />
-          <label className="text-xs font-medium text-gray-500">From:</label>
+          <Calendar className="h-4 w-4 text-theme-muted" />
+          <label className="text-xs font-medium text-theme-tertiary">From:</label>
           <input
             type="date"
             value={startDate || ''}
             onChange={(e) => onChange(e.target.value || undefined, endDate)}
-            className="rounded border border-gray-300 px-2 py-1 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            className="rounded border border-theme-primary px-2 py-1 text-sm focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
             max={endDate || getTodayDate()}
           />
         </div>
         <div className="flex items-center gap-2">
-          <label className="text-xs font-medium text-gray-500">To:</label>
+          <label className="text-xs font-medium text-theme-tertiary">To:</label>
           <input
             type="date"
             value={endDate || ''}
             onChange={(e) => onChange(startDate, e.target.value || undefined)}
-            className="rounded border border-gray-300 px-2 py-1 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+            className="rounded border border-theme-primary px-2 py-1 text-sm focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
             min={startDate}
             max={getTodayDate()}
           />

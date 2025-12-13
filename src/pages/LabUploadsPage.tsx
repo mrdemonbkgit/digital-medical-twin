@@ -58,10 +58,10 @@ export function LabUploadsPage() {
                 <FileUp className="h-6 w-6 text-cyan-600" />
               </div>
               <div>
-                <h2 className="text-lg font-semibold text-gray-900">
+                <h2 className="text-lg font-semibold text-theme-primary">
                   Upload Lab Results
                 </h2>
-                <p className="mt-1 text-gray-600">
+                <p className="mt-1 text-theme-secondary">
                   Upload your lab result PDFs here for automatic data extraction.
                   Our AI will extract biomarkers, reference ranges, and other details.
                 </p>

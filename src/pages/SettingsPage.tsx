@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Settings, Bot, Palette, Database, Download, Upload, Sun, Moon, Monitor } from 'lucide-react';
+import { Settings, Bot, Palette, Database, Download, Upload, Sun, Moon, Monitor, Waves, TreePine } from 'lucide-react';
 import { PageWrapper } from '@/components/layout';
 import { Card, CardContent, CardHeader, CardTitle, Button } from '@/components/common';
 import { AISettingsForm } from '@/components/ai';
@@ -9,10 +9,12 @@ import { useTheme } from '@/context/ThemeContext';
 import type { Theme } from '@/types/theme';
 import { cn } from '@/utils/cn';
 
-const themeOptions: { value: Theme; label: string; icon: typeof Sun; description: string }[] = [
-  { value: 'light', label: 'Light', icon: Sun, description: 'Light background with dark text' },
-  { value: 'dark', label: 'Dark', icon: Moon, description: 'Dark background with light text' },
-  { value: 'system', label: 'System', icon: Monitor, description: 'Follows your device settings' },
+const themeOptions: { value: Theme; label: string; icon: typeof Sun; description: string; preview: { bg: string; accent: string } }[] = [
+  { value: 'light', label: 'Light', icon: Sun, description: 'Clean and bright', preview: { bg: '#f9fafb', accent: '#2563eb' } },
+  { value: 'dark', label: 'Dark', icon: Moon, description: 'Easy on the eyes', preview: { bg: '#18181b', accent: '#3b82f6' } },
+  { value: 'ocean', label: 'Ocean', icon: Waves, description: 'Deep blue waters', preview: { bg: '#0f2942', accent: '#22d3ee' } },
+  { value: 'forest', label: 'Forest', icon: TreePine, description: 'Natural greens', preview: { bg: '#1a2e1a', accent: '#4ade80' } },
+  { value: 'system', label: 'System', icon: Monitor, description: 'Match device', preview: { bg: '#f9fafb', accent: '#2563eb' } },
 ];
 
 export function SettingsPage() {
@@ -48,32 +50,35 @@ export function SettingsPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-gray-600 dark:text-zinc-400 mb-4">
-              Customize the look and feel of your application.
+            <p className="text-theme-secondary mb-4">
+              Choose your preferred theme for the application.
             </p>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-              {themeOptions.map(({ value, label, icon: Icon, description }) => (
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+              {themeOptions.map(({ value, label, icon: Icon, description, preview }) => (
                 <button
                   key={value}
                   onClick={() => setTheme(value)}
                   className={cn(
-                    'flex flex-col items-center gap-2 p-4 rounded-lg border-2 transition-colors',
+                    'flex flex-col items-center gap-2 p-4 rounded-lg border-2 transition-all',
                     theme === value
-                      ? 'border-blue-500 bg-blue-50 dark:bg-blue-950'
-                      : 'border-gray-200 hover:border-gray-300 dark:border-zinc-700 dark:hover:border-zinc-600'
+                      ? 'border-accent bg-info-muted'
+                      : 'border-theme-primary hover:border-theme-secondary bg-theme-secondary'
                   )}
                 >
-                  <Icon className={cn(
-                    'h-6 w-6',
-                    theme === value ? 'text-blue-600 dark:text-blue-400' : 'text-gray-500 dark:text-zinc-400'
-                  )} />
+                  {/* Theme preview circle */}
+                  <div
+                    className="w-10 h-10 rounded-full border-2 flex items-center justify-center"
+                    style={{ backgroundColor: preview.bg, borderColor: preview.accent }}
+                  >
+                    <Icon className="h-5 w-5" style={{ color: preview.accent }} />
+                  </div>
                   <span className={cn(
-                    'font-medium',
-                    theme === value ? 'text-blue-700 dark:text-blue-300' : 'text-gray-900 dark:text-zinc-100'
+                    'font-medium text-sm',
+                    theme === value ? 'text-accent' : 'text-theme-primary'
                   )}>
                     {label}
                   </span>
-                  <span className="text-xs text-gray-500 dark:text-zinc-400 text-center">
+                  <span className="text-xs text-theme-muted text-center">
                     {description}
                   </span>
                 </button>
@@ -90,15 +95,15 @@ export function SettingsPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-gray-600 dark:text-zinc-400 mb-4">
+            <p className="text-theme-secondary mb-4">
               Export or import your health data for backup or transfer.
             </p>
 
             <div className="space-y-4">
               {/* Export Section */}
-              <div className="rounded-lg border border-gray-200 dark:border-zinc-700 p-4">
-                <h4 className="font-medium text-gray-900 dark:text-zinc-100 mb-2">Export Data</h4>
-                <p className="text-sm text-gray-500 dark:text-zinc-400 mb-3">
+              <div className="rounded-lg border border-theme-primary p-4">
+                <h4 className="font-medium text-theme-primary mb-2">Export Data</h4>
+                <p className="text-sm text-theme-tertiary mb-3">
                   Download all your health events in JSON or CSV format.
                 </p>
                 <div className="flex gap-2">
@@ -120,14 +125,14 @@ export function SettingsPage() {
                   </Button>
                 </div>
                 {exportError && (
-                  <p className="mt-2 text-sm text-red-600">{exportError}</p>
+                  <p className="mt-2 text-sm text-danger">{exportError}</p>
                 )}
               </div>
 
               {/* Import Section */}
-              <div className="rounded-lg border border-gray-200 dark:border-zinc-700 p-4">
-                <h4 className="font-medium text-gray-900 dark:text-zinc-100 mb-2">Import Data</h4>
-                <p className="text-sm text-gray-500 dark:text-zinc-400 mb-3">
+              <div className="rounded-lg border border-theme-primary p-4">
+                <h4 className="font-medium text-theme-primary mb-2">Import Data</h4>
+                <p className="text-sm text-theme-tertiary mb-3">
                   Import health events from a previously exported JSON file.
                 </p>
                 <Button variant="secondary" onClick={() => setIsImportModalOpen(true)}>
@@ -147,11 +152,11 @@ export function SettingsPage() {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <p className="text-gray-600 dark:text-zinc-400">
+            <p className="text-theme-secondary">
               Manage your account settings and data.
             </p>
-            <div className="mt-4 rounded-lg bg-gray-50 dark:bg-zinc-700 p-4">
-              <p className="text-sm text-gray-500 dark:text-zinc-400">
+            <div className="mt-4 rounded-lg bg-theme-tertiary p-4">
+              <p className="text-sm text-theme-tertiary">
                 Account management coming soon.
               </p>
             </div>

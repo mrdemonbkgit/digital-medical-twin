@@ -60,10 +60,10 @@ export function InsightsPage() {
             <CardContent>
               <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                  <h2 className="text-lg font-semibold text-gray-900">
+                  <h2 className="text-lg font-semibold text-theme-primary">
                     Biomarker Trends
                   </h2>
-                  <p className="mt-1 text-sm text-gray-600">
+                  <p className="mt-1 text-sm text-theme-secondary">
                     No data in selected time range
                   </p>
                 </div>
@@ -74,11 +74,11 @@ export function InsightsPage() {
           <Card>
             <CardContent>
               <div className="flex flex-col items-center justify-center py-16">
-                <TrendingUp className="h-12 w-12 text-gray-300" />
-                <h3 className="mt-4 text-lg font-medium text-gray-900">
+                <TrendingUp className="h-12 w-12 text-theme-muted" />
+                <h3 className="mt-4 text-lg font-medium text-theme-primary">
                   No biomarker data in selected time range
                 </h3>
-                <p className="mt-2 text-center text-gray-500">
+                <p className="mt-2 text-center text-theme-tertiary">
                   Try selecting a longer time range or upload lab results to start tracking.
                 </p>
               </div>
@@ -127,10 +127,10 @@ export function InsightsPage() {
           <CardContent>
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div>
-                <h2 className="text-lg font-semibold text-gray-900">
+                <h2 className="text-lg font-semibold text-theme-primary">
                   Biomarker Trends
                 </h2>
-                <p className="mt-1 text-sm text-gray-600">
+                <p className="mt-1 text-sm text-theme-secondary">
                   {searchQuery
                     ? `Found ${filteredCount} of ${summaries.length} biomarkers`
                     : `Tracking ${summaries.length} biomarkers from your lab results`}
@@ -139,18 +139,18 @@ export function InsightsPage() {
               <div className="flex flex-wrap items-center gap-3">
                 {/* Search input */}
                 <div className="relative">
-                  <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-gray-400" />
+                  <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-theme-muted" />
                   <input
                     type="text"
                     placeholder="Search biomarkers..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="h-9 w-48 rounded-md border border-gray-300 bg-white pl-9 pr-8 text-sm placeholder:text-gray-400 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    className="input-theme h-9 w-48 rounded-md pl-9 pr-8 text-sm"
                   />
                   {searchQuery && (
                     <button
                       onClick={() => setSearchQuery('')}
-                      className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                      className="absolute right-2 top-1/2 -translate-y-1/2 text-theme-muted hover:text-theme-secondary"
                     >
                       <X className="h-4 w-4" />
                     </button>
@@ -185,7 +185,7 @@ export function InsightsPage() {
         {searchQuery && filteredCount === 0 && (
           <Card>
             <CardContent>
-              <p className="py-8 text-center text-gray-500">
+              <p className="py-8 text-center text-theme-tertiary">
                 No biomarkers found matching "{searchQuery}"
               </p>
             </CardContent>
@@ -196,7 +196,7 @@ export function InsightsPage() {
         {!searchQuery && orderedCategories.length === 0 && visibleCategories.length === 0 && (
           <Card>
             <CardContent>
-              <p className="py-8 text-center text-gray-500">
+              <p className="py-8 text-center text-theme-tertiary">
                 No categories selected. Use the category filter to show biomarkers.
               </p>
             </CardContent>

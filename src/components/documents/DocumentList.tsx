@@ -76,7 +76,7 @@ export function DocumentList({
 
   if (isLoading) {
     return (
-      <div className="flex flex-col items-center justify-center py-12 text-gray-500">
+      <div className="flex flex-col items-center justify-center py-12 text-theme-tertiary">
         <Loader2 className="h-8 w-8 animate-spin mb-3" />
         <p className="text-sm">Loading documents...</p>
       </div>
@@ -103,11 +103,11 @@ export function DocumentList({
                   px-3 py-1.5 rounded-full text-sm font-medium transition-colors
                   ${isActive
                     ? 'bg-blue-600 text-white'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}
+                    : 'bg-theme-tertiary text-theme-secondary hover:bg-theme-secondary'}
                 `}
               >
                 {tab.label}
-                <span className={`ml-1.5 ${isActive ? 'text-blue-200' : 'text-gray-500'}`}>
+                <span className={`ml-1.5 ${isActive ? 'text-blue-200' : 'text-theme-tertiary'}`}>
                   {count}
                 </span>
               </button>
@@ -119,7 +119,7 @@ export function DocumentList({
         <select
           value={sortBy}
           onChange={(e) => setSortBy(e.target.value as SortOption)}
-          className="text-sm border border-gray-200 rounded-lg px-3 py-1.5 bg-white flex-shrink-0"
+          className="text-sm border border-theme-primary rounded-lg px-3 py-1.5 bg-theme-primary flex-shrink-0"
         >
           <option value="date-desc">Newest first</option>
           <option value="date-asc">Oldest first</option>
@@ -129,8 +129,8 @@ export function DocumentList({
 
       {/* Document grid or empty state */}
       {filteredDocuments.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-12 text-gray-500">
-          <FolderOpen className="h-12 w-12 mb-3 text-gray-300" />
+        <div className="flex flex-col items-center justify-center py-12 text-theme-tertiary">
+          <FolderOpen className="h-12 w-12 mb-3 text-theme-muted" />
           <p className="text-sm font-medium">No documents yet</p>
           <p className="text-xs mt-1">Upload your first document above</p>
         </div>

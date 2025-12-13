@@ -25,7 +25,7 @@ const categoryColors: Record<DocumentCategory, string> = {
   discharge_summaries: 'border-l-orange-400',
   insurance: 'border-l-blue-400',
   referrals: 'border-l-cyan-400',
-  other: 'border-l-gray-400',
+  other: 'border-l-theme-muted',
 };
 
 interface DocumentCardProps {
@@ -82,13 +82,13 @@ export function DocumentCard({
   const FileIcon = isImage ? ImageIcon : FileText;
 
   return (
-    <div className={`border border-gray-200 rounded-lg bg-white border-l-4 ${categoryColors[document.category]} hover:shadow-md transition-shadow`}>
+    <div className={`border border-theme-primary rounded-lg bg-theme-primary border-l-4 ${categoryColors[document.category]} hover:shadow-md transition-shadow`}>
       {/* Header with icon and actions */}
       <div className="flex items-center justify-between px-4 pt-3 pb-2">
         <div className={`w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 ${
-          isImage ? 'bg-purple-100' : 'bg-blue-100'
+          isImage ? 'bg-purple-100' : 'bg-info-muted'
         }`}>
-          <FileIcon className={`h-5 w-5 ${isImage ? 'text-purple-600' : 'text-blue-600'}`} />
+          <FileIcon className={`h-5 w-5 ${isImage ? 'text-purple-600' : 'text-info'}`} />
         </div>
         <div className="flex items-center gap-1">
           <Button
@@ -114,7 +114,7 @@ export function DocumentCard({
             size="sm"
             onClick={() => onDelete(document.id)}
             disabled={isDeleting}
-            className="h-9 w-9 p-0 text-gray-400 hover:text-red-600"
+            className="h-9 w-9 p-0 text-theme-muted hover:text-danger"
             title="Delete"
           >
             {isDeleting ? (
@@ -128,13 +128,13 @@ export function DocumentCard({
 
       {/* Content - full width */}
       <div className="px-4 pb-4">
-        <h3 className="font-medium text-gray-900 line-clamp-2 leading-snug">
+        <h3 className="font-medium text-theme-primary line-clamp-2 leading-snug">
           {document.title || document.filename}
         </h3>
         {document.title && (
-          <p className="text-sm text-gray-500 truncate mt-1">{document.filename}</p>
+          <p className="text-sm text-theme-tertiary truncate mt-1">{document.filename}</p>
         )}
-        <p className="text-sm text-gray-500 mt-1">
+        <p className="text-sm text-theme-tertiary mt-1">
           {formatFileSize(document.fileSize)}
           {document.documentDate && ` • ${formatDate(document.documentDate)}`}
         </p>
@@ -142,7 +142,7 @@ export function DocumentCard({
 
       {/* Lab extraction section */}
       {(canExtract || hasExtraction) && (
-        <div className="px-4 pb-4 pt-3 border-t border-gray-100">
+        <div className="px-4 pb-4 pt-3 border-t border-theme-primary">
           {canExtract && !hasExtraction && (
             <Button
               variant="secondary"
@@ -175,7 +175,7 @@ export function DocumentCard({
           )}
 
           {extractError && (
-            <p className="mt-2 text-xs text-red-600">{extractError}</p>
+            <p className="mt-2 text-xs text-danger">{extractError}</p>
           )}
         </div>
       )}

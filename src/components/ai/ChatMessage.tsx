@@ -18,24 +18,24 @@ const remarkPlugins = [remarkGfm];
 
 const markdownComponents = {
   table: ({ children }: { children?: React.ReactNode }) => (
-    <div className="overflow-x-auto my-4 rounded-lg border border-gray-200 dark:border-zinc-700">
-      <table className="min-w-full divide-y divide-gray-200 dark:divide-zinc-700">{children}</table>
+    <div className="overflow-x-auto my-4 rounded-lg border border-theme-primary">
+      <table className="min-w-full divide-y divide-theme-primary">{children}</table>
     </div>
   ),
   thead: ({ children }: { children?: React.ReactNode }) => (
-    <thead className="bg-gray-100 dark:bg-zinc-700">{children}</thead>
+    <thead className="bg-theme-tertiary">{children}</thead>
   ),
   tbody: ({ children }: { children?: React.ReactNode }) => (
-    <tbody className="divide-y divide-gray-100 dark:divide-zinc-700 bg-white dark:bg-zinc-800">{children}</tbody>
+    <tbody className="divide-y divide-theme-primary bg-theme-primary">{children}</tbody>
   ),
   tr: ({ children }: { children?: React.ReactNode }) => (
-    <tr className="even:bg-gray-50 dark:even:bg-zinc-800 hover:bg-blue-50/50 dark:hover:bg-blue-900/20 transition-colors">
+    <tr className="even:bg-theme-secondary hover:bg-info-muted/30 transition-colors">
       {children}
     </tr>
   ),
   th: ({ children, style, ...props }: React.ThHTMLAttributes<HTMLTableCellElement>) => (
     <th
-      className="px-3 py-2 text-xs font-semibold text-gray-700 dark:text-zinc-300 uppercase tracking-wider whitespace-nowrap"
+      className="px-3 py-2 text-xs font-semibold text-theme-secondary uppercase tracking-wider whitespace-nowrap"
       style={style}
       {...props}
     >
@@ -44,7 +44,7 @@ const markdownComponents = {
   ),
   td: ({ children, style, ...props }: React.TdHTMLAttributes<HTMLTableCellElement>) => (
     <td
-      className="px-3 py-2 text-sm text-gray-700 dark:text-zinc-300 whitespace-nowrap"
+      className="px-3 py-2 text-sm text-theme-secondary whitespace-nowrap"
       style={style}
       {...props}
     >
@@ -70,13 +70,13 @@ export function ChatMessage({ message }: ChatMessageProps) {
       <div
         className={cn(
           'group flex gap-3 p-4 rounded-lg relative',
-          isAssistant ? 'bg-gray-50 dark:bg-zinc-700' : 'bg-white dark:bg-zinc-800'
+          isAssistant ? 'bg-theme-secondary' : 'bg-theme-primary'
         )}
       >
         <div
           className={cn(
             'flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center',
-            isAssistant ? 'bg-blue-100 text-blue-600 dark:bg-blue-900 dark:text-blue-400' : 'bg-gray-100 text-gray-600 dark:bg-zinc-600 dark:text-zinc-400'
+            isAssistant ? 'bg-info-muted text-info' : 'bg-theme-tertiary text-theme-tertiary'
           )}
         >
           {isAssistant ? <Bot className="h-4 w-4" /> : <User className="h-4 w-4" />}
@@ -84,16 +84,16 @@ export function ChatMessage({ message }: ChatMessageProps) {
 
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-1">
-            <span className="text-sm font-medium text-gray-900 dark:text-zinc-100">
+            <span className="text-sm font-medium text-theme-primary">
               {isAssistant ? 'AI Historian' : 'You'}
             </span>
-            <span className="text-xs text-gray-400 dark:text-zinc-400">
+            <span className="text-xs text-theme-muted">
               {formatTime(message.timestamp)}
             </span>
           </div>
 
         {isAssistant ? (
-          <div className="text-sm text-gray-700 dark:text-zinc-300 prose prose-sm dark:prose-invert max-w-none prose-p:my-2 prose-ul:my-2 prose-ol:my-2 prose-li:my-0.5 prose-strong:text-gray-900 dark:prose-strong:text-zinc-100">
+          <div className="text-sm text-theme-secondary prose prose-sm prose-invert max-w-none prose-p:my-2 prose-ul:my-2 prose-ol:my-2 prose-li:my-0.5 prose-strong:text-theme-primary">
             {renderContentWithCitations(
               message.content,
               message.citations,
@@ -101,7 +101,7 @@ export function ChatMessage({ message }: ChatMessageProps) {
             )}
           </div>
         ) : (
-          <div className="text-sm text-gray-700 dark:text-zinc-300 whitespace-pre-wrap break-words">
+          <div className="text-sm text-theme-secondary whitespace-pre-wrap break-words">
             {message.content}
           </div>
         )}
@@ -116,8 +116,8 @@ export function ChatMessage({ message }: ChatMessageProps) {
         )}
 
         {message.sources && message.sources.length > 0 && (
-          <div className="mt-3 pt-3 border-t border-gray-200 dark:border-zinc-700">
-            <span className="text-xs font-medium text-gray-500 dark:text-zinc-400">
+          <div className="mt-3 pt-3 border-t border-theme-primary">
+            <span className="text-xs font-medium text-theme-tertiary">
               Based on {message.sources.length} health event{message.sources.length > 1 ? 's' : ''}
             </span>
           </div>
@@ -293,7 +293,7 @@ function CitationMarker({
 
   return (
     <sup
-      className="text-blue-600 dark:text-blue-400 cursor-pointer hover:text-blue-800 dark:hover:text-blue-300 hover:underline font-medium ml-0.5"
+      className="text-accent cursor-pointer hover:opacity-80 hover:underline font-medium ml-0.5"
       onClick={handleClick}
       title={tooltipText}
     >

@@ -13,10 +13,10 @@ interface DebugTabProps {
 export function DebugTab({ debugInfo }: DebugTabProps) {
   if (!debugInfo) {
     return (
-      <div className="flex flex-col items-center justify-center py-12 text-gray-500">
-        <Bug className="h-8 w-8 mb-3 text-gray-400" />
+      <div className="flex flex-col items-center justify-center py-12 text-theme-tertiary">
+        <Bug className="h-8 w-8 mb-3 text-theme-muted" />
         <p className="text-sm">No debug information available for this extraction.</p>
-        <p className="text-xs text-gray-400 mt-1">
+        <p className="text-xs text-theme-muted mt-1">
           Debug info is only captured for extractions run after this feature was added.
         </p>
       </div>

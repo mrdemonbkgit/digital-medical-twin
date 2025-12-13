@@ -91,7 +91,7 @@ export function ImportModal({ isOpen, onClose, onSuccess }: ImportModalProps) {
         {/* Upload Step */}
         {step === 'upload' && (
           <>
-            <p className="text-sm text-gray-600 dark:text-zinc-400">
+            <p className="text-sm text-theme-secondary">
               Upload a JSON file exported from this application to import your health events.
             </p>
 
@@ -99,7 +99,7 @@ export function ImportModal({ isOpen, onClose, onSuccess }: ImportModalProps) {
               onDrop={handleDrop}
               onDragOver={handleDragOver}
               onClick={() => fileInputRef.current?.click()}
-              className="border-2 border-dashed border-gray-300 dark:border-zinc-600 rounded-lg p-8 text-center cursor-pointer hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-blue-950 transition-colors"
+              className="border-2 border-dashed border-theme-secondary rounded-lg p-8 text-center cursor-pointer hover:border-accent hover:bg-info-muted transition-colors"
             >
               <input
                 ref={fileInputRef}
@@ -108,27 +108,27 @@ export function ImportModal({ isOpen, onClose, onSuccess }: ImportModalProps) {
                 onChange={handleFileSelect}
                 className="hidden"
               />
-              <FileJson className="mx-auto h-12 w-12 text-gray-400 dark:text-zinc-400 mb-3" />
+              <FileJson className="mx-auto h-12 w-12 text-theme-muted mb-3" />
               {isValidating ? (
-                <p className="text-gray-600 dark:text-zinc-400">Validating file...</p>
+                <p className="text-theme-secondary">Validating file...</p>
               ) : (
                 <>
-                  <p className="text-gray-900 dark:text-zinc-100 font-medium">
+                  <p className="text-theme-primary font-medium">
                     Drop your JSON file here or click to browse
                   </p>
-                  <p className="text-sm text-gray-500 dark:text-zinc-400 mt-1">Max file size: 10MB</p>
+                  <p className="text-sm text-theme-tertiary mt-1">Max file size: 10MB</p>
                 </>
               )}
             </div>
 
             {/* Validation Errors */}
             {validationResult && !validationResult.success && (
-              <div className="rounded-lg bg-red-50 dark:bg-red-950 p-4">
+              <div className="rounded-lg bg-danger-muted p-4">
                 <div className="flex items-start">
-                  <XCircle className="h-5 w-5 text-red-500 dark:text-red-400 mt-0.5 mr-2" />
+                  <XCircle className="h-5 w-5 text-danger mt-0.5 mr-2" />
                   <div>
-                    <h4 className="font-medium text-red-800 dark:text-red-300">Validation Failed</h4>
-                    <ul className="mt-2 text-sm text-red-700 dark:text-red-400 list-disc list-inside">
+                    <h4 className="font-medium text-danger">Validation Failed</h4>
+                    <ul className="mt-2 text-sm text-danger list-disc list-inside">
                       {validationResult.errors.map((error, i) => (
                         <li key={i}>{error}</li>
                       ))}
@@ -143,19 +143,19 @@ export function ImportModal({ isOpen, onClose, onSuccess }: ImportModalProps) {
         {/* Preview Step */}
         {step === 'preview' && validationResult && (
           <>
-            <div className="flex items-center gap-2 text-green-600 dark:text-green-400">
+            <div className="flex items-center gap-2 text-success">
               <CheckCircle className="h-5 w-5" />
               <span className="font-medium">File validated successfully</span>
             </div>
 
             {/* Warnings */}
             {validationResult.warnings.length > 0 && (
-              <div className="rounded-lg bg-amber-50 dark:bg-amber-950 p-3">
+              <div className="rounded-lg bg-warning-muted p-3">
                 <div className="flex items-start">
-                  <AlertTriangle className="h-5 w-5 text-amber-500 dark:text-amber-400 mt-0.5 mr-2" />
+                  <AlertTriangle className="h-5 w-5 text-warning mt-0.5 mr-2" />
                   <div>
-                    <h4 className="font-medium text-amber-800 dark:text-amber-300">Warnings</h4>
-                    <ul className="mt-1 text-sm text-amber-700 dark:text-amber-400">
+                    <h4 className="font-medium text-warning">Warnings</h4>
+                    <ul className="mt-1 text-sm text-warning">
                       {validationResult.warnings.map((warning, i) => (
                         <li key={i}>{warning}</li>
                       ))}
@@ -165,9 +165,9 @@ export function ImportModal({ isOpen, onClose, onSuccess }: ImportModalProps) {
               </div>
             )}
 
-            <div className="rounded-lg border border-gray-200 dark:border-zinc-700 p-4">
-              <h4 className="font-medium text-gray-900 dark:text-zinc-100 mb-3">Import Preview</h4>
-              <p className="text-sm text-gray-600 dark:text-zinc-400 mb-3">
+            <div className="rounded-lg border border-theme-primary p-4">
+              <h4 className="font-medium text-theme-primary mb-3">Import Preview</h4>
+              <p className="text-sm text-theme-secondary mb-3">
                 Found <strong>{eventsToImport.length}</strong> events to import from{' '}
                 <strong>{fileName}</strong>
               </p>
@@ -176,7 +176,7 @@ export function ImportModal({ isOpen, onClose, onSuccess }: ImportModalProps) {
                 {Object.entries(eventTypeCounts).map(([type, count]) => (
                   <div
                     key={type}
-                    className="flex items-center justify-between bg-gray-50 dark:bg-zinc-700 rounded px-3 py-2 text-gray-900 dark:text-zinc-100"
+                    className="flex items-center justify-between bg-theme-secondary rounded px-3 py-2 text-theme-primary"
                   >
                     <span className="capitalize">{type.replace('_', ' ')}</span>
                     <span className="font-medium">{count}</span>
@@ -200,16 +200,16 @@ export function ImportModal({ isOpen, onClose, onSuccess }: ImportModalProps) {
         {/* Importing Step */}
         {step === 'importing' && (
           <div className="text-center py-8">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4" />
-            <p className="text-gray-900 dark:text-zinc-100 font-medium">Importing events...</p>
-            <p className="text-sm text-gray-500 dark:text-zinc-400 mt-1">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-accent mx-auto mb-4" />
+            <p className="text-theme-primary font-medium">Importing events...</p>
+            <p className="text-sm text-theme-tertiary mt-1">
               {progress.completed} of {progress.total} events imported
             </p>
 
             {/* Progress bar */}
-            <div className="mt-4 h-2 bg-gray-200 dark:bg-zinc-600 rounded-full overflow-hidden">
+            <div className="mt-4 h-2 bg-theme-tertiary rounded-full overflow-hidden">
               <div
-                className="h-full bg-blue-600 transition-all duration-300"
+                className="h-full bg-accent transition-all duration-300"
                 style={{ width: `${(progress.completed / progress.total) * 100}%` }}
               />
             </div>
@@ -219,12 +219,12 @@ export function ImportModal({ isOpen, onClose, onSuccess }: ImportModalProps) {
         {/* Complete Step */}
         {step === 'complete' && (
           <div className="text-center py-4">
-            <CheckCircle className="h-16 w-16 text-green-500 dark:text-green-400 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 dark:text-zinc-100 mb-2">Import Complete</h3>
-            <p className="text-gray-600 dark:text-zinc-400">
+            <CheckCircle className="h-16 w-16 text-success mx-auto mb-4" />
+            <h3 className="text-lg font-medium text-theme-primary mb-2">Import Complete</h3>
+            <p className="text-theme-secondary">
               Successfully imported <strong>{progress.completed}</strong> events
               {progress.failed > 0 && (
-                <span className="text-red-600 dark:text-red-400">
+                <span className="text-danger">
                   {' '}
                   ({progress.failed} failed)
                 </span>
@@ -233,9 +233,9 @@ export function ImportModal({ isOpen, onClose, onSuccess }: ImportModalProps) {
 
             {/* Import errors */}
             {progress.errors.length > 0 && (
-              <div className="mt-4 rounded-lg bg-red-50 dark:bg-red-950 p-3 text-left">
-                <h4 className="font-medium text-red-800 dark:text-red-300 mb-2">Failed to import:</h4>
-                <ul className="text-sm text-red-700 dark:text-red-400 list-disc list-inside max-h-32 overflow-y-auto">
+              <div className="mt-4 rounded-lg bg-danger-muted p-3 text-left">
+                <h4 className="font-medium text-danger mb-2">Failed to import:</h4>
+                <ul className="text-sm text-danger list-disc list-inside max-h-32 overflow-y-auto">
                   {progress.errors.map((error, i) => (
                     <li key={i}>{error}</li>
                   ))}

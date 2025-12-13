@@ -19,9 +19,9 @@ export function WebSearchStep({ activities }: WebSearchStepProps) {
 
   return (
     <div className="flex gap-2">
-      <Globe className="mt-1 h-4 w-4 text-gray-400 flex-shrink-0" />
+      <Globe className="mt-1 h-4 w-4 text-theme-muted flex-shrink-0" />
       <div>
-        <span className="text-sm font-medium text-gray-800">
+        <span className="text-sm font-medium text-theme-primary">
           Searching for relevant information
         </span>
 
@@ -34,9 +34,9 @@ export function WebSearchStep({ activities }: WebSearchStepProps) {
           {hiddenCount > 0 && !showAll && (
             <button
               onClick={() => setShowAll(true)}
-              className="inline-flex items-center gap-1 px-2.5 py-1 bg-gray-100 hover:bg-gray-200 rounded-full text-xs text-gray-600 transition-colors"
+              className="inline-flex items-center gap-1 px-2.5 py-1 bg-theme-tertiary hover:bg-theme-secondary rounded-full text-xs text-theme-secondary transition-colors"
             >
-              <span className="text-orange-500">+{hiddenCount}</span> more
+              <span className="text-warning">+{hiddenCount}</span> more
             </button>
           )}
         </div>
@@ -55,12 +55,12 @@ function SourceChip({ source, index }: SourceChipProps) {
   if (!source.url) {
     return (
       <span
-        className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-gray-100 rounded-full text-xs text-gray-700"
+        className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-theme-tertiary rounded-full text-xs text-theme-secondary"
         title={source.snippet || source.title}
         data-sources-section
       >
-        <span className="font-semibold text-blue-600">[{index + 1}]</span>
-        <Globe className="h-3.5 w-3.5 text-gray-400" />
+        <span className="font-semibold text-accent">[{index + 1}]</span>
+        <Globe className="h-3.5 w-3.5 text-theme-muted" />
         {truncateTitle(source.title) || source.displayUrl}
       </span>
     );
@@ -75,11 +75,11 @@ function SourceChip({ source, index }: SourceChipProps) {
       href={source.url}
       target="_blank"
       rel="noopener noreferrer"
-      className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-gray-100 hover:bg-gray-200 rounded-full text-xs text-gray-700 transition-colors"
+      className="inline-flex items-center gap-1.5 px-2.5 py-1 bg-theme-tertiary hover:bg-theme-secondary rounded-full text-xs text-theme-secondary transition-colors"
       title={`${source.title}\n${source.url}`}
       data-sources-section
     >
-      <span className="font-semibold text-blue-600">[{index + 1}]</span>
+      <span className="font-semibold text-accent">[{index + 1}]</span>
       <img
         src={faviconUrl}
         alt=""

@@ -154,7 +154,7 @@ export function AIHistorianPage() {
     return (
       <PageWrapper title="AI Historian">
         <div className="flex items-center justify-center h-[60vh]">
-          <Loader2 className="h-8 w-8 animate-spin text-gray-400" />
+          <Loader2 className="h-8 w-8 animate-spin text-theme-muted" />
         </div>
       </PageWrapper>
     );
@@ -165,13 +165,13 @@ export function AIHistorianPage() {
     return (
       <PageWrapper title="AI Historian">
         <div className="flex flex-col items-center justify-center h-[60vh] text-center">
-          <div className="w-16 h-16 bg-gray-100 dark:bg-zinc-700 rounded-full flex items-center justify-center mb-4">
-            <Bot className="h-8 w-8 text-gray-400 dark:text-zinc-400" />
+          <div className="w-16 h-16 bg-theme-tertiary rounded-full flex items-center justify-center mb-4">
+            <Bot className="h-8 w-8 text-theme-muted" />
           </div>
-          <h2 className="text-xl font-semibold text-gray-900 dark:text-zinc-100 mb-2">
+          <h2 className="text-xl font-semibold text-theme-primary mb-2">
             Set Up AI Historian
           </h2>
-          <p className="text-gray-600 dark:text-zinc-400 max-w-md mb-6">
+          <p className="text-theme-secondary max-w-md mb-6">
             Configure your AI provider to start asking questions about your health history.
             Your data is processed securely and never stored by AI providers.
           </p>
@@ -200,18 +200,18 @@ export function AIHistorianPage() {
         {/* Sidebar */}
         <div
           className={cn(
-            'fixed lg:static inset-y-0 left-0 z-50 w-64 bg-gray-50 dark:bg-zinc-800 border-r border-gray-200 dark:border-zinc-800 transform transition-transform duration-200 ease-in-out lg:transform-none',
+            'fixed lg:static inset-y-0 left-0 z-50 w-64 bg-theme-secondary border-r border-theme-primary transform transition-transform duration-200 ease-in-out lg:transform-none',
             sidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
           )}
         >
           {/* Mobile close button */}
-          <div className="lg:hidden flex items-center justify-between p-3 border-b border-gray-200 dark:border-zinc-700">
-            <span className="font-medium text-gray-900 dark:text-zinc-100">Conversations</span>
+          <div className="lg:hidden flex items-center justify-between p-3 border-b border-theme-primary">
+            <span className="font-medium text-theme-primary">Conversations</span>
             <button
               onClick={() => setSidebarOpen(false)}
-              className="p-1 hover:bg-gray-200 dark:hover:bg-zinc-700 rounded"
+              className="p-1 hover:bg-theme-tertiary rounded"
             >
-              <X className="h-5 w-5 text-gray-500 dark:text-zinc-400" />
+              <X className="h-5 w-5 text-theme-tertiary" />
             </button>
           </div>
 
@@ -231,22 +231,22 @@ export function AIHistorianPage() {
         {/* Main chat area */}
         <div className="flex-1 flex flex-col min-w-0">
           {/* Header */}
-          <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-800">
+          <div className="flex items-center justify-between px-4 py-3 border-b border-theme-primary bg-theme-primary">
             <div className="flex items-center gap-3">
               {/* Mobile menu button */}
               <button
                 onClick={() => setSidebarOpen(true)}
-                className="lg:hidden p-1 hover:bg-gray-100 dark:hover:bg-zinc-700 rounded"
+                className="lg:hidden p-1 hover:bg-theme-tertiary rounded"
               >
-                <Menu className="h-5 w-5 text-gray-500 dark:text-zinc-400" />
+                <Menu className="h-5 w-5 text-theme-tertiary" />
               </button>
 
-              <div className="w-9 h-9 bg-blue-100 dark:bg-blue-900 rounded-full flex items-center justify-center">
-                <Bot className="h-5 w-5 text-blue-600 dark:text-blue-400" />
+              <div className="w-9 h-9 bg-info-muted rounded-full flex items-center justify-center">
+                <Bot className="h-5 w-5 text-info" />
               </div>
               <div>
-                <h2 className="font-semibold text-gray-900 dark:text-zinc-100">AI Historian</h2>
-                <p className="text-xs text-gray-500 dark:text-zinc-400">
+                <h2 className="font-semibold text-theme-primary">AI Historian</h2>
+                <p className="text-xs text-theme-tertiary">
                   {effectiveSettings?.provider === 'google' ? 'Gemini' : 'GPT'} · {effectiveSettings?.model}
                 </p>
               </div>
@@ -265,12 +265,12 @@ export function AIHistorianPage() {
                     className={cn(
                       'px-2 py-1 text-xs font-medium rounded-md transition-colors',
                       effectiveSettings.provider === 'google'
-                        ? 'bg-gray-100 dark:bg-zinc-700 text-gray-400 dark:text-zinc-400 cursor-not-allowed'
+                        ? 'bg-theme-tertiary text-theme-muted cursor-not-allowed'
                         : messages.length > 0
-                          ? 'bg-gray-100 dark:bg-zinc-700 text-gray-500 dark:text-zinc-400 cursor-not-allowed'
+                          ? 'bg-theme-tertiary text-theme-tertiary cursor-not-allowed'
                           : effectiveSettings.agenticMode
-                            ? 'bg-blue-100 dark:bg-blue-900 text-blue-700 dark:text-blue-300 hover:bg-blue-200 dark:hover:bg-blue-800'
-                            : 'bg-amber-100 dark:bg-amber-900 text-amber-700 dark:text-amber-300 hover:bg-amber-200 dark:hover:bg-amber-800'
+                            ? 'bg-info-muted text-info hover:opacity-80'
+                            : 'bg-warning-muted text-warning hover:opacity-80'
                     )}
                     title={
                       effectiveSettings.provider === 'google'
@@ -313,13 +313,13 @@ export function AIHistorianPage() {
           <div className="flex-1 overflow-y-auto py-4 px-4 space-y-4">
             {messages.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-full text-center px-4">
-                <div className="w-12 h-12 bg-gray-100 dark:bg-zinc-700 rounded-full flex items-center justify-center mb-4">
-                  <Bot className="h-6 w-6 text-gray-400 dark:text-zinc-400" />
+                <div className="w-12 h-12 bg-theme-tertiary rounded-full flex items-center justify-center mb-4">
+                  <Bot className="h-6 w-6 text-theme-muted" />
                 </div>
-                <h3 className="text-lg font-medium text-gray-900 dark:text-zinc-100 mb-2">
+                <h3 className="text-lg font-medium text-theme-primary mb-2">
                   Ask about your health history
                 </h3>
-                <p className="text-sm text-gray-600 dark:text-zinc-400 max-w-md mb-6">
+                <p className="text-sm text-theme-secondary max-w-md mb-6">
                   I can help you understand trends, find specific events, and summarize
                   your health journey. Ask me anything about your recorded health data.
                 </p>
@@ -338,20 +338,20 @@ export function AIHistorianPage() {
 
           {/* Error display */}
           {error && (
-            <div className="mx-4 mb-4 flex items-center gap-2 p-3 bg-red-50 dark:bg-red-950 text-red-700 dark:text-red-400 text-sm rounded-lg">
+            <div className="mx-4 mb-4 flex items-center gap-2 p-3 bg-danger-muted text-danger text-sm rounded-lg">
               <AlertCircle className="h-4 w-4 flex-shrink-0" />
               {error}
             </div>
           )}
 
           {/* Input area */}
-          <div className="px-4 py-3 border-t border-gray-200 dark:border-zinc-700 bg-white dark:bg-zinc-800">
+          <div className="px-4 py-3 border-t border-theme-primary bg-theme-primary">
             <ChatInput
               onSend={sendMessage}
               disabled={isLoading}
               placeholder="Ask about your health history..."
             />
-            <p className="text-xs text-gray-400 dark:text-zinc-400 mt-2 text-center">
+            <p className="text-xs text-theme-muted mt-2 text-center">
               AI responses are based on your recorded health data and should not replace medical advice.
             </p>
           </div>

@@ -24,29 +24,29 @@ function PageRow({ page, isExpanded, onToggle }: PageRowProps) {
   const verificationPassed = page.verification?.verificationPassed ?? false;
 
   return (
-    <div className="border border-gray-200 rounded-lg overflow-hidden">
+    <div className="border border-theme-primary rounded-lg overflow-hidden">
       {/* Header */}
       <button
         onClick={onToggle}
-        className="w-full flex items-center justify-between p-3 bg-white hover:bg-gray-50 transition-colors"
+        className="w-full flex items-center justify-between p-3 bg-theme-primary hover:bg-theme-secondary transition-colors"
       >
         <div className="flex items-center gap-3">
           {isExpanded ? (
-            <ChevronDown className="h-4 w-4 text-gray-400" />
+            <ChevronDown className="h-4 w-4 text-theme-muted" />
           ) : (
-            <ChevronRight className="h-4 w-4 text-gray-400" />
+            <ChevronRight className="h-4 w-4 text-theme-muted" />
           )}
-          <FileText className="h-4 w-4 text-gray-500" />
-          <span className="text-sm font-medium text-gray-700">
+          <FileText className="h-4 w-4 text-theme-tertiary" />
+          <span className="text-sm font-medium text-theme-secondary">
             Page {page.pageNumber}
           </span>
-          <span className="text-xs text-gray-500">
+          <span className="text-xs text-theme-tertiary">
             {page.extraction.biomarkersExtracted} biomarker
             {page.extraction.biomarkersExtracted !== 1 ? 's' : ''}
           </span>
         </div>
         <div className="flex items-center gap-3">
-          <span className="text-xs font-mono text-gray-500">
+          <span className="text-xs font-mono text-theme-tertiary">
             {formatDuration(totalDuration)}
           </span>
           {hasVerification && (
@@ -61,20 +61,20 @@ function PageRow({ page, isExpanded, onToggle }: PageRowProps) {
 
       {/* Expanded Content */}
       {isExpanded && (
-        <div className="border-t border-gray-200 bg-gray-50 p-3 space-y-3">
+        <div className="border-t border-theme-primary bg-theme-secondary p-3 space-y-3">
           {/* Extraction */}
           <div className="flex items-start gap-3">
             <div className="w-2 h-2 rounded-full bg-blue-500 mt-1.5" />
             <div className="flex-1">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-medium text-gray-700">
+                <span className="text-xs font-medium text-theme-secondary">
                   Extraction
                 </span>
-                <span className="text-xs font-mono text-gray-500">
+                <span className="text-xs font-mono text-theme-tertiary">
                   {formatDuration(page.extraction.durationMs)}
                 </span>
               </div>
-              <p className="text-xs text-gray-500 mt-1">
+              <p className="text-xs text-theme-tertiary mt-1">
                 Extracted {page.extraction.biomarkersExtracted} biomarker
                 {page.extraction.biomarkersExtracted !== 1 ? 's' : ''}
                 {page.extraction.biomarkersExtracted === 0 && ' (empty page)'}
@@ -94,18 +94,18 @@ function PageRow({ page, isExpanded, onToggle }: PageRowProps) {
               />
               <div className="flex-1">
                 <div className="flex items-center justify-between">
-                  <span className="text-xs font-medium text-gray-700">
+                  <span className="text-xs font-medium text-theme-secondary">
                     Verification
                   </span>
-                  <span className="text-xs font-mono text-gray-500">
+                  <span className="text-xs font-mono text-theme-tertiary">
                     {formatDuration(page.verification.durationMs)}
                   </span>
                 </div>
-                <p className="text-xs text-gray-500 mt-1">
+                <p className="text-xs text-theme-tertiary mt-1">
                   {page.verification.verificationPassed ? (
-                    <span className="text-green-600">Passed</span>
+                    <span className="text-success">Passed</span>
                   ) : (
-                    <span className="text-amber-600">
+                    <span className="text-warning">
                       Issues found
                       {page.verification.correctionsCount > 0 && (
                         <span className="ml-1">
@@ -123,13 +123,13 @@ function PageRow({ page, isExpanded, onToggle }: PageRowProps) {
                       page.verification.corrections.map((correction, idx) => (
                         <li
                           key={idx}
-                          className="text-xs text-amber-600 pl-2 border-l-2 border-amber-300"
+                          className="text-xs text-warning pl-2 border-l-2 border-amber-300"
                         >
                           {correction}
                         </li>
                       ))
                     ) : (
-                      <li className="text-xs text-gray-500 pl-2 border-l-2 border-gray-300 italic">
+                      <li className="text-xs text-theme-tertiary pl-2 border-l-2 border-theme-primary italic">
                         Verification flagged issues but no specific corrections provided
                       </li>
                     )}
@@ -157,7 +157,7 @@ export function PageDebugAccordion({ pageDetails }: PageDebugAccordionProps) {
 
   return (
     <div className="space-y-3">
-      <h4 className="text-sm font-medium text-gray-700">Per-Page Details</h4>
+      <h4 className="text-sm font-medium text-theme-secondary">Per-Page Details</h4>
       <div className="space-y-2">
         {pageDetails.map((page) => (
           <PageRow

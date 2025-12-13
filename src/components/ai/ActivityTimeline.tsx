@@ -17,7 +17,7 @@ export function ActivityTimeline({ activities }: ActivityTimelineProps) {
       {/* Thinking section */}
       {thinkingActivities.length > 0 && (
         <div>
-          <h4 className="text-sm font-semibold text-gray-700 mb-2">Thinking</h4>
+          <h4 className="text-sm font-semibold text-theme-secondary mb-2">Thinking</h4>
           <div className="space-y-2">
             {thinkingActivities.map(activity => (
               <ThinkingStep key={activity.id} activity={activity} />

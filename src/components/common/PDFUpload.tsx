@@ -98,17 +98,17 @@ export function PDFUpload({
   // Show uploaded file
   if (attachment) {
     return (
-      <div className="border border-gray-200 rounded-lg p-4 bg-gray-50">
+      <div className="border border-theme-primary rounded-lg p-4 bg-theme-secondary">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-              <FileText className="h-5 w-5 text-blue-600" />
+            <div className="w-10 h-10 bg-info-muted rounded-lg flex items-center justify-center">
+              <FileText className="h-5 w-5 text-info" />
             </div>
             <div>
-              <p className="text-sm font-medium text-gray-900 truncate max-w-[200px]">
+              <p className="text-sm font-medium text-theme-primary truncate max-w-[200px]">
                 {attachment.filename}
               </p>
-              <p className="text-xs text-gray-500">
+              <p className="text-xs text-theme-tertiary">
                 Uploaded {new Date(attachment.uploadedAt).toLocaleDateString()}
               </p>
             </div>
@@ -118,7 +118,7 @@ export function PDFUpload({
               href={attachment.url}
               target="_blank"
               rel="noopener noreferrer"
-              className="text-sm text-blue-600 hover:text-blue-700"
+              className="text-sm text-info hover:text-accent"
             >
               View
             </a>
@@ -127,7 +127,7 @@ export function PDFUpload({
               size="sm"
               onClick={handleDelete}
               disabled={isDeleting || disabled}
-              className="text-gray-400 hover:text-red-600"
+              className="text-theme-muted hover:text-danger"
             >
               {isDeleting ? (
                 <Loader2 className="h-4 w-4 animate-spin" />
@@ -161,34 +161,34 @@ export function PDFUpload({
         className={`
           border-2 border-dashed rounded-lg p-6 text-center cursor-pointer
           transition-colors duration-200
-          ${isDragging ? 'border-blue-500 bg-blue-50' : 'border-gray-300 hover:border-gray-400'}
+          ${isDragging ? 'border-accent bg-info-muted' : 'border-theme-primary hover:border-theme-secondary'}
           ${disabled || isUploading ? 'opacity-50 cursor-not-allowed' : ''}
         `}
       >
         {isUploading ? (
           <div className="space-y-2">
-            <Loader2 className="h-8 w-8 text-blue-500 animate-spin mx-auto" />
-            <p className="text-sm text-gray-600">Uploading... {uploadProgress}%</p>
-            <div className="w-full bg-gray-200 rounded-full h-2 max-w-xs mx-auto">
+            <Loader2 className="h-8 w-8 text-accent animate-spin mx-auto" />
+            <p className="text-sm text-theme-secondary">Uploading... {uploadProgress}%</p>
+            <div className="w-full bg-theme-tertiary rounded-full h-2 max-w-xs mx-auto">
               <div
-                className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                className="bg-accent h-2 rounded-full transition-all duration-300"
                 style={{ width: `${uploadProgress}%` }}
               />
             </div>
           </div>
         ) : (
           <>
-            <Upload className="h-8 w-8 text-gray-400 mx-auto mb-2" />
-            <p className="text-sm text-gray-600">
-              <span className="font-medium text-blue-600">Click to upload</span> or drag and drop
+            <Upload className="h-8 w-8 text-theme-muted mx-auto mb-2" />
+            <p className="text-sm text-theme-secondary">
+              <span className="font-medium text-accent">Click to upload</span> or drag and drop
             </p>
-            <p className="text-xs text-gray-500 mt-1">PDF files only (max 10MB)</p>
+            <p className="text-xs text-theme-tertiary mt-1">PDF files only (max 10MB)</p>
           </>
         )}
       </div>
 
       {error && (
-        <div className="flex items-center gap-2 text-sm text-red-600">
+        <div className="flex items-center gap-2 text-sm text-danger">
           <AlertCircle className="h-4 w-4" />
           {error}
         </div>
@@ -260,11 +260,11 @@ export function ExtractionStatus({
   if (isActive) {
     const { text, showSpinner } = stageMessages[extractionStage];
     return (
-      <div className="flex items-center gap-2 text-sm text-blue-600 bg-blue-50 rounded-lg px-3 py-2">
+      <div className="flex items-center gap-2 text-sm text-info bg-info-muted rounded-lg px-3 py-2">
         {showSpinner && <Loader2 className="h-4 w-4 animate-spin" />}
         <span className="flex-1">{text}</span>
         {startTime && (
-          <span className="font-mono text-xs text-blue-500">
+          <span className="font-mono text-xs text-accent">
             {formatElapsed(elapsed)}
           </span>
         )}
@@ -275,7 +275,7 @@ export function ExtractionStatus({
   // Show error state
   if (extractionStage === 'error') {
     return (
-      <div className="flex items-center gap-2 text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">
+      <div className="flex items-center gap-2 text-sm text-danger bg-danger-muted rounded-lg px-3 py-2">
         <AlertCircle className="h-4 w-4" />
         Extraction failed
       </div>
@@ -287,12 +287,12 @@ export function ExtractionStatus({
     if (verificationPassed && (!corrections || corrections.length === 0)) {
       return (
         <div className="space-y-1">
-          <div className="flex items-center gap-2 text-sm text-green-600 bg-green-50 rounded-lg px-3 py-2">
+          <div className="flex items-center gap-2 text-sm text-success bg-success-muted rounded-lg px-3 py-2">
             <CheckCircle className="h-4 w-4" />
             Extraction verified successfully
           </div>
           {biomarkerCount !== undefined && biomarkerCount > 0 && (
-            <p className="text-xs text-gray-500 pl-1">
+            <p className="text-xs text-theme-tertiary pl-1">
               Extracted {biomarkerCount} biomarker{biomarkerCount > 1 ? 's' : ''}
             </p>
           )}
@@ -303,16 +303,16 @@ export function ExtractionStatus({
     if (corrections && corrections.length > 0) {
       return (
         <div className="space-y-2">
-          <div className="flex items-center gap-2 text-sm text-amber-600 bg-amber-50 rounded-lg px-3 py-2">
+          <div className="flex items-center gap-2 text-sm text-warning bg-warning-muted rounded-lg px-3 py-2">
             <AlertCircle className="h-4 w-4" />
             Extraction corrected ({corrections.length} fix{corrections.length > 1 ? 'es' : ''})
           </div>
           {biomarkerCount !== undefined && biomarkerCount > 0 && (
-            <p className="text-xs text-gray-500 pl-1">
+            <p className="text-xs text-theme-tertiary pl-1">
               Extracted {biomarkerCount} biomarker{biomarkerCount > 1 ? 's' : ''}
             </p>
           )}
-          <ul className="text-xs text-gray-600 list-disc list-inside pl-2">
+          <ul className="text-xs text-theme-secondary list-disc list-inside pl-2">
             {corrections.map((correction, i) => (
               <li key={i}>{correction}</li>
             ))}

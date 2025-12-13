@@ -40,7 +40,7 @@ export function CategoryFilter({
     <div className="relative">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 rounded-lg border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50"
+        className="flex items-center gap-2 rounded-lg border border-theme-primary bg-theme-primary px-3 py-2 text-sm font-medium text-theme-secondary hover:bg-theme-secondary"
       >
         <span>
           Categories ({visibleCount}/{totalCount})
@@ -59,18 +59,18 @@ export function CategoryFilter({
           />
 
           {/* Dropdown */}
-          <div className="absolute right-0 z-20 mt-2 w-full sm:w-64 min-w-[200px] max-w-[calc(100vw-2rem)] rounded-lg border border-gray-200 bg-white shadow-lg">
-            <div className="border-b border-gray-100 p-2">
+          <div className="absolute right-0 z-20 mt-2 w-full sm:w-64 min-w-[200px] max-w-[calc(100vw-2rem)] rounded-lg border border-theme-primary bg-theme-elevated shadow-lg">
+            <div className="border-b border-theme-primary p-2">
               <div className="flex gap-2">
                 <button
                   onClick={selectAll}
-                  className="flex-1 rounded px-2 py-1 text-xs font-medium text-blue-600 hover:bg-blue-50"
+                  className="flex-1 rounded px-2 py-1 text-xs font-medium text-accent hover:bg-info-muted"
                 >
                   Select All
                 </button>
                 <button
                   onClick={selectNone}
-                  className="flex-1 rounded px-2 py-1 text-xs font-medium text-gray-600 hover:bg-gray-50"
+                  className="flex-1 rounded px-2 py-1 text-xs font-medium text-theme-secondary hover:bg-theme-tertiary"
                 >
                   Clear All
                 </button>
@@ -86,19 +86,19 @@ export function CategoryFilter({
                   <button
                     key={category}
                     onClick={() => toggleCategory(category)}
-                    className="flex w-full items-center gap-2 rounded px-2 py-2 text-left hover:bg-gray-50"
+                    className="flex w-full items-center gap-2 rounded px-2 py-2 text-left hover:bg-theme-tertiary"
                   >
                     <div
                       className={cn(
                         'flex h-4 w-4 items-center justify-center rounded border',
                         isVisible
-                          ? 'border-blue-600 bg-blue-600 text-white'
-                          : 'border-gray-300'
+                          ? 'border-accent bg-accent text-white'
+                          : 'border-theme-secondary'
                       )}
                     >
                       {isVisible && <Check className="h-3 w-3" />}
                     </div>
-                    <span className="text-sm text-gray-700">
+                    <span className="text-sm text-theme-secondary">
                       {categoryInfo?.label || category}
                     </span>
                   </button>

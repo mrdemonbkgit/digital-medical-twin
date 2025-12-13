@@ -36,7 +36,7 @@ export function MobileNav() {
       {/* Hamburger button */}
       <button
         onClick={() => setIsOpen(true)}
-        className="p-2 -ml-2 rounded-lg hover:bg-gray-100 dark:hover:bg-zinc-700 min-w-[44px] min-h-[44px] flex items-center justify-center"
+        className="p-2 -ml-2 rounded-lg hover:bg-theme-tertiary min-w-[44px] min-h-[44px] flex items-center justify-center"
         aria-label="Open menu"
       >
         <Menu className="w-6 h-6" />
@@ -53,16 +53,16 @@ export function MobileNav() {
       {/* Drawer */}
       <div
         className={cn(
-          'fixed inset-y-0 left-0 w-72 bg-white dark:bg-zinc-800 z-50 transform transition-transform duration-200 ease-in-out shadow-xl',
+          'fixed inset-y-0 left-0 w-72 bg-theme-primary z-50 transform transition-transform duration-200 ease-in-out shadow-xl',
           isOpen ? 'translate-x-0' : '-translate-x-full'
         )}
       >
         {/* Header */}
-        <div className="flex items-center justify-between p-4 border-b dark:border-zinc-800">
-          <span className="font-semibold text-gray-900 dark:text-zinc-100">Menu</span>
+        <div className="flex items-center justify-between p-4 border-b border-theme-primary">
+          <span className="font-semibold text-theme-primary">Menu</span>
           <button
             onClick={() => setIsOpen(false)}
-            className="p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-zinc-700 min-w-[44px] min-h-[44px] flex items-center justify-center"
+            className="p-2 rounded-lg hover:bg-theme-tertiary min-w-[44px] min-h-[44px] flex items-center justify-center"
             aria-label="Close menu"
           >
             <X className="w-5 h-5" />
@@ -70,20 +70,20 @@ export function MobileNav() {
         </div>
 
         {/* User info */}
-        <div className="p-4 border-b bg-gray-50 dark:bg-zinc-700 dark:border-zinc-700">
+        <div className="p-4 border-b border-theme-primary bg-theme-secondary">
           <Link
             to={ROUTES.PROFILE}
             onClick={() => setIsOpen(false)}
             className="flex items-center gap-3"
           >
-            <div className="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center">
-              <User className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+            <div className="w-10 h-10 rounded-full bg-info-muted flex items-center justify-center">
+              <User className="w-5 h-5 text-accent" />
             </div>
             <div>
-              <p className="font-medium text-gray-900 dark:text-zinc-100">
+              <p className="font-medium text-theme-primary">
                 {profile?.displayName || user?.email?.split('@')[0]}
               </p>
-              <p className="text-sm text-gray-500 dark:text-zinc-400">{user?.email}</p>
+              <p className="text-sm text-theme-tertiary">{user?.email}</p>
             </div>
           </Link>
         </div>
@@ -98,8 +98,8 @@ export function MobileNav() {
               className={cn(
                 'flex items-center gap-3 px-3 py-3 rounded-lg text-sm font-medium transition-colors min-h-[44px]',
                 location.pathname === to
-                  ? 'bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300'
-                  : 'text-gray-600 hover:bg-gray-100 dark:text-zinc-400 dark:hover:bg-zinc-700'
+                  ? 'bg-info-muted text-accent'
+                  : 'text-theme-secondary hover:bg-theme-tertiary'
               )}
             >
               <Icon className="w-5 h-5" />
@@ -109,10 +109,10 @@ export function MobileNav() {
         </nav>
 
         {/* Logout button */}
-        <div className="absolute bottom-0 left-0 right-0 p-4 border-t bg-white dark:bg-zinc-800 dark:border-zinc-800">
+        <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-theme-primary bg-theme-primary">
           <button
             onClick={handleLogout}
-            className="flex items-center gap-3 w-full px-3 py-3 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100 dark:text-zinc-400 dark:hover:bg-zinc-700 transition-colors min-h-[44px]"
+            className="flex items-center gap-3 w-full px-3 py-3 rounded-lg text-sm font-medium text-theme-secondary hover:bg-theme-tertiary transition-colors min-h-[44px]"
           >
             <LogOut className="w-5 h-5" />
             Logout

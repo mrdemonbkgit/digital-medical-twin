@@ -50,7 +50,7 @@ export function ChatInput({ onSend, disabled, placeholder }: ChatInputProps) {
           placeholder={placeholder || 'Ask about your health history...'}
           disabled={disabled}
           rows={1}
-          className="w-full px-4 py-3 pr-12 text-sm border border-gray-300 dark:border-zinc-600 rounded-lg resize-none bg-white dark:bg-zinc-700 text-gray-900 dark:text-zinc-100 placeholder-gray-400 dark:placeholder-zinc-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-50 dark:disabled:bg-zinc-800 disabled:text-gray-500 dark:disabled:text-zinc-500"
+          className="input-theme w-full px-4 py-3 pr-12 text-sm rounded-lg resize-none disabled:opacity-50 disabled:cursor-not-allowed"
         />
       </div>
       <Button

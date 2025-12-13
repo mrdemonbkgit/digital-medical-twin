@@ -275,15 +275,15 @@ export function TimelinePage() {
         <div className="mb-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <span className="text-sm text-gray-500">
+              <span className="text-sm text-theme-tertiary">
                 Showing {events.length} of {total} events
               </span>
               <button
                 onClick={togglePrivate}
                 className={`flex items-center gap-1.5 px-2 py-1 text-xs rounded-md transition-colors ${
                   filters.includePrivate
-                    ? 'bg-slate-100 text-slate-700 border border-slate-300'
-                    : 'text-gray-400 hover:text-gray-600 hover:bg-gray-50'
+                    ? 'bg-theme-tertiary text-theme-secondary border border-theme-secondary'
+                    : 'text-theme-muted hover:text-theme-secondary hover:bg-theme-secondary'
                 }`}
                 title={filters.includePrivate ? 'Hide private events' : 'Show private events'}
               >
@@ -292,7 +292,7 @@ export function TimelinePage() {
               </button>
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-xs text-gray-400">Export:</span>
+              <span className="text-xs text-theme-muted">Export:</span>
               <Button
                 size="sm"
                 variant="ghost"
@@ -316,16 +316,16 @@ export function TimelinePage() {
             </div>
           </div>
           {exportError && (
-            <p className="mt-2 text-sm text-red-600 text-right">{exportError}</p>
+            <p className="mt-2 text-sm text-danger text-right">{exportError}</p>
           )}
         </div>
       )}
 
       {/* Dev tools */}
       {isDev && !isLoading && events.length > 0 && (
-        <div className="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-lg">
+        <div className="mb-6 p-4 bg-warning-muted border border-warning rounded-lg">
           <div className="flex items-center justify-between">
-            <span className="text-sm text-amber-800 font-medium">Dev Tools</span>
+            <span className="text-sm text-warning font-medium">Dev Tools</span>
             <div className="flex gap-2">
               <Button
                 size="sm"
@@ -359,7 +359,7 @@ export function TimelinePage() {
       {/* Error state */}
       {error && (
         <div className="text-center py-12">
-          <p className="text-red-600 mb-4">{error}</p>
+          <p className="text-danger mb-4">{error}</p>
           <Button variant="secondary" onClick={refetch}>
             Try Again
           </Button>
@@ -369,13 +369,13 @@ export function TimelinePage() {
       {/* Empty state */}
       {emptyState && (
         <div className="text-center py-12">
-          <div className="mx-auto w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
-            <emptyState.icon className="w-8 h-8 text-gray-400" />
+          <div className="mx-auto w-16 h-16 bg-theme-tertiary rounded-full flex items-center justify-center mb-4">
+            <emptyState.icon className="w-8 h-8 text-theme-muted" />
           </div>
-          <h3 className="text-lg font-medium text-gray-900 mb-2">
+          <h3 className="text-lg font-medium text-theme-primary mb-2">
             {emptyState.title}
           </h3>
-          <p className="text-gray-500 mb-6">{emptyState.message}</p>
+          <p className="text-theme-tertiary mb-6">{emptyState.message}</p>
           {emptyState.action}
         </div>
       )}

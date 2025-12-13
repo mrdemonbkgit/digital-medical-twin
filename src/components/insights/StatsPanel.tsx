@@ -21,13 +21,13 @@ function StatCard({
   return (
     <div
       className={cn(
-        'rounded-lg border border-gray-200 bg-white p-4',
+        'rounded-lg border border-theme-primary bg-theme-primary p-4',
         className
       )}
     >
-      <p className="text-sm font-medium text-gray-500">{label}</p>
-      <p className="mt-1 text-2xl font-semibold text-gray-900">{value}</p>
-      {subValue && <p className="mt-0.5 text-sm text-gray-500">{subValue}</p>}
+      <p className="text-sm font-medium text-theme-tertiary">{label}</p>
+      <p className="mt-1 text-2xl font-semibold text-theme-primary">{value}</p>
+      {subValue && <p className="mt-0.5 text-sm text-theme-tertiary">{subValue}</p>}
     </div>
   );
 }
@@ -48,21 +48,21 @@ function TrendCard({
 
   const colorClass =
     direction === 'up'
-      ? 'text-red-600 bg-red-50'
+      ? 'text-danger bg-danger-muted'
       : direction === 'down'
-        ? 'text-green-600 bg-green-50'
-        : 'text-gray-600 bg-gray-50';
+        ? 'text-success bg-success-muted'
+        : 'text-theme-secondary bg-theme-tertiary';
 
   const iconColorClass =
     direction === 'up'
-      ? 'text-red-500'
+      ? 'text-danger'
       : direction === 'down'
-        ? 'text-green-500'
-        : 'text-gray-400';
+        ? 'text-success'
+        : 'text-theme-muted';
 
   return (
-    <div className="rounded-lg border border-gray-200 bg-white p-4">
-      <p className="text-sm font-medium text-gray-500">Trend</p>
+    <div className="rounded-lg border border-theme-primary bg-theme-primary p-4">
+      <p className="text-sm font-medium text-theme-tertiary">Trend</p>
       <div className="mt-1 flex items-center gap-2">
         <Icon className={cn('h-6 w-6', iconColorClass)} />
         <span
@@ -76,7 +76,7 @@ function TrendCard({
             : `${changePercent > 0 ? '+' : ''}${changePercent}%`}
         </span>
       </div>
-      <p className="mt-0.5 text-sm text-gray-500">
+      <p className="mt-0.5 text-sm text-theme-tertiary">
         {direction === 'up'
           ? 'Increasing'
           : direction === 'down'

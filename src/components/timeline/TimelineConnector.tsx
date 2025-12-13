@@ -26,7 +26,7 @@ export function TimelineGroup({ children, className }: TimelineGroupProps) {
     <div className={cn('relative pl-6', className)}>
       {/* Vertical connector line */}
       <div
-        className="absolute left-[7px] top-8 bottom-0 w-0.5 bg-gray-200"
+        className="absolute left-[7px] top-8 bottom-0 w-0.5 bg-theme-tertiary"
         aria-hidden="true"
       />
       {children}
@@ -56,7 +56,7 @@ export function TimelineEvent({
       {/* Dot connector */}
       <div
         className={cn(
-          'absolute -left-6 top-5 h-3 w-3 rounded-full border-2 border-white shadow-sm',
+          'absolute -left-6 top-5 h-3 w-3 rounded-full border-2 border-theme-primary shadow-sm',
           eventTypeColors[eventType]
         )}
         aria-hidden="true"
@@ -64,7 +64,7 @@ export function TimelineEvent({
       {/* Hide the line for the last item */}
       {isLast && (
         <div
-          className="absolute -left-[17px] top-6 bottom-0 w-0.5 bg-white"
+          className="absolute -left-[17px] top-6 bottom-0 w-0.5 bg-theme-primary"
           aria-hidden="true"
         />
       )}
@@ -86,10 +86,10 @@ export function TimelineDateHeader({ children, className }: TimelineDateHeaderPr
     <div className={cn('relative mb-4', className)}>
       {/* Circle at the header */}
       <div
-        className="absolute -left-6 top-0.5 h-3 w-3 rounded-full border-2 border-gray-300 bg-white"
+        className="absolute -left-6 top-0.5 h-3 w-3 rounded-full border-2 border-theme-primary bg-theme-primary"
         aria-hidden="true"
       />
-      <h2 className="text-sm font-semibold uppercase tracking-wide text-gray-500">
+      <h2 className="text-sm font-semibold uppercase tracking-wide text-theme-tertiary">
         {children}
       </h2>
     </div>

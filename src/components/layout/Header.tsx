@@ -23,17 +23,18 @@ export function Header() {
   const isActive = (path: string) => location.pathname === path;
 
   return (
-    <header className="border-b border-gray-200 bg-white dark:border-zinc-800 dark:bg-zinc-800">
+    <header className="border-b border-theme-primary bg-theme-tertiary">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
         <div className="flex items-center gap-4 sm:gap-8">
           {/* Mobile navigation */}
           <MobileNav />
 
           <Link to={ROUTES.DASHBOARD} className="flex items-center gap-2">
-            <Activity className="h-8 w-8 text-blue-600" />
-            <span className="text-xl font-bold text-gray-900 dark:text-zinc-100 hidden sm:inline">
-              Digital Medical Twin
-            </span>
+            <Activity className="h-7 w-7 text-accent" />
+            <div className="hidden sm:flex flex-col leading-tight">
+              <span className="text-[10px] font-medium text-theme-tertiary uppercase tracking-wider">Digital</span>
+              <span className="text-sm font-bold text-theme-primary -mt-0.5">MedTwin</span>
+            </div>
           </Link>
 
           {/* Desktop navigation - hidden on mobile */}
@@ -41,74 +42,74 @@ export function Header() {
             <Link
               to={ROUTES.DASHBOARD}
               className={cn(
-                'flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors',
+                'flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap',
                 isActive(ROUTES.DASHBOARD)
-                  ? 'bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300'
-                  : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-zinc-400 dark:hover:bg-zinc-700 dark:hover:text-zinc-100'
+                  ? 'bg-info-muted text-accent'
+                  : 'text-theme-secondary hover:bg-theme-tertiary hover:text-theme-primary'
               )}
             >
-              <LayoutDashboard className="h-4 w-4" />
-              <span className="hidden sm:inline">Dashboard</span>
+              <LayoutDashboard className="h-4 w-4 flex-shrink-0" />
+              Dashboard
             </Link>
             <Link
               to={ROUTES.TIMELINE}
               className={cn(
-                'flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors',
+                'flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap',
                 isActive(ROUTES.TIMELINE)
-                  ? 'bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300'
-                  : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-zinc-400 dark:hover:bg-zinc-700 dark:hover:text-zinc-100'
+                  ? 'bg-info-muted text-accent'
+                  : 'text-theme-secondary hover:bg-theme-tertiary hover:text-theme-primary'
               )}
             >
-              <Calendar className="h-4 w-4" />
-              <span className="hidden sm:inline">Timeline</span>
+              <Calendar className="h-4 w-4 flex-shrink-0" />
+              Timeline
             </Link>
             <Link
               to={ROUTES.AI_CHAT}
               className={cn(
-                'flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors',
+                'flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap',
                 isActive(ROUTES.AI_CHAT)
-                  ? 'bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300'
-                  : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-zinc-400 dark:hover:bg-zinc-700 dark:hover:text-zinc-100'
+                  ? 'bg-info-muted text-accent'
+                  : 'text-theme-secondary hover:bg-theme-tertiary hover:text-theme-primary'
               )}
             >
-              <Bot className="h-4 w-4" />
-              <span className="hidden sm:inline">AI Historian</span>
+              <Bot className="h-4 w-4 flex-shrink-0" />
+              AI Historian
             </Link>
             <Link
               to={ROUTES.LAB_UPLOADS}
               className={cn(
-                'flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors',
+                'flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap',
                 isActive(ROUTES.LAB_UPLOADS) || isActive(ROUTES.BIOMARKERS)
-                  ? 'bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300'
-                  : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-zinc-400 dark:hover:bg-zinc-700 dark:hover:text-zinc-100'
+                  ? 'bg-info-muted text-accent'
+                  : 'text-theme-secondary hover:bg-theme-tertiary hover:text-theme-primary'
               )}
             >
-              <FileUp className="h-4 w-4" />
-              <span className="hidden sm:inline">Labs</span>
+              <FileUp className="h-4 w-4 flex-shrink-0" />
+              Labs
             </Link>
             <Link
               to={ROUTES.DOCUMENTS}
               className={cn(
-                'flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors',
+                'flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap',
                 isActive(ROUTES.DOCUMENTS)
-                  ? 'bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300'
-                  : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-zinc-400 dark:hover:bg-zinc-700 dark:hover:text-zinc-100'
+                  ? 'bg-info-muted text-accent'
+                  : 'text-theme-secondary hover:bg-theme-tertiary hover:text-theme-primary'
               )}
             >
-              <FolderOpen className="h-4 w-4" />
-              <span className="hidden sm:inline">Documents</span>
+              <FolderOpen className="h-4 w-4 flex-shrink-0" />
+              Documents
             </Link>
             <Link
               to={ROUTES.INSIGHTS}
               className={cn(
-                'flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors',
+                'flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium transition-colors whitespace-nowrap',
                 isActive(ROUTES.INSIGHTS)
-                  ? 'bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300'
-                  : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-zinc-400 dark:hover:bg-zinc-700 dark:hover:text-zinc-100'
+                  ? 'bg-info-muted text-accent'
+                  : 'text-theme-secondary hover:bg-theme-tertiary hover:text-theme-primary'
               )}
             >
-              <TrendingUp className="h-4 w-4" />
-              <span className="hidden sm:inline">Insights</span>
+              <TrendingUp className="h-4 w-4 flex-shrink-0" />
+              Insights
             </Link>
           </nav>
         </div>
@@ -120,22 +121,22 @@ export function Header() {
             className={cn(
               'flex items-center gap-1 px-3 py-2 rounded-lg text-sm font-medium transition-colors',
               isActive(ROUTES.SETTINGS)
-                ? 'bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300'
-                : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-zinc-400 dark:hover:bg-zinc-700 dark:hover:text-zinc-100'
+                ? 'bg-info-muted text-accent'
+                : 'text-theme-secondary hover:bg-theme-tertiary hover:text-theme-primary'
             )}
           >
             <Settings className="h-4 w-4" />
             <span className="hidden sm:inline">Settings</span>
           </Link>
 
-          <div className="flex items-center gap-3 pl-4 border-l border-gray-200 dark:border-zinc-700">
+          <div className="flex items-center gap-3 pl-4 border-l border-theme-primary">
             <Link
               to={ROUTES.PROFILE}
               className={cn(
                 'flex items-center gap-1.5 px-2 py-1.5 rounded-lg text-sm font-medium transition-colors',
                 isActive(ROUTES.PROFILE)
-                  ? 'bg-blue-50 text-blue-700 dark:bg-blue-950 dark:text-blue-300'
-                  : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900 dark:text-zinc-400 dark:hover:bg-zinc-700 dark:hover:text-zinc-100'
+                  ? 'bg-info-muted text-accent'
+                  : 'text-theme-secondary hover:bg-theme-tertiary hover:text-theme-primary'
               )}
             >
               <User className="h-4 w-4" />

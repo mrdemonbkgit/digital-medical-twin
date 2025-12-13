@@ -155,15 +155,15 @@ export function DocumentUploadDropzone({
         className={`
           border-2 border-dashed rounded-lg p-8 text-center cursor-pointer
           transition-colors duration-200
-          ${isDragging ? 'border-blue-500 bg-blue-50' : 'border-gray-300 hover:border-gray-400'}
+          ${isDragging ? 'border-blue-500 bg-info-muted' : 'border-theme-primary hover:border-theme-secondary'}
           ${disabled || isBusy ? 'opacity-50 cursor-not-allowed' : ''}
         `}
       >
         {isUploading ? (
           <div className="space-y-3">
             <Loader2 className="h-10 w-10 text-blue-500 animate-spin mx-auto" />
-            <p className="text-sm text-gray-600">Uploading... {uploadProgress}%</p>
-            <div className="w-full bg-gray-200 rounded-full h-2 max-w-xs mx-auto">
+            <p className="text-sm text-theme-secondary">Uploading... {uploadProgress}%</p>
+            <div className="w-full bg-theme-tertiary rounded-full h-2 max-w-xs mx-auto">
               <div
                 className="bg-blue-600 h-2 rounded-full transition-all duration-300"
                 style={{ width: `${uploadProgress}%` }}
@@ -172,17 +172,17 @@ export function DocumentUploadDropzone({
           </div>
         ) : (
           <>
-            <Upload className="h-10 w-10 text-gray-400 mx-auto mb-3" />
-            <p className="text-sm text-gray-600">
-              <span className="font-medium text-blue-600">Click to upload</span> or drag and drop
+            <Upload className="h-10 w-10 text-theme-muted mx-auto mb-3" />
+            <p className="text-sm text-theme-secondary">
+              <span className="font-medium text-info">Click to upload</span> or drag and drop
             </p>
-            <p className="text-xs text-gray-500 mt-1">PDF or images (JPG, PNG, HEIC) up to 10MB</p>
+            <p className="text-xs text-theme-tertiary mt-1">PDF or images (JPG, PNG, HEIC) up to 10MB</p>
           </>
         )}
       </div>
 
       {error && (
-        <div className="flex items-center gap-2 text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">
+        <div className="flex items-center gap-2 text-sm text-danger bg-danger-muted rounded-lg px-3 py-2">
           <AlertCircle className="h-4 w-4 flex-shrink-0" />
           {error}
         </div>

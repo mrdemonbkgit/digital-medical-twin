@@ -10,9 +10,9 @@ function MatchDetailRow({ detail }: { detail: BiomarkerMatchDetail }) {
   const hasIssues = detail.validationIssues.length > 0;
 
   return (
-    <tr className={`hover:bg-gray-50 ${!detail.matchedCode ? 'bg-amber-50/50' : ''}`}>
+    <tr className={`hover:bg-theme-secondary ${!detail.matchedCode ? 'bg-warning-muted/50' : ''}`}>
       {/* Original Name */}
-      <td className="px-2 py-2 text-sm text-gray-900 truncate" title={detail.originalName}>
+      <td className="px-2 py-2 text-sm text-theme-primary truncate" title={detail.originalName}>
         {detail.originalName}
       </td>
 
@@ -20,13 +20,13 @@ function MatchDetailRow({ detail }: { detail: BiomarkerMatchDetail }) {
       <td className="px-2 py-2">
         {detail.matchedCode ? (
           <div>
-            <div className="text-sm text-gray-900 truncate" title={detail.matchedName || ''}>
+            <div className="text-sm text-theme-primary truncate" title={detail.matchedName || ''}>
               {detail.matchedName}
             </div>
-            <div className="text-xs text-gray-400 font-mono truncate">{detail.matchedCode}</div>
+            <div className="text-xs text-theme-muted font-mono truncate">{detail.matchedCode}</div>
           </div>
         ) : (
-          <span className="inline-flex items-center gap-1 text-sm text-amber-600">
+          <span className="inline-flex items-center gap-1 text-sm text-warning">
             <Link2Off className="h-3 w-3" />
             No match
           </span>
@@ -34,17 +34,17 @@ function MatchDetailRow({ detail }: { detail: BiomarkerMatchDetail }) {
       </td>
 
       {/* Conversion */}
-      <td className="px-2 py-2 text-xs text-gray-500">
+      <td className="px-2 py-2 text-xs text-theme-tertiary">
         {hasConversion ? (
           <div className="flex items-center gap-1 font-mono">
             <span>{detail.conversionApplied!.fromValue} {detail.conversionApplied!.fromUnit}</span>
-            <ArrowRight className="h-3 w-3 text-gray-400" />
-            <span className="text-gray-900">{detail.conversionApplied!.toValue.toFixed(2)} {detail.conversionApplied!.toUnit}</span>
+            <ArrowRight className="h-3 w-3 text-theme-muted" />
+            <span className="text-theme-primary">{detail.conversionApplied!.toValue.toFixed(2)} {detail.conversionApplied!.toUnit}</span>
           </div>
         ) : detail.matchedCode ? (
-          <span className="text-gray-400">No conversion</span>
+          <span className="text-theme-muted">No conversion</span>
         ) : (
-          <span className="text-gray-300">-</span>
+          <span className="text-theme-muted">-</span>
         )}
       </td>
 
@@ -53,12 +53,12 @@ function MatchDetailRow({ detail }: { detail: BiomarkerMatchDetail }) {
         {hasIssues ? (
           <div className="flex items-start gap-1">
             <AlertTriangle className="h-3 w-3 text-amber-500 flex-shrink-0 mt-0.5" />
-            <div className="text-xs text-amber-600">
+            <div className="text-xs text-warning">
               {detail.validationIssues.join(', ')}
             </div>
           </div>
         ) : (
-          <span className="text-gray-300 text-xs">-</span>
+          <span className="text-theme-muted text-xs">-</span>
         )}
       </td>
     </tr>
@@ -72,14 +72,14 @@ export function MatchDetailsTable({ matchDetails }: MatchDetailsTableProps) {
   return (
     <div className="space-y-3">
       <div className="flex items-center justify-between">
-        <h4 className="text-sm font-medium text-gray-700">Biomarker Matching Details</h4>
+        <h4 className="text-sm font-medium text-theme-secondary">Biomarker Matching Details</h4>
         <div className="flex items-center gap-3 text-xs">
-          <span className="text-green-600">
+          <span className="text-success">
             <Link2 className="h-3 w-3 inline mr-1" />
             {matched.length} matched
           </span>
           {unmatched.length > 0 && (
-            <span className="text-amber-600">
+            <span className="text-warning">
               <Link2Off className="h-3 w-3 inline mr-1" />
               {unmatched.length} unmatched
             </span>
@@ -87,25 +87,25 @@ export function MatchDetailsTable({ matchDetails }: MatchDetailsTableProps) {
         </div>
       </div>
 
-      <div className="border border-gray-200 rounded-lg overflow-x-auto">
-        <table className="w-full min-w-[500px] table-fixed divide-y divide-gray-200">
-          <thead className="bg-gray-50">
+      <div className="border border-theme-primary rounded-lg overflow-x-auto">
+        <table className="w-full min-w-[500px] table-fixed divide-y divide-theme-primary">
+          <thead className="bg-theme-secondary">
             <tr>
-              <th className="w-[25%] px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+              <th className="w-[25%] px-2 py-2 text-left text-xs font-medium text-theme-tertiary uppercase">
                 Original Name
               </th>
-              <th className="w-[25%] px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+              <th className="w-[25%] px-2 py-2 text-left text-xs font-medium text-theme-tertiary uppercase">
                 Matched To
               </th>
-              <th className="w-[28%] px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+              <th className="w-[28%] px-2 py-2 text-left text-xs font-medium text-theme-tertiary uppercase">
                 Conversion
               </th>
-              <th className="w-[22%] px-2 py-2 text-left text-xs font-medium text-gray-500 uppercase">
+              <th className="w-[22%] px-2 py-2 text-left text-xs font-medium text-theme-tertiary uppercase">
                 Issues
               </th>
             </tr>
           </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
+          <tbody className="bg-theme-primary divide-y divide-theme-primary">
             {matchDetails.map((detail, index) => (
               <MatchDetailRow key={index} detail={detail} />
             ))}

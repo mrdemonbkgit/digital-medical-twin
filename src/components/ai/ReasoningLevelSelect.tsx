@@ -37,15 +37,15 @@ export function ReasoningLevelSelect({
 
   return (
     <div className="flex items-center gap-1.5">
-      <Brain className="h-4 w-4 text-gray-400" />
+      <Brain className="h-4 w-4 text-theme-muted" />
       <select
         value={currentValue}
         onChange={handleChange}
         disabled={disabled}
         className={cn(
-          'text-sm bg-gray-50 border border-gray-200 rounded-md px-2 py-1',
-          'focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500',
-          'cursor-pointer hover:bg-gray-100 transition-colors',
+          'text-sm bg-theme-secondary border border-theme-primary rounded-md px-2 py-1',
+          'focus:outline-none focus:ring-1 focus:ring-accent focus:border-accent',
+          'cursor-pointer hover:bg-theme-tertiary transition-colors',
           disabled && 'opacity-50 cursor-not-allowed'
         )}
         title={isOpenAI ? 'Reasoning Effort' : 'Thinking Level'}

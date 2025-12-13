@@ -13,14 +13,14 @@ export function ToolCallStep({ toolCall }: ToolCallStepProps) {
     <div className="flex gap-2">
       {/* Code icon */}
       <div className="mt-1 flex-shrink-0">
-        <Code2 className="h-4 w-4 text-gray-400" />
+        <Code2 className="h-4 w-4 text-theme-muted" />
       </div>
 
       <div className="flex-1 min-w-0">
         {/* Tool call title (clickable to collapse) */}
         <button
           onClick={() => setIsExpanded(!isExpanded)}
-          className="text-sm font-medium text-gray-800 hover:text-gray-600 transition-colors"
+          className="text-sm font-medium text-theme-primary hover:text-theme-secondary transition-colors"
         >
           {toolCall.name}
         </button>

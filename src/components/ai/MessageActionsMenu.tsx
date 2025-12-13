@@ -57,7 +57,7 @@ export function MessageActionsMenu({
       {/* Trigger button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="p-2.5 rounded-full text-gray-400 hover:text-gray-600 hover:bg-gray-100 transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
+        className="p-2.5 rounded-full text-theme-muted hover:text-theme-secondary hover:bg-theme-tertiary transition-colors min-w-[44px] min-h-[44px] flex items-center justify-center"
         aria-label="Message actions"
         aria-expanded={isOpen}
       >
@@ -66,15 +66,15 @@ export function MessageActionsMenu({
 
       {/* Dropdown menu */}
       {isOpen && (
-        <div className="absolute right-0 top-full mt-1 w-40 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50">
+        <div className="absolute right-0 top-full mt-1 w-40 bg-theme-primary rounded-lg shadow-lg border border-theme-primary py-1 z-50">
           <button
             onClick={handleCopy}
-            className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+            className="w-full flex items-center gap-2 px-3 py-2 text-sm text-theme-secondary hover:bg-theme-secondary transition-colors"
           >
             {copied ? (
               <>
-                <Check className="w-4 h-4 text-green-500" />
-                <span className="text-green-600">Copied!</span>
+                <Check className="w-4 h-4 text-success" />
+                <span className="text-success">Copied!</span>
               </>
             ) : (
               <>
@@ -85,7 +85,7 @@ export function MessageActionsMenu({
           </button>
           <button
             onClick={handleShowDetails}
-            className="w-full flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors"
+            className="w-full flex items-center gap-2 px-3 py-2 text-sm text-theme-secondary hover:bg-theme-secondary transition-colors"
           >
             <Info className="w-4 h-4" />
             <span>Details</span>

@@ -242,7 +242,7 @@ export function ProfileSetupPage() {
                 tags={formData.medicalConditions}
                 onChange={(tags) => updateField('medicalConditions', tags)}
               />
-              <p className="text-xs text-gray-500 mt-1">Add any chronic conditions or diagnoses</p>
+              <p className="text-xs text-theme-tertiary mt-1">Add any chronic conditions or diagnoses</p>
             </div>
 
             <div>
@@ -252,7 +252,7 @@ export function ProfileSetupPage() {
                 tags={formData.currentMedications}
                 onChange={(tags) => updateField('currentMedications', tags)}
               />
-              <p className="text-xs text-gray-500 mt-1">Include dosage if known</p>
+              <p className="text-xs text-theme-tertiary mt-1">Include dosage if known</p>
             </div>
 
             <div>
@@ -262,7 +262,7 @@ export function ProfileSetupPage() {
                 tags={formData.allergies}
                 onChange={(tags) => updateField('allergies', tags)}
               />
-              <p className="text-xs text-gray-500 mt-1">Drug allergies, food allergies, etc.</p>
+              <p className="text-xs text-theme-tertiary mt-1">Drug allergies, food allergies, etc.</p>
             </div>
 
             <div>
@@ -272,7 +272,7 @@ export function ProfileSetupPage() {
                 tags={formData.surgicalHistory}
                 onChange={(tags) => updateField('surgicalHistory', tags)}
               />
-              <p className="text-xs text-gray-500 mt-1">Past surgeries and approximate year</p>
+              <p className="text-xs text-theme-tertiary mt-1">Past surgeries and approximate year</p>
             </div>
           </div>
         );
@@ -280,13 +280,13 @@ export function ProfileSetupPage() {
       case 'family':
         return (
           <div className="space-y-6">
-            <p className="text-sm text-gray-600 mb-4">
+            <p className="text-sm text-theme-secondary mb-4">
               Select conditions that run in your family and which relatives are affected.
             </p>
 
             {FAMILY_CONDITIONS.map((condition) => (
-              <div key={condition.value} className="border rounded-lg p-4">
-                <h4 className="font-medium text-gray-900 mb-3">{condition.label}</h4>
+              <div key={condition.value} className="border border-theme-primary rounded-lg p-4">
+                <h4 className="font-medium text-theme-primary mb-3">{condition.label}</h4>
                 <div className="flex flex-wrap gap-2">
                   {RELATIVE_OPTIONS.map((relative) => {
                     const isSelected =
@@ -299,7 +299,7 @@ export function ProfileSetupPage() {
                         className={`px-3 py-1.5 rounded-full text-sm border transition-colors ${
                           isSelected
                             ? 'bg-cyan-100 border-cyan-300 text-cyan-800'
-                            : 'bg-gray-50 border-gray-200 text-gray-600 hover:bg-gray-100'
+                            : 'bg-theme-secondary border-theme-primary text-theme-secondary hover:bg-theme-tertiary'
                         }`}
                       >
                         {relative.label}
@@ -385,7 +385,7 @@ export function ProfileSetupPage() {
                       ? 'bg-cyan-600 border-cyan-600 text-white'
                       : isActive
                         ? 'border-cyan-600 text-cyan-600'
-                        : 'border-gray-300 text-gray-400'
+                        : 'border-theme-primary text-theme-muted'
                   }`}
                 >
                   {isComplete ? <Check className="w-5 h-5" /> : <Icon className="w-5 h-5" />}
@@ -393,7 +393,7 @@ export function ProfileSetupPage() {
                 {index < STEPS.length - 1 && (
                   <div
                     className={`w-16 h-0.5 mx-2 ${
-                      isComplete ? 'bg-cyan-600' : 'bg-gray-300'
+                      isComplete ? 'bg-cyan-600' : 'bg-theme-muted'
                     }`}
                   />
                 )}
@@ -405,7 +405,7 @@ export function ProfileSetupPage() {
         {/* Step content */}
         <Card>
           <CardContent>
-            <h2 className="text-xl font-semibold text-gray-900 mb-6">
+            <h2 className="text-xl font-semibold text-theme-primary mb-6">
               {STEPS[currentStep].title}
             </h2>
             {renderStepContent()}

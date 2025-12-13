@@ -34,9 +34,9 @@ export function RegisterForm() {
   return (
     <form onSubmit={handleSubmit} className="space-y-4">
       {displayErrors.length > 0 && (
-        <div className="rounded-lg bg-red-50 dark:bg-red-950 p-3">
+        <div className="rounded-lg bg-danger-muted p-3">
           {displayErrors.map((err, i) => (
-            <p key={i} className="text-sm text-red-600 dark:text-red-400">{err}</p>
+            <p key={i} className="text-sm text-danger">{err}</p>
           ))}
         </div>
       )}
@@ -75,9 +75,9 @@ export function RegisterForm() {
         Create Account
       </Button>
 
-      <p className="text-center text-sm text-gray-600 dark:text-zinc-400">
+      <p className="text-center text-sm text-theme-secondary">
         Already have an account?{' '}
-        <Link to={ROUTES.LOGIN} className="font-medium text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300">
+        <Link to={ROUTES.LOGIN} className="font-medium text-accent hover:opacity-80">
           Sign in
         </Link>
       </p>

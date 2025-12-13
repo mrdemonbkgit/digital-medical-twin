@@ -37,13 +37,13 @@ export function LabResultForm({ data, onChange, errors }: LabResultFormProps) {
   return (
     <div className="space-y-4">
       {/* Upload PDF Helper Link */}
-      <div className="bg-cyan-50 border border-cyan-200 rounded-lg p-4">
+      <div className="bg-info-muted border border-info rounded-lg p-4">
         <div className="flex items-start gap-3">
-          <FileUp className="h-5 w-5 text-cyan-600 flex-shrink-0 mt-0.5" />
+          <FileUp className="h-5 w-5 text-info flex-shrink-0 mt-0.5" />
           <div>
-            <p className="text-sm text-cyan-800">
+            <p className="text-sm text-info">
               Have a lab result PDF?{' '}
-              <Link to={ROUTES.LAB_UPLOADS} className="font-medium underline hover:text-cyan-900">
+              <Link to={ROUTES.LAB_UPLOADS} className="font-medium underline hover:opacity-80">
                 Upload it here
               </Link>{' '}
               for automatic data extraction with AI.
@@ -86,7 +86,7 @@ export function LabResultForm({ data, onChange, errors }: LabResultFormProps) {
       </div>
 
       {/* Biomarkers Section */}
-      <div className="border-t border-gray-200 pt-4">
+      <div className="border-t border-theme-primary pt-4">
         <BiomarkerInput
           biomarkers={data.biomarkers}
           onChange={handleBiomarkersChange}

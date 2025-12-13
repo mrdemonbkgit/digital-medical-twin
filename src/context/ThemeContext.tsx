@@ -26,12 +26,7 @@ function resolveTheme(theme: Theme): ResolvedTheme {
 }
 
 function applyTheme(resolvedTheme: ResolvedTheme) {
-  const root = document.documentElement;
-  if (resolvedTheme === 'dark') {
-    root.classList.add('dark');
-  } else {
-    root.classList.remove('dark');
-  }
+  document.documentElement.setAttribute('data-theme', resolvedTheme);
 }
 
 interface ThemeProviderProps {

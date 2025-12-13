@@ -24,20 +24,20 @@ function StageCard({ name, icon, durationMs, totalMs, details, skipped }: StageC
   const isInstant = durationMs === undefined || durationMs === 0;
 
   return (
-    <div className={`border rounded-lg p-3 ${skipped ? 'bg-gray-50 border-gray-200' : 'bg-white border-gray-200'}`}>
+    <div className={`border rounded-lg p-3 ${skipped ? 'bg-theme-secondary border-theme-primary' : 'bg-theme-primary border-theme-primary'}`}>
       <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-2">
-          <span className={skipped ? 'text-gray-400' : 'text-gray-600'}>{icon}</span>
-          <span className={`text-sm font-medium ${skipped ? 'text-gray-400' : 'text-gray-700'}`}>{name}</span>
+          <span className={skipped ? 'text-theme-muted' : 'text-theme-secondary'}>{icon}</span>
+          <span className={`text-sm font-medium ${skipped ? 'text-theme-muted' : 'text-theme-secondary'}`}>{name}</span>
         </div>
-        <span className={`text-xs font-mono ${skipped ? 'text-gray-400' : 'text-gray-500'}`}>
+        <span className={`text-xs font-mono ${skipped ? 'text-theme-muted' : 'text-theme-tertiary'}`}>
           {skipped ? 'Skipped' : isInstant ? 'instant' : formatDuration(durationMs!)}
         </span>
       </div>
 
       {/* Progress bar - hide for skipped or instant operations */}
       {!skipped && !isInstant && (
-        <div className="h-2 bg-gray-100 rounded-full overflow-hidden mb-2">
+        <div className="h-2 bg-theme-tertiary rounded-full overflow-hidden mb-2">
           <div
             className="h-full bg-blue-500 rounded-full transition-all duration-300"
             style={{ width: `${percentage}%` }}
@@ -46,7 +46,7 @@ function StageCard({ name, icon, durationMs, totalMs, details, skipped }: StageC
       )}
 
       {/* Details */}
-      <div className={`text-xs ${skipped ? 'text-gray-400' : 'text-gray-500'}`}>
+      <div className={`text-xs ${skipped ? 'text-theme-muted' : 'text-theme-tertiary'}`}>
         {details}
       </div>
     </div>
@@ -59,7 +59,7 @@ export function StageTimeline({ debugInfo }: StageTimelineProps) {
 
   return (
     <div className="space-y-3">
-      <h4 className="text-sm font-medium text-gray-700">Processing Timeline</h4>
+      <h4 className="text-sm font-medium text-theme-secondary">Processing Timeline</h4>
 
       <div className="space-y-2">
         {/* Stage 1: Gemini Extraction */}
@@ -101,17 +101,17 @@ export function StageTimeline({ debugInfo }: StageTimelineProps) {
                 <span>Reasoning: {stage2.reasoningEffort}</span>
                 {isChunked && stage2.pagesVerified ? (
                   <span>
-                    Pages: <span className="text-green-600">{stage2.pagesPassed}</span>
+                    Pages: <span className="text-success">{stage2.pagesPassed}</span>
                     {stage2.pagesFailed !== undefined && stage2.pagesFailed > 0 && (
-                      <>/<span className="text-amber-600">{stage2.pagesFailed}</span></>
+                      <>/<span className="text-warning">{stage2.pagesFailed}</span></>
                     )} of {stage2.pagesVerified}
                   </span>
                 ) : (
                   <span>
                     {stage2.verificationPassed ? (
-                      <span className="text-green-600">Passed</span>
+                      <span className="text-success">Passed</span>
                     ) : (
-                      <span className="text-red-600">Failed</span>
+                      <span className="text-danger">Failed</span>
                     )}
                   </span>
                 )}
@@ -135,12 +135,12 @@ export function StageTimeline({ debugInfo }: StageTimelineProps) {
                   {mergeStage.totalBiomarkersBeforeMerge} → {mergeStage.totalBiomarkersAfterMerge} biomarkers
                 </span>
                 {mergeStage.duplicatesRemoved > 0 && (
-                  <span className="text-amber-600">
+                  <span className="text-warning">
                     {mergeStage.duplicatesRemoved} duplicate{mergeStage.duplicatesRemoved !== 1 ? 's' : ''} removed
                   </span>
                 )}
                 {mergeStage.conflictsResolved > 0 && (
-                  <span className="text-blue-600">
+                  <span className="text-info">
                     {mergeStage.conflictsResolved} conflict{mergeStage.conflictsResolved !== 1 ? 's' : ''} resolved
                   </span>
                 )}
@@ -162,20 +162,20 @@ export function StageTimeline({ debugInfo }: StageTimelineProps) {
                 <span>Standards: {stage3.standardsCount}</span>
                 <span>Gender: {stage3.userGender}</span>
                 <span>
-                  Matched: <span className="text-green-600">{stage3.matchedCount}</span>
+                  Matched: <span className="text-success">{stage3.matchedCount}</span>
                   {stage3.unmatchedCount > 0 && (
-                    <> / Unmatched: <span className="text-amber-600">{stage3.unmatchedCount}</span></>
+                    <> / Unmatched: <span className="text-warning">{stage3.unmatchedCount}</span></>
                   )}
                 </span>
-                <span className="inline-flex items-center px-1.5 py-0.5 rounded bg-blue-50 text-blue-700 font-medium">
+                <span className="inline-flex items-center px-1.5 py-0.5 rounded bg-info-muted text-accent font-medium">
                   {stage3.conversionMethod}
                 </span>
               </div>
 
               {/* Matched biomarkers list */}
               {stage3.matchDetails.filter(d => d.matchedCode).length > 0 && (
-                <div className="pt-1 border-t border-gray-100">
-                  <div className="text-xs text-green-600 font-medium mb-1">
+                <div className="pt-1 border-t border-theme-primary">
+                  <div className="text-xs text-success font-medium mb-1">
                     ✓ Matched ({stage3.matchedCount}):
                   </div>
                   <div className="space-y-0.5 text-xs">
@@ -183,9 +183,9 @@ export function StageTimeline({ debugInfo }: StageTimelineProps) {
                       .filter(d => d.matchedCode)
                       .map((d, i) => (
                         <div key={i} className="flex gap-2">
-                          <span className="text-gray-600">{d.originalName}</span>
-                          <span className="text-gray-400">→</span>
-                          <span className="font-mono text-gray-700">{d.matchedCode}</span>
+                          <span className="text-theme-secondary">{d.originalName}</span>
+                          <span className="text-theme-muted">→</span>
+                          <span className="font-mono text-theme-secondary">{d.matchedCode}</span>
                         </div>
                       ))}
                   </div>
@@ -194,8 +194,8 @@ export function StageTimeline({ debugInfo }: StageTimelineProps) {
 
               {/* Conversions applied list */}
               {stage3.matchDetails.filter(d => d.conversionApplied).length > 0 && (
-                <div className="pt-1 border-t border-gray-100">
-                  <div className="text-xs text-blue-600 font-medium mb-1">
+                <div className="pt-1 border-t border-theme-primary">
+                  <div className="text-xs text-info font-medium mb-1">
                     ↔ Conversions ({stage3.conversionsApplied}):
                   </div>
                   <div className="space-y-0.5 font-mono text-xs">
@@ -214,7 +214,7 @@ export function StageTimeline({ debugInfo }: StageTimelineProps) {
 
               {/* Missing conversions */}
               {stage3.matchDetails.filter(d => d.conversionMissing).length > 0 && (
-                <div className="pt-1 border-t border-gray-100">
+                <div className="pt-1 border-t border-theme-primary">
                   <div className="text-xs text-orange-600 font-medium mb-1">
                     ⚠ Missing Conversions ({stage3.conversionsMissing}):
                   </div>
@@ -232,11 +232,11 @@ export function StageTimeline({ debugInfo }: StageTimelineProps) {
 
               {/* Unmatched biomarkers */}
               {stage3.matchDetails.filter(d => !d.matchedCode).length > 0 && (
-                <div className="pt-1 border-t border-gray-100">
-                  <div className="text-xs text-amber-600 font-medium mb-1">
+                <div className="pt-1 border-t border-theme-primary">
+                  <div className="text-xs text-warning font-medium mb-1">
                     ✗ Unmatched ({stage3.unmatchedCount}):
                   </div>
-                  <div className="space-y-0.5 text-xs text-amber-700">
+                  <div className="space-y-0.5 text-xs text-warning">
                     {stage3.matchDetails
                       .filter(d => !d.matchedCode)
                       .map((d, i) => (
@@ -248,11 +248,11 @@ export function StageTimeline({ debugInfo }: StageTimelineProps) {
 
               {/* Validation issues */}
               {stage3.matchDetails.some(d => d.validationIssues?.length > 0) && (
-                <div className="pt-1 border-t border-gray-100">
-                  <div className="text-xs text-red-600 font-medium mb-1">
+                <div className="pt-1 border-t border-theme-primary">
+                  <div className="text-xs text-danger font-medium mb-1">
                     ⚠ Validation Issues:
                   </div>
-                  <div className="space-y-0.5 text-xs text-red-700">
+                  <div className="space-y-0.5 text-xs text-danger">
                     {stage3.matchDetails
                       .filter(d => d.validationIssues?.length > 0)
                       .map((d, i) => (

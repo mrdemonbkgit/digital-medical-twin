@@ -49,7 +49,7 @@ export function FilterBar({
   const [isExpanded, setIsExpanded] = useState(false);
 
   return (
-    <div className={cn('space-y-4 rounded-lg border border-gray-200 bg-white p-4', className)}>
+    <div className={cn('space-y-4 rounded-lg border border-theme-primary bg-theme-primary p-4', className)}>
       {/* Search - always visible */}
       <SearchInput value={search} onChange={onSearchChange} />
 
@@ -58,13 +58,13 @@ export function FilterBar({
         <button
           type="button"
           onClick={() => setIsExpanded(!isExpanded)}
-          className="flex w-full items-center justify-between rounded-lg border border-gray-200 bg-gray-50 px-4 py-3 text-sm font-medium text-gray-700 min-h-[44px]"
+          className="flex w-full items-center justify-between rounded-lg border border-theme-primary bg-theme-secondary px-4 py-3 text-sm font-medium text-theme-secondary min-h-[44px]"
         >
           <span className="flex items-center gap-2">
             <Filter className="h-4 w-4" />
             Filters
             {activeFilterCount > 0 && (
-              <span className="rounded-full bg-blue-100 px-2 py-0.5 text-xs font-semibold text-blue-700">
+              <span className="rounded-full bg-info-muted px-2 py-0.5 text-xs font-semibold text-accent">
                 {activeFilterCount}
               </span>
             )}
@@ -81,7 +81,7 @@ export function FilterBar({
       <div className={cn('space-y-4', !isExpanded && 'hidden sm:block')}>
         {/* Event type filters */}
         <div>
-          <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-500">
+          <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-theme-tertiary">
             Event Types
           </h3>
           <EventTypeFilterChips
@@ -93,7 +93,7 @@ export function FilterBar({
 
         {/* Date range filter */}
         <div>
-          <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-500">
+          <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-theme-tertiary">
             Date Range
           </h3>
           <DateRangeFilter
@@ -105,7 +105,7 @@ export function FilterBar({
 
         {/* Tag filter */}
         <div>
-          <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-gray-500">
+          <h3 className="mb-2 text-xs font-semibold uppercase tracking-wide text-theme-tertiary">
             Tags
           </h3>
           <TagFilter

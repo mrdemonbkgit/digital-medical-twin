@@ -120,7 +120,7 @@ export function BiomarkerSelect({
 
   return (
     <div ref={containerRef} className="relative">
-      <label className="block text-sm font-medium text-gray-700 mb-1">
+      <label className="block text-sm font-medium text-theme-secondary mb-1">
         Biomarker
       </label>
 
@@ -131,57 +131,57 @@ export function BiomarkerSelect({
         disabled={disabled}
         className={cn(
           'w-full flex items-center justify-between px-3 py-2 text-left',
-          'border rounded-lg bg-white',
+          'border rounded-lg bg-theme-primary',
           'focus:outline-none focus:ring-1',
-          disabled && 'bg-gray-50 text-gray-500 cursor-not-allowed',
+          disabled && 'bg-theme-secondary text-theme-tertiary cursor-not-allowed',
           error
-            ? 'border-red-500 focus:border-red-500 focus:ring-red-500'
-            : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500'
+            ? 'border-danger focus:border-danger focus:ring-danger'
+            : 'border-theme-primary focus:border-accent focus:ring-accent'
         )}
       >
         {selectedBiomarker ? (
           <div className="flex items-center gap-2 flex-1 min-w-0">
-            <span className="text-gray-900">{selectedBiomarker.name}</span>
-            <span className="text-xs text-gray-400 font-mono shrink-0">
+            <span className="text-theme-primary">{selectedBiomarker.name}</span>
+            <span className="text-xs text-theme-muted font-mono shrink-0">
               {selectedBiomarker.code}
             </span>
           </div>
         ) : (
-          <span className="text-gray-400">Select biomarker...</span>
+          <span className="text-theme-muted">Select biomarker...</span>
         )}
 
         <div className="flex items-center gap-1 ml-2">
           {selectedBiomarker && !disabled && (
             <X
-              className="w-4 h-4 text-gray-400 hover:text-gray-600"
+              className="w-4 h-4 text-theme-muted hover:text-theme-secondary"
               onClick={handleClear}
             />
           )}
           <ChevronDown
             className={cn(
-              'w-4 h-4 text-gray-400 transition-transform',
+              'w-4 h-4 text-theme-muted transition-transform',
               isOpen && 'rotate-180'
             )}
           />
         </div>
       </button>
 
-      {error && <p className="text-sm text-red-600 mt-1">{error}</p>}
+      {error && <p className="text-sm text-danger mt-1">{error}</p>}
 
       {/* Dropdown */}
       {isOpen && (
-        <div className="absolute z-50 w-full mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-80 overflow-hidden">
+        <div className="absolute z-50 w-full mt-1 bg-theme-primary border border-theme-primary rounded-lg shadow-lg max-h-80 overflow-hidden">
           {/* Search input */}
-          <div className="p-2 border-b border-gray-100">
+          <div className="p-2 border-b border-theme-primary">
             <div className="relative">
-              <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+              <Search className="absolute left-2 top-1/2 -translate-y-1/2 w-4 h-4 text-theme-muted" />
               <input
                 ref={inputRef}
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search biomarkers..."
-                className="w-full pl-8 pr-3 py-1.5 text-sm border border-gray-200 rounded focus:outline-none focus:border-blue-500"
+                className="w-full pl-8 pr-3 py-1.5 text-sm border border-theme-primary rounded focus:outline-none focus:border-accent"
               />
             </div>
           </div>
@@ -189,7 +189,7 @@ export function BiomarkerSelect({
           {/* Options list */}
           <div className="overflow-y-auto max-h-64">
             {filteredBiomarkers.length === 0 ? (
-              <div className="px-3 py-4 text-center text-sm text-gray-500">
+              <div className="px-3 py-4 text-center text-sm text-theme-tertiary">
                 No biomarkers found
               </div>
             ) : (
@@ -201,7 +201,7 @@ export function BiomarkerSelect({
 
                 return (
                   <div key={category}>
-                    <div className="px-3 py-1.5 bg-gray-50 text-xs font-medium text-gray-500 uppercase tracking-wide sticky top-0">
+                    <div className="px-3 py-1.5 bg-theme-secondary text-xs font-medium text-theme-tertiary uppercase tracking-wide sticky top-0">
                       {categoryInfo.label}
                     </div>
                     {items.map((biomarker) => (
@@ -210,19 +210,19 @@ export function BiomarkerSelect({
                         type="button"
                         onClick={() => handleSelect(biomarker)}
                         className={cn(
-                          'w-full px-3 py-2 text-left hover:bg-blue-50 flex items-center justify-between',
-                          value === biomarker.code && 'bg-blue-50'
+                          'w-full px-3 py-2 text-left hover:bg-info-muted flex items-center justify-between',
+                          value === biomarker.code && 'bg-info-muted'
                         )}
                       >
                         <div>
-                          <span className="text-sm text-gray-900">{biomarker.name}</span>
+                          <span className="text-sm text-theme-primary">{biomarker.name}</span>
                           {biomarker.aliases.length > 0 && (
-                            <span className="ml-2 text-xs text-gray-400">
+                            <span className="ml-2 text-xs text-theme-muted">
                               ({biomarker.aliases[0]})
                             </span>
                           )}
                         </div>
-                        <span className="text-xs text-gray-400 font-mono">
+                        <span className="text-xs text-theme-muted font-mono">
                           {biomarker.standardUnit}
                         </span>
                       </button>

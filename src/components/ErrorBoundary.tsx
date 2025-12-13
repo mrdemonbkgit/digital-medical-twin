@@ -10,13 +10,13 @@ function ErrorFallback({ error, resetError }: ErrorFallbackProps) {
   const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred';
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen p-4 bg-gray-50">
+    <div className="flex flex-col items-center justify-center min-h-screen p-4 bg-theme-secondary">
       <div className="max-w-md text-center">
-        <h1 className="text-xl font-bold text-red-600 mb-4">Something went wrong</h1>
-        <p className="text-gray-600 mb-6">{errorMessage}</p>
+        <h1 className="text-xl font-bold text-danger mb-4">Something went wrong</h1>
+        <p className="text-theme-secondary mb-6">{errorMessage}</p>
         <button
           onClick={resetError}
-          className="px-4 py-2 bg-cyan-600 text-white rounded-lg hover:bg-cyan-700 transition-colors"
+          className="px-4 py-2 bg-accent text-white rounded-lg hover:bg-accent/90 transition-colors"
         >
           Try again
         </button>

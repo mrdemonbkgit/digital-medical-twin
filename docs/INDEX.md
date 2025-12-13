@@ -1,6 +1,6 @@
 # Documentation Index
 
-> Last Updated: 2025-12-13 (Dark mode color overhaul)
+> Last Updated: 2025-12-13 (Multi-theme system with 4 themes)
 
 ## Summary
 
@@ -113,7 +113,8 @@ Master index for all project documentation. Search here first to find relevant d
 
 ### D
 
-- **dark mode**: /docs/CHANGELOG.md#unreleased
+- **dark mode**: /docs/CHANGELOG.md#unreleased, src/styles/globals.css
+- **CSS variables**: src/styles/globals.css (theme tokens)
 - **dashboard**: /docs/features/INSIGHTS_DASHBOARD.md
 - **database**: /docs/architecture/DATABASE_SCHEMA.md, /docs/DATABASE_MIGRATIONS.md
 - **decisions**: /docs/DECISION_LOG.md
@@ -258,8 +259,10 @@ Master index for all project documentation. Search here first to find relevant d
 
 - **tags**: /docs/features/DATA_TRACKING.md#tags-system, src/components/common/TagInput.tsx, src/hooks/useUserTags.ts
 - **Tailwind**: /docs/ONBOARDING.md#tech-stack
-- **theme**: /docs/CHANGELOG.md#unreleased, src/context/ThemeContext.tsx
+- **theme**: /docs/CHANGELOG.md#unreleased, src/context/ThemeContext.tsx, src/styles/globals.css
 - **ThemeContext**: src/context/ThemeContext.tsx
+- **theme colors**: src/styles/globals.css (CSS Variables)
+- **multi-theme**: /docs/CHANGELOG.md#unreleased (Light, Dark, Ocean, Forest)
 - **touch targets**: /docs/CHANGELOG.md#unreleased (44px minimum)
 - **tech stack**: /docs/ONBOARDING.md#tech-stack
 - **testing**: /docs/development/TESTING_STRATEGY.md, /docs/testing/MANUAL_TEST_CASES.md

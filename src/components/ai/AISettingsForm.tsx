@@ -76,9 +76,9 @@ export function AISettingsForm() {
   if (isLoading) {
     return (
       <div className="animate-pulse space-y-4">
-        <div className="h-10 bg-gray-200 dark:bg-zinc-600 rounded" />
-        <div className="h-10 bg-gray-200 dark:bg-zinc-600 rounded" />
-        <div className="h-10 bg-gray-200 dark:bg-zinc-600 rounded" />
+        <div className="h-10 bg-theme-tertiary rounded" />
+        <div className="h-10 bg-theme-tertiary rounded" />
+        <div className="h-10 bg-theme-tertiary rounded" />
       </div>
     );
   }
@@ -86,19 +86,19 @@ export function AISettingsForm() {
   return (
     <div className="space-y-6">
       <div>
-        <h3 className="text-lg font-semibold text-gray-900 dark:text-zinc-100 mb-4">AI Configuration</h3>
-        <p className="text-sm text-gray-600 dark:text-zinc-400 mb-6">
+        <h3 className="text-lg font-semibold text-theme-primary mb-4">AI Configuration</h3>
+        <p className="text-sm text-theme-secondary mb-6">
           Select your preferred AI provider and configure reasoning depth for the AI Historian
           feature.
         </p>
       </div>
 
       {(error || saveError) && (
-        <div className="rounded-lg bg-red-50 dark:bg-red-950 p-4 text-sm text-red-700 dark:text-red-400">{error || saveError}</div>
+        <div className="rounded-lg bg-danger-muted p-4 text-sm text-danger">{error || saveError}</div>
       )}
 
       {saveSuccess && (
-        <div className="rounded-lg bg-green-50 dark:bg-green-950 p-4 text-sm text-green-700 dark:text-green-400">
+        <div className="rounded-lg bg-success-muted p-4 text-sm text-success">
           Settings saved successfully!
         </div>
       )}
@@ -131,7 +131,7 @@ export function AISettingsForm() {
               label: `${opt.label} - ${opt.description}`,
             }))}
           />
-          <p className="text-xs text-gray-500 dark:text-zinc-400 mt-1">
+          <p className="text-xs text-theme-tertiary mt-1">
             Controls how much time GPT-5.2 spends thinking before responding. Higher values produce
             more thorough answers but take longer.
           </p>
@@ -149,7 +149,7 @@ export function AISettingsForm() {
               label: `${opt.label} - ${opt.description}`,
             }))}
           />
-          <p className="text-xs text-gray-500 dark:text-zinc-400 mt-1">
+          <p className="text-xs text-theme-tertiary mt-1">
             Controls the depth of Gemini 3 Pro's thinking process. Higher values enable deeper
             analysis.
           </p>
@@ -157,13 +157,13 @@ export function AISettingsForm() {
       )}
 
       {/* Agentic Mode Toggle */}
-      <div className="pt-4 border-t dark:border-zinc-700">
+      <div className="pt-4 border-t border-theme-primary">
         <div className="flex items-center justify-between">
           <div className="flex-1">
-            <label className="text-sm font-medium text-gray-700 dark:text-zinc-300">Agentic Mode</label>
-            <p className="text-xs text-gray-500 dark:text-zinc-400 mt-1">
+            <label className="text-sm font-medium text-theme-secondary">Agentic Mode</label>
+            <p className="text-xs text-theme-tertiary mt-1">
               {provider === 'google' ? (
-                <span className="text-amber-600 dark:text-amber-400">
+                <span className="text-warning">
                   Not available for Gemini (API limitation)
                 </span>
               ) : (
@@ -177,16 +177,16 @@ export function AISettingsForm() {
             aria-checked={provider === 'google' ? false : agenticMode}
             disabled={provider === 'google'}
             onClick={() => setAgenticMode(!agenticMode)}
-            className={`relative inline-flex h-8 w-14 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-zinc-900 ${
+            className={`relative inline-flex h-8 w-14 flex-shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-accent focus:ring-offset-2 ${
               provider === 'google'
-                ? 'bg-gray-200 dark:bg-zinc-600 cursor-not-allowed'
+                ? 'bg-theme-tertiary cursor-not-allowed'
                 : agenticMode
-                  ? 'bg-blue-600'
-                  : 'bg-gray-200 dark:bg-zinc-600'
+                  ? 'bg-accent'
+                  : 'bg-theme-tertiary'
             }`}
           >
             <span
-              className={`pointer-events-none inline-block h-7 w-7 transform rounded-full bg-white dark:bg-zinc-200 shadow ring-0 transition duration-200 ease-in-out ${
+              className={`pointer-events-none inline-block h-7 w-7 transform rounded-full bg-theme-primary shadow ring-0 transition duration-200 ease-in-out ${
                 provider === 'google' ? 'translate-x-0' : agenticMode ? 'translate-x-6' : 'translate-x-0'
               }`}
             />
@@ -194,7 +194,7 @@ export function AISettingsForm() {
         </div>
       </div>
 
-      <div className="pt-4 border-t dark:border-zinc-700">
+      <div className="pt-4 border-t border-theme-primary">
         <Button onClick={handleSave} isLoading={isSaving} disabled={!provider}>
           Save Settings
         </Button>

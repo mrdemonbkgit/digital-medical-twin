@@ -153,7 +153,7 @@ export function BiomarkerInput({
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <label className="block text-sm font-medium text-gray-700">
+        <label className="block text-sm font-medium text-theme-secondary">
           Biomarkers
         </label>
         <Button
@@ -168,14 +168,14 @@ export function BiomarkerInput({
         </Button>
       </div>
 
-      {error && <p className="text-sm text-red-600">{error}</p>}
+      {error && <p className="text-sm text-danger">{error}</p>}
 
       {isLoading ? (
-        <p className="text-sm text-gray-500 text-center py-4 border border-dashed border-gray-300 rounded-lg">
+        <p className="text-sm text-theme-tertiary text-center py-4 border border-dashed border-theme-primary rounded-lg">
           Loading biomarker standards...
         </p>
       ) : biomarkers.length === 0 ? (
-        <p className="text-sm text-gray-500 text-center py-4 border border-dashed border-gray-300 rounded-lg">
+        <p className="text-sm text-theme-tertiary text-center py-4 border border-dashed border-theme-primary rounded-lg">
           No biomarkers added yet. Click "Add Biomarker" to start.
         </p>
       ) : (
@@ -185,22 +185,22 @@ export function BiomarkerInput({
               key={index}
               className={cn(
                 'p-4 border rounded-lg space-y-3',
-                biomarker.flag === 'high' && 'border-red-300 bg-red-50',
-                biomarker.flag === 'low' && 'border-blue-300 bg-blue-50',
-                biomarker.flag === 'normal' && 'border-green-300 bg-green-50',
-                !biomarker.flag && 'border-gray-200 bg-gray-50'
+                biomarker.flag === 'high' && 'border-danger bg-danger-muted',
+                biomarker.flag === 'low' && 'border-info bg-info-muted',
+                biomarker.flag === 'normal' && 'border-success bg-success-muted',
+                !biomarker.flag && 'border-theme-primary bg-theme-secondary'
               )}
             >
               <div className="flex items-start justify-between">
-                <span className="text-sm font-medium text-gray-700">
+                <span className="text-sm font-medium text-theme-secondary">
                   Biomarker {index + 1}
                   {biomarker.flag && (
                     <span
                       className={cn(
                         'ml-2 text-xs uppercase px-2 py-0.5 rounded',
-                        biomarker.flag === 'high' && 'bg-red-100 text-red-700',
-                        biomarker.flag === 'low' && 'bg-blue-100 text-blue-700',
-                        biomarker.flag === 'normal' && 'bg-green-100 text-green-700'
+                        biomarker.flag === 'high' && 'bg-danger-muted text-danger',
+                        biomarker.flag === 'low' && 'bg-info-muted text-info',
+                        biomarker.flag === 'normal' && 'bg-success-muted text-success'
                       )}
                     >
                       {biomarker.flag}
@@ -212,7 +212,7 @@ export function BiomarkerInput({
                   variant="ghost"
                   size="sm"
                   onClick={() => handleRemove(index)}
-                  className="p-2.5 min-w-[44px] min-h-[44px] text-red-600 hover:text-red-700 hover:bg-red-100"
+                  className="p-2.5 min-w-[44px] min-h-[44px] text-danger hover:text-danger hover:bg-danger-muted"
                 >
                   <Trash2 className="w-4 h-4" />
                 </Button>
@@ -251,17 +251,17 @@ export function BiomarkerInput({
                     label="Unit"
                     value={biomarker.unit === 'qualitative' ? 'Qualitative' : biomarker.unit}
                     disabled
-                    className="bg-gray-100"
+                    className="bg-theme-tertiary"
                   />
                 </div>
               </div>
 
               {/* Reference range display (read-only) - only for quantitative biomarkers */}
               {biomarker.standardCode && !isBiomarkerQualitative(index) && biomarker.referenceMin !== undefined && (
-                <div className="flex items-center gap-4 text-sm text-gray-500">
+                <div className="flex items-center gap-4 text-sm text-theme-tertiary">
                   <span>
                     Reference Range:{' '}
-                    <span className="text-gray-700">
+                    <span className="text-theme-secondary">
                       {biomarker.referenceMin} - {biomarker.referenceMax} {biomarker.unit}
                     </span>
                   </span>

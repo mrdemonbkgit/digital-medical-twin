@@ -15,7 +15,7 @@ const OPTIONS: { value: TimeRange; label: string }[] = [
 
 export function TimeRangeFilter({ value, onChange }: TimeRangeFilterProps) {
   return (
-    <div className="inline-flex rounded-lg border border-gray-200 bg-gray-50 p-1">
+    <div className="inline-flex rounded-lg border border-theme-primary bg-theme-secondary p-1">
       {OPTIONS.map((option) => (
         <button
           key={option.value}
@@ -23,8 +23,8 @@ export function TimeRangeFilter({ value, onChange }: TimeRangeFilterProps) {
           className={cn(
             'px-3 py-1.5 text-sm font-medium rounded-md transition-colors',
             value === option.value
-              ? 'bg-white text-gray-900 shadow-sm'
-              : 'text-gray-600 hover:text-gray-900'
+              ? 'bg-theme-primary text-theme-primary shadow-sm'
+              : 'text-theme-secondary hover:text-theme-primary'
           )}
         >
           {option.label}

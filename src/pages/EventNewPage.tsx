@@ -339,17 +339,17 @@ export function EventNewPage() {
             className={`px-6 py-4 border-b flex items-center gap-3 ${typeInfo.colors.bg}`}
           >
             <Icon className={`w-5 h-5 ${typeInfo.colors.icon}`} />
-            <span className="font-medium text-gray-900">{typeInfo.label}</span>
+            <span className="font-medium text-theme-primary">{typeInfo.label}</span>
           </div>
           <CardContent className="p-6">
             {eventType === 'lab_result' && excludedBiomarkerCount > 0 && (
-              <div className="mb-6 p-4 bg-amber-50 border border-amber-200 rounded-lg flex gap-3">
-                <AlertCircle className="w-5 h-5 text-amber-600 flex-shrink-0 mt-0.5" />
+              <div className="mb-6 p-4 bg-warning-muted border border-warning rounded-lg flex gap-3">
+                <AlertCircle className="w-5 h-5 text-warning flex-shrink-0 mt-0.5" />
                 <div>
-                  <p className="text-sm font-medium text-amber-800">
+                  <p className="text-sm font-medium text-warning">
                     {excludedBiomarkerCount} biomarker{excludedBiomarkerCount !== 1 ? 's' : ''} excluded
                   </p>
-                  <p className="text-sm text-amber-700 mt-1">
+                  <p className="text-sm text-warning mt-1">
                     {excludedBiomarkerCount !== 1 ? 'These biomarkers' : 'This biomarker'} could not be matched to our standards database
                     and {excludedBiomarkerCount !== 1 ? 'have' : 'has'} been excluded. You can add{' '}
                     {excludedBiomarkerCount !== 1 ? 'them' : 'it'} manually using the biomarker dropdown below.
@@ -361,8 +361,8 @@ export function EventNewPage() {
               {renderForm()}
 
               {mutationError && (
-                <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
-                  <p className="text-sm text-red-600">{mutationError}</p>
+                <div className="p-4 bg-danger-muted border border-danger rounded-lg">
+                  <p className="text-sm text-danger">{mutationError}</p>
                 </div>
               )}
 

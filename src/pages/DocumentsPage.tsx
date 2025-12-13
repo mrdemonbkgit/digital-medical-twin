@@ -83,10 +83,10 @@ export function DocumentsPage() {
                 <FolderOpen className="h-6 w-6 text-indigo-600" />
               </div>
               <div>
-                <h2 className="text-lg font-semibold text-gray-900">
+                <h2 className="text-lg font-semibold text-theme-primary">
                   Document Storage
                 </h2>
-                <p className="mt-1 text-gray-600">
+                <p className="mt-1 text-theme-secondary">
                   Store and organize your health-related documents. Upload lab results,
                   prescriptions, imaging reports, discharge summaries, and more.
                   Lab result PDFs can be sent for automatic biomarker extraction.
@@ -113,7 +113,7 @@ export function DocumentsPage() {
           </CardHeader>
           <CardContent>
             {error ? (
-              <div className="text-center py-8 text-red-600">
+              <div className="text-center py-8 text-danger">
                 <p className="text-sm">{error}</p>
                 <Button variant="secondary" size="sm" onClick={refetch} className="mt-3">
                   Try again

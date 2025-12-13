@@ -22,36 +22,36 @@ const eventTypeConfigs: EventTypeConfig[] = [
     type: 'lab_result',
     label: 'Labs',
     icon: FlaskConical,
-    activeClasses: 'bg-red-100 text-red-700 border-red-300',
-    inactiveClasses: 'bg-gray-50 text-gray-600 border-gray-200 hover:bg-gray-100',
+    activeClasses: 'bg-danger-muted text-danger border-danger',
+    inactiveClasses: 'bg-theme-secondary text-theme-secondary border-theme-primary hover:bg-theme-tertiary',
   },
   {
     type: 'doctor_visit',
     label: 'Visits',
     icon: Stethoscope,
-    activeClasses: 'bg-blue-100 text-blue-700 border-blue-300',
-    inactiveClasses: 'bg-gray-50 text-gray-600 border-gray-200 hover:bg-gray-100',
+    activeClasses: 'bg-info-muted text-info border-info',
+    inactiveClasses: 'bg-theme-secondary text-theme-secondary border-theme-primary hover:bg-theme-tertiary',
   },
   {
     type: 'medication',
     label: 'Meds',
     icon: Pill,
-    activeClasses: 'bg-green-100 text-green-700 border-green-300',
-    inactiveClasses: 'bg-gray-50 text-gray-600 border-gray-200 hover:bg-gray-100',
+    activeClasses: 'bg-success-muted text-success border-success',
+    inactiveClasses: 'bg-theme-secondary text-theme-secondary border-theme-primary hover:bg-theme-tertiary',
   },
   {
     type: 'intervention',
     label: 'Interventions',
     icon: Zap,
-    activeClasses: 'bg-amber-100 text-amber-700 border-amber-300',
-    inactiveClasses: 'bg-gray-50 text-gray-600 border-gray-200 hover:bg-gray-100',
+    activeClasses: 'bg-warning-muted text-warning border-warning',
+    inactiveClasses: 'bg-theme-secondary text-theme-secondary border-theme-primary hover:bg-theme-tertiary',
   },
   {
     type: 'metric',
     label: 'Metrics',
     icon: Activity,
     activeClasses: 'bg-purple-100 text-purple-700 border-purple-300',
-    inactiveClasses: 'bg-gray-50 text-gray-600 border-gray-200 hover:bg-gray-100',
+    inactiveClasses: 'bg-theme-secondary text-theme-secondary border-theme-primary hover:bg-theme-tertiary',
   },
 ];
 
@@ -99,7 +99,7 @@ export function EventTypeFilterChips({
         <button
           type="button"
           onClick={onClear}
-          className="inline-flex items-center gap-1 rounded-full border border-gray-200 bg-gray-50 px-2.5 py-1.5 text-xs font-medium text-gray-500 transition-colors hover:bg-gray-100 hover:text-gray-700"
+          className="inline-flex items-center gap-1 rounded-full border border-theme-primary bg-theme-secondary px-2.5 py-1.5 text-xs font-medium text-theme-tertiary transition-colors hover:bg-theme-tertiary hover:text-theme-secondary"
           aria-label="Clear type filters"
         >
           <X className="h-3 w-3" />

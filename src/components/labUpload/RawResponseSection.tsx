@@ -25,8 +25,8 @@ function CollapsibleResponse({ title, content, defaultOpen = false }: Collapsibl
 
   if (!content) {
     return (
-      <div className="border border-gray-200 rounded-lg p-3 bg-gray-50">
-        <div className="flex items-center gap-2 text-gray-400 text-sm">
+      <div className="border border-theme-primary rounded-lg p-3 bg-theme-secondary">
+        <div className="flex items-center gap-2 text-theme-muted text-sm">
           <ChevronRight className="h-4 w-4" />
           <span>{title}</span>
           <span className="text-xs">(no response)</span>
@@ -36,19 +36,19 @@ function CollapsibleResponse({ title, content, defaultOpen = false }: Collapsibl
   }
 
   return (
-    <div className="border border-gray-200 rounded-lg overflow-hidden">
+    <div className="border border-theme-primary rounded-lg overflow-hidden">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full flex items-center justify-between p-3 bg-gray-50 hover:bg-gray-100 transition-colors text-left"
+        className="w-full flex items-center justify-between p-3 bg-theme-secondary hover:bg-theme-tertiary transition-colors text-left"
       >
-        <div className="flex items-center gap-2 text-sm font-medium text-gray-700">
+        <div className="flex items-center gap-2 text-sm font-medium text-theme-secondary">
           {isOpen ? (
             <ChevronDown className="h-4 w-4" />
           ) : (
             <ChevronRight className="h-4 w-4" />
           )}
           <span>{title}</span>
-          <span className="text-xs font-normal text-gray-400">
+          <span className="text-xs font-normal text-theme-muted">
             ({(content.length / 1024).toFixed(1)} KB)
           </span>
         </div>
@@ -58,7 +58,7 @@ function CollapsibleResponse({ title, content, defaultOpen = false }: Collapsibl
               e.stopPropagation();
               handleCopy();
             }}
-            className="flex items-center gap-1 text-xs text-gray-500 hover:text-gray-700 px-2 py-1 rounded bg-white border border-gray-200"
+            className="flex items-center gap-1 text-xs text-theme-tertiary hover:text-theme-secondary px-2 py-1 rounded bg-theme-primary border border-theme-primary"
           >
             {copied ? (
               <>
@@ -77,7 +77,7 @@ function CollapsibleResponse({ title, content, defaultOpen = false }: Collapsibl
 
       {isOpen && (
         <div className="p-3 bg-gray-900 max-h-64 overflow-auto">
-          <pre className="text-xs text-gray-100 font-mono whitespace-pre-wrap break-words">
+          <pre className="text-xs text-theme-tertiary font-mono whitespace-pre-wrap break-words">
             {content}
           </pre>
         </div>
@@ -106,7 +106,7 @@ export function RawResponseSection({ debugInfo }: RawResponseSectionProps) {
 
   return (
     <div className="space-y-3">
-      <h4 className="text-sm font-medium text-gray-700">Raw AI Responses</h4>
+      <h4 className="text-sm font-medium text-theme-secondary">Raw AI Responses</h4>
 
       <div className="space-y-2">
         <CollapsibleResponse

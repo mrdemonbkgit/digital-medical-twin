@@ -195,7 +195,7 @@ export function ProfilePage() {
         <Card>
           <CardContent>
             <div className="text-center py-8">
-              <p className="text-gray-600 mb-4">
+              <p className="text-theme-secondary mb-4">
                 {error || 'No profile found. Please complete your profile setup.'}
               </p>
               <Button onClick={() => navigate('/profile/setup')}>Setup Profile</Button>
@@ -221,7 +221,7 @@ export function ProfilePage() {
     <div className="flex items-center justify-between">
       <div className="flex items-center gap-2">
         {icon}
-        <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
+        <h3 className="text-lg font-semibold text-theme-primary">{title}</h3>
       </div>
       {editSection === section ? (
         <div className="flex gap-2">
@@ -292,7 +292,7 @@ export function ProfilePage() {
     <PageWrapper title="Your Profile">
       <div className="max-w-3xl mx-auto space-y-6">
         {saveError && (
-          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+          <div className="bg-danger-muted border border-danger text-danger px-4 py-3 rounded-lg">
             {saveError}
           </div>
         )}
@@ -351,46 +351,46 @@ export function ProfilePage() {
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                 <div>
-                  <p className="text-sm text-gray-500">Display Name</p>
-                  <p className="font-medium text-gray-900">
+                  <p className="text-sm text-theme-tertiary">Display Name</p>
+                  <p className="font-medium text-theme-primary">
                     {profile.displayName || 'Not set'}
                   </p>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500">Gender</p>
-                  <p className="font-medium text-gray-900">{formatGender(profile.gender)}</p>
+                  <p className="text-sm text-theme-tertiary">Gender</p>
+                  <p className="font-medium text-theme-primary">{formatGender(profile.gender)}</p>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Calendar className="w-4 h-4 text-gray-400" />
+                  <Calendar className="w-4 h-4 text-theme-muted" />
                   <div>
-                    <p className="text-sm text-gray-500">Age</p>
-                    <p className="font-medium text-gray-900">{age} years old</p>
+                    <p className="text-sm text-theme-tertiary">Age</p>
+                    <p className="font-medium text-theme-primary">{age} years old</p>
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Ruler className="w-4 h-4 text-gray-400" />
+                  <Ruler className="w-4 h-4 text-theme-muted" />
                   <div>
-                    <p className="text-sm text-gray-500">Height</p>
-                    <p className="font-medium text-gray-900">
+                    <p className="text-sm text-theme-tertiary">Height</p>
+                    <p className="font-medium text-theme-primary">
                       {profile.heightCm ? `${profile.heightCm} cm` : 'Not set'}
                     </p>
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Scale className="w-4 h-4 text-gray-400" />
+                  <Scale className="w-4 h-4 text-theme-muted" />
                   <div>
-                    <p className="text-sm text-gray-500">Weight</p>
-                    <p className="font-medium text-gray-900">
+                    <p className="text-sm text-theme-tertiary">Weight</p>
+                    <p className="font-medium text-theme-primary">
                       {profile.weightKg ? `${profile.weightKg} kg` : 'Not set'}
                     </p>
                   </div>
                 </div>
                 {bmi && (
                   <div>
-                    <p className="text-sm text-gray-500">BMI</p>
-                    <p className="font-medium text-gray-900">
+                    <p className="text-sm text-theme-tertiary">BMI</p>
+                    <p className="font-medium text-theme-primary">
                       {bmi.toFixed(1)}{' '}
-                      <span className="text-sm text-gray-500">({bmiCategory})</span>
+                      <span className="text-sm text-theme-tertiary">({bmiCategory})</span>
                     </p>
                   </div>
                 )}
@@ -439,71 +439,71 @@ export function ProfilePage() {
             ) : (
               <div className="space-y-4">
                 <div>
-                  <p className="text-sm text-gray-500 mb-2">Medical Conditions</p>
+                  <p className="text-sm text-theme-tertiary mb-2">Medical Conditions</p>
                   {profile.medicalConditions?.length ? (
                     <div className="flex flex-wrap gap-2">
                       {profile.medicalConditions.map((condition) => (
                         <span
                           key={condition}
-                          className="px-2 py-1 bg-red-50 text-red-700 rounded-full text-sm"
+                          className="px-2 py-1 bg-danger-muted text-danger rounded-full text-sm"
                         >
                           {condition}
                         </span>
                       ))}
                     </div>
                   ) : (
-                    <p className="text-gray-400 italic">None reported</p>
+                    <p className="text-theme-muted italic">None reported</p>
                   )}
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500 mb-2">Current Medications</p>
+                  <p className="text-sm text-theme-tertiary mb-2">Current Medications</p>
                   {profile.currentMedications?.length ? (
                     <div className="flex flex-wrap gap-2">
                       {profile.currentMedications.map((med) => (
                         <span
                           key={med}
-                          className="px-2 py-1 bg-blue-50 text-blue-700 rounded-full text-sm"
+                          className="px-2 py-1 bg-info-muted text-info rounded-full text-sm"
                         >
                           {med}
                         </span>
                       ))}
                     </div>
                   ) : (
-                    <p className="text-gray-400 italic">None reported</p>
+                    <p className="text-theme-muted italic">None reported</p>
                   )}
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500 mb-2">Allergies</p>
+                  <p className="text-sm text-theme-tertiary mb-2">Allergies</p>
                   {profile.allergies?.length ? (
                     <div className="flex flex-wrap gap-2">
                       {profile.allergies.map((allergy) => (
                         <span
                           key={allergy}
-                          className="px-2 py-1 bg-orange-50 text-orange-700 rounded-full text-sm"
+                          className="px-2 py-1 bg-warning-muted text-warning rounded-full text-sm"
                         >
                           {allergy}
                         </span>
                       ))}
                     </div>
                   ) : (
-                    <p className="text-gray-400 italic">None reported</p>
+                    <p className="text-theme-muted italic">None reported</p>
                   )}
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500 mb-2">Surgical History</p>
+                  <p className="text-sm text-theme-tertiary mb-2">Surgical History</p>
                   {profile.surgicalHistory?.length ? (
                     <div className="flex flex-wrap gap-2">
                       {profile.surgicalHistory.map((surgery) => (
                         <span
                           key={surgery}
-                          className="px-2 py-1 bg-purple-50 text-purple-700 rounded-full text-sm"
+                          className="px-2 py-1 bg-event-metric text-event-metric rounded-full text-sm"
                         >
                           {surgery}
                         </span>
                       ))}
                     </div>
                   ) : (
-                    <p className="text-gray-400 italic">None reported</p>
+                    <p className="text-theme-muted italic">None reported</p>
                   )}
                 </div>
               </div>
@@ -523,13 +523,13 @@ export function ProfilePage() {
           <CardContent>
             {editSection === 'family' && formData ? (
               <div className="space-y-4">
-                <p className="text-sm text-gray-600 mb-4">
+                <p className="text-sm text-theme-secondary mb-4">
                   Select conditions that run in your family and which relatives are
                   affected.
                 </p>
                 {FAMILY_CONDITIONS.map((condition) => (
-                  <div key={condition.value} className="border rounded-lg p-4">
-                    <h4 className="font-medium text-gray-900 mb-3">{condition.label}</h4>
+                  <div key={condition.value} className="border border-theme-primary rounded-lg p-4">
+                    <h4 className="font-medium text-theme-primary mb-3">{condition.label}</h4>
                     <div className="flex flex-wrap gap-2">
                       {RELATIVE_OPTIONS.map((relative) => {
                         const isSelected =
@@ -545,8 +545,8 @@ export function ProfilePage() {
                             }
                             className={`px-3 py-1.5 rounded-full text-sm border transition-colors ${
                               isSelected
-                                ? 'bg-cyan-100 border-cyan-300 text-cyan-800'
-                                : 'bg-gray-50 border-gray-200 text-gray-600 hover:bg-gray-100'
+                                ? 'bg-info-muted border-info text-info'
+                                : 'bg-theme-secondary border-theme-primary text-theme-secondary hover:bg-theme-tertiary'
                             }`}
                           >
                             {relative.label}
@@ -571,19 +571,19 @@ export function ProfilePage() {
                       return (
                         <div
                           key={condition}
-                          className="flex items-start gap-3 py-2 border-b border-gray-100 last:border-0"
+                          className="flex items-start gap-3 py-2 border-b border-theme-primary last:border-0"
                         >
-                          <span className="font-medium text-gray-900 shrink-0">
+                          <span className="font-medium text-theme-primary shrink-0">
                             {conditionLabel}:
                           </span>
-                          <span className="text-gray-600">
+                          <span className="text-theme-secondary">
                             {relatives.map((r) => getRelativeLabel(r)).join(', ')}
                           </span>
                         </div>
                       );
                     })
                 ) : (
-                  <p className="text-gray-400 italic">No family history reported</p>
+                  <p className="text-theme-muted italic">No family history reported</p>
                 )}
               </div>
             )}
@@ -651,20 +651,20 @@ export function ProfilePage() {
             ) : (
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                 <div>
-                  <p className="text-sm text-gray-500">Smoking</p>
-                  <p className="font-medium text-gray-900">
+                  <p className="text-sm text-theme-tertiary">Smoking</p>
+                  <p className="font-medium text-theme-primary">
                     {formatSmokingStatus(profile.smokingStatus)}
                   </p>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500">Alcohol</p>
-                  <p className="font-medium text-gray-900">
+                  <p className="text-sm text-theme-tertiary">Alcohol</p>
+                  <p className="font-medium text-theme-primary">
                     {formatAlcoholFrequency(profile.alcoholFrequency)}
                   </p>
                 </div>
                 <div>
-                  <p className="text-sm text-gray-500">Exercise</p>
-                  <p className="font-medium text-gray-900">
+                  <p className="text-sm text-theme-tertiary">Exercise</p>
+                  <p className="font-medium text-theme-primary">
                     {formatExerciseFrequency(profile.exerciseFrequency)}
                   </p>
                 </div>

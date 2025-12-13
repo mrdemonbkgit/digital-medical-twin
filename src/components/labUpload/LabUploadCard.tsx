@@ -98,35 +98,35 @@ export function LabUploadCard({
     switch (upload.status) {
       case 'pending':
         return (
-          <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-600">
+          <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-theme-tertiary text-theme-secondary">
             <Clock className="h-3 w-3" />
             Pending
           </span>
         );
       case 'processing':
         return (
-          <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-600">
+          <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-info-muted text-info">
             <Loader2 className="h-3 w-3 animate-spin" />
             Processing
           </span>
         );
       case 'complete':
         return (
-          <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-green-100 text-green-600">
+          <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-success-muted text-success">
             <CheckCircle className="h-3 w-3" />
             Complete
           </span>
         );
       case 'partial':
         return (
-          <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-amber-100 text-amber-600">
+          <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-warning-muted text-warning">
             <AlertCircle className="h-3 w-3" />
             Partial
           </span>
         );
       case 'failed':
         return (
-          <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-red-100 text-red-600">
+          <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium bg-danger-muted text-danger">
             <AlertCircle className="h-3 w-3" />
             Failed
           </span>
@@ -135,18 +135,18 @@ export function LabUploadCard({
   };
 
   return (
-    <div className="border border-gray-200 rounded-lg p-4 bg-white hover:shadow-sm transition-shadow">
+    <div className="border border-theme-primary rounded-lg p-4 bg-theme-primary hover:shadow-sm transition-shadow">
       <div className="flex items-start justify-between gap-4">
         {/* File info */}
         <div className="flex items-start gap-3 min-w-0 flex-1">
-          <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center flex-shrink-0">
-            <FileText className="h-5 w-5 text-blue-600" />
+          <div className="w-10 h-10 bg-info-muted rounded-lg flex items-center justify-center flex-shrink-0">
+            <FileText className="h-5 w-5 text-info" />
           </div>
           <div className="min-w-0 flex-1">
-            <p className="text-sm font-medium text-gray-900 truncate">
+            <p className="text-sm font-medium text-theme-primary truncate">
               {upload.filename}
             </p>
-            <p className="text-xs text-gray-500">
+            <p className="text-xs text-theme-tertiary">
               {formatFileSize(upload.fileSize)} • {new Date(upload.createdAt).toLocaleDateString()}
             </p>
             {getStatusBadge()}
@@ -168,7 +168,7 @@ export function LabUploadCard({
             size="sm"
             onClick={() => onDelete(upload.id)}
             disabled={isDeleting || !canDelete}
-            className="text-gray-400 hover:text-red-600"
+            className="text-theme-muted hover:text-danger"
             title={isStuck ? 'Delete stuck job' : 'Delete'}
           >
             {isDeleting ? (
@@ -183,7 +183,7 @@ export function LabUploadCard({
       {/* Processing progress */}
       {isProcessing && (
         <div className={`mt-3 space-y-2 text-sm rounded-lg px-3 py-2 ${
-          isStuck ? 'text-amber-600 bg-amber-50' : 'text-blue-600 bg-blue-50'
+          isStuck ? 'text-warning bg-warning-muted' : 'text-info bg-info-muted'
         }`}>
           <div className="flex items-center gap-2">
             <Loader2 className="h-4 w-4 animate-spin" />
@@ -223,7 +223,7 @@ export function LabUploadCard({
       {/* Failed state */}
       {upload.status === 'failed' && (
         <div className="mt-3 space-y-2">
-          <div className="flex items-center gap-2 text-sm text-red-600 bg-red-50 rounded-lg px-3 py-2">
+          <div className="flex items-center gap-2 text-sm text-danger bg-danger-muted rounded-lg px-3 py-2">
             <AlertCircle className="h-4 w-4 flex-shrink-0" />
             <span className="flex-1">{upload.errorMessage || 'Extraction failed'}</span>
           </div>
@@ -244,21 +244,21 @@ export function LabUploadCard({
         <div className="mt-3 space-y-2">
           {/* Extraction summary */}
           <div className="flex items-center justify-between text-sm">
-            <span className="text-gray-600">
+            <span className="text-theme-secondary">
               {upload.extractedData.biomarkers.length} biomarker{upload.extractedData.biomarkers.length !== 1 ? 's' : ''} extracted
             </span>
             {upload.verificationPassed ? (
-              <span className="text-green-600 flex items-center gap-1">
+              <span className="text-success flex items-center gap-1">
                 <CheckCircle className="h-3 w-3" />
                 Verified
               </span>
             ) : upload.status === 'partial' ? (
-              <span className="text-amber-600 flex items-center gap-1">
+              <span className="text-warning flex items-center gap-1">
                 <AlertCircle className="h-3 w-3" />
                 Needs review
               </span>
             ) : (
-              <span className="text-amber-600 flex items-center gap-1">
+              <span className="text-warning flex items-center gap-1">
                 <AlertCircle className="h-3 w-3" />
                 Unverified
               </span>
@@ -267,7 +267,7 @@ export function LabUploadCard({
 
           {/* Corrections */}
           {upload.corrections && upload.corrections.length > 0 && (
-            <div className="text-xs text-gray-500 bg-gray-50 rounded px-2 py-1">
+            <div className="text-xs text-theme-tertiary bg-theme-secondary rounded px-2 py-1">
               {upload.corrections.length} correction{upload.corrections.length !== 1 ? 's' : ''} applied
             </div>
           )}

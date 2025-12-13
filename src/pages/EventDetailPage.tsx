@@ -155,7 +155,7 @@ export function EventDetailPage() {
     return (
       <PageWrapper title="Error">
         <div className="text-center py-12">
-          <p className="text-red-600 mb-4">{loadError || 'Event not found'}</p>
+          <p className="text-danger mb-4">{loadError || 'Event not found'}</p>
           <Link to="/timeline">
             <Button variant="secondary">Back to Timeline</Button>
           </Link>
@@ -245,14 +245,14 @@ export function EventDetailPage() {
           >
             <div className="flex items-center gap-3">
               <Icon className={`w-5 h-5 ${typeInfo.colors.icon}`} />
-              <span className="font-medium text-gray-900">{typeInfo.label}</span>
+              <span className="font-medium text-theme-primary">{typeInfo.label}</span>
             </div>
             <Button
               variant="ghost"
               size="sm"
               onClick={handleDelete}
               disabled={isDeleting}
-              className="text-red-600 hover:text-red-700 hover:bg-red-50"
+              className="text-danger hover:text-danger hover:bg-danger-muted"
             >
               {isDeleting ? (
                 <LoadingSpinner size="sm" />
@@ -269,8 +269,8 @@ export function EventDetailPage() {
               {renderForm()}
 
               {mutationError && (
-                <div className="p-4 bg-red-50 border border-red-200 rounded-lg">
-                  <p className="text-sm text-red-600">{mutationError}</p>
+                <div className="p-4 bg-danger-muted border border-danger rounded-lg">
+                  <p className="text-sm text-danger">{mutationError}</p>
                 </div>
               )}
 

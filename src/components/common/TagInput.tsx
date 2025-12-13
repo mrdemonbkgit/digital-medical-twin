@@ -72,21 +72,21 @@ export function TagInput({
   return (
     <div className="space-y-1" ref={containerRef}>
       {label && (
-        <label className="block text-sm font-medium text-gray-700">{label}</label>
+        <label className="block text-sm font-medium text-theme-secondary">{label}</label>
       )}
 
       <div
         className={cn(
           'flex flex-wrap gap-2 p-2 border rounded-lg min-h-[42px] cursor-text',
-          'focus-within:border-blue-500 focus-within:ring-1 focus-within:ring-blue-500',
-          error ? 'border-red-500' : 'border-gray-300'
+          'focus-within:border-accent focus-within:ring-1 focus-within:ring-accent',
+          error ? 'border-danger' : 'border-theme-primary'
         )}
         onClick={() => inputRef.current?.focus()}
       >
         {tags.map((tag) => (
           <span
             key={tag}
-            className="inline-flex items-center gap-1 pl-3 pr-1 py-1 bg-blue-100 text-blue-800 rounded-full text-sm"
+            className="inline-flex items-center gap-1 pl-3 pr-1 py-1 bg-info-muted text-accent rounded-full text-sm"
           >
             {tag}
             <button
@@ -95,7 +95,7 @@ export function TagInput({
                 e.stopPropagation();
                 removeTag(tag);
               }}
-              className="p-1.5 rounded-full hover:bg-blue-200 hover:text-blue-700 focus:outline-none min-w-[28px] min-h-[28px] flex items-center justify-center"
+              className="p-1.5 rounded-full hover:bg-theme-tertiary hover:text-accent focus:outline-none min-w-[28px] min-h-[28px] flex items-center justify-center"
               aria-label={`Remove ${tag}`}
             >
               <X className="h-3.5 w-3.5" />
@@ -120,13 +120,13 @@ export function TagInput({
 
           {/* Suggestions dropdown */}
           {showSuggestions && filteredSuggestions.length > 0 && (
-            <div className="absolute z-10 left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg max-h-48 overflow-y-auto">
+            <div className="absolute z-10 left-0 right-0 mt-1 bg-theme-primary border border-theme-primary rounded-lg shadow-lg max-h-48 overflow-y-auto">
               {filteredSuggestions.map((suggestion) => (
                 <button
                   key={suggestion}
                   type="button"
                   onClick={() => addTag(suggestion)}
-                  className="w-full px-3 py-2 text-left text-sm hover:bg-gray-100 focus:bg-gray-100 focus:outline-none"
+                  className="w-full px-3 py-2 text-left text-sm hover:bg-theme-secondary focus:bg-theme-secondary focus:outline-none"
                 >
                   {suggestion}
                 </button>
@@ -136,9 +136,9 @@ export function TagInput({
         </div>
       </div>
 
-      {error && <p className="text-sm text-red-600">{error}</p>}
+      {error && <p className="text-sm text-danger">{error}</p>}
 
-      <p className="text-xs text-gray-500">
+      <p className="text-xs text-theme-tertiary">
         Press Enter or comma to add a tag
       </p>
     </div>

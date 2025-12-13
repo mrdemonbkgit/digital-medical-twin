@@ -18,7 +18,7 @@ export function EventTypeSelectorPage() {
       }
     >
       <div className="max-w-3xl mx-auto">
-        <p className="text-gray-600 mb-8 text-center">
+        <p className="text-theme-secondary mb-8 text-center">
           What type of health event would you like to record?
         </p>
         <EventTypeSelector />

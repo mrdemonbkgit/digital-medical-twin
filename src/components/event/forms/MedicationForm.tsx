@@ -137,9 +137,9 @@ export function MedicationForm({ data, onChange, errors }: MedicationFormProps) 
               handleChange('endDate', undefined);
             }
           }}
-          className="h-5 w-5 rounded border-gray-300 text-blue-600 focus:ring-blue-500"
+          className="h-5 w-5 rounded border-theme-secondary text-accent focus:ring-accent"
         />
-        <span className="text-sm text-gray-700">
+        <span className="text-sm text-theme-secondary">
           Currently taking this medication
         </span>
       </label>

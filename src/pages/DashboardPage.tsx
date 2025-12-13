@@ -39,10 +39,10 @@ export function DashboardPage() {
         {/* Welcome card */}
         <Card>
           <CardContent>
-            <h2 className="text-lg font-semibold text-gray-900">
+            <h2 className="text-lg font-semibold text-theme-primary">
               Welcome back, {profile?.displayName || user?.email?.split('@')[0]}
             </h2>
-            <p className="mt-1 text-gray-600">
+            <p className="mt-1 text-theme-secondary">
               Your digital medical twin is tracking your health journey.
             </p>
           </CardContent>
@@ -62,16 +62,16 @@ export function DashboardPage() {
                   className={`flex items-center gap-2 p-3 rounded-lg border-2 transition-all ${colors.bg} ${colors.border} ${colors.hover}`}
                 >
                   <Icon className={`w-5 h-5 ${colors.icon}`} />
-                  <span className="text-sm font-medium text-gray-700">{label}</span>
+                  <span className="text-sm font-medium text-theme-secondary">{label}</span>
                 </Link>
               ))}
               {/* Upload Lab PDF quick action */}
               <Link
                 to={ROUTES.LAB_UPLOADS}
-                className="flex items-center gap-2 p-3 rounded-lg border-2 transition-all bg-cyan-50 border-cyan-200 hover:border-cyan-400 hover:bg-cyan-100"
+                className="flex items-center gap-2 p-3 rounded-lg border-2 transition-all bg-info-muted border-info hover:opacity-80"
               >
-                <FileUp className="w-5 h-5 text-cyan-600" />
-                <span className="text-sm font-medium text-gray-700">Upload Lab</span>
+                <FileUp className="w-5 h-5 text-info" />
+                <span className="text-sm font-medium text-theme-secondary">Upload Lab</span>
               </Link>
             </div>
           </CardContent>
@@ -95,11 +95,11 @@ export function DashboardPage() {
               </div>
             ) : events.length === 0 ? (
               <div className="text-center py-8">
-                <Calendar className="mx-auto h-12 w-12 text-gray-400" />
-                <h3 className="mt-4 text-lg font-medium text-gray-900">
+                <Calendar className="mx-auto h-12 w-12 text-theme-muted" />
+                <h3 className="mt-4 text-lg font-medium text-theme-primary">
                   No health events yet
                 </h3>
-                <p className="mt-2 text-gray-600">
+                <p className="mt-2 text-theme-secondary">
                   Start tracking your health by adding your first event.
                 </p>
                 <Link to="/event/new">

@@ -32,7 +32,7 @@ export function InsightsDetailPage() {
       <PageWrapper title="Biomarker Details">
         <Card>
           <CardContent>
-            <p className="py-8 text-center text-red-600">{error}</p>
+            <p className="py-8 text-center text-danger">{error}</p>
           </CardContent>
         </Card>
       </PageWrapper>
@@ -46,7 +46,7 @@ export function InsightsDetailPage() {
         <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between mb-6">
           <Link
             to={ROUTES.INSIGHTS}
-            className="inline-flex items-center gap-1 text-sm text-gray-600 hover:text-gray-900"
+            className="inline-flex items-center gap-1 text-sm text-theme-secondary hover:text-theme-primary"
           >
             <ArrowLeft className="h-4 w-4" />
             Back to Insights
@@ -56,10 +56,10 @@ export function InsightsDetailPage() {
         <Card>
           <CardContent>
             <div className="flex flex-col items-center justify-center py-16">
-              <p className="text-lg font-medium text-gray-900">
+              <p className="text-lg font-medium text-theme-primary">
                 No data found in selected time range
               </p>
-              <p className="mt-2 text-gray-500">
+              <p className="mt-2 text-theme-tertiary">
                 Try selecting a longer time range to see historical data.
               </p>
             </div>
@@ -82,15 +82,15 @@ export function InsightsDetailPage() {
           <div>
             <Link
               to={ROUTES.INSIGHTS}
-              className="inline-flex items-center gap-1 text-sm text-gray-600 hover:text-gray-900"
+              className="inline-flex items-center gap-1 text-sm text-theme-secondary hover:text-theme-primary"
             >
               <ArrowLeft className="h-4 w-4" />
               Back to Insights
             </Link>
-            <h1 className="mt-2 text-2xl font-bold text-gray-900">
+            <h1 className="mt-2 text-2xl font-bold text-theme-primary">
               {timeSeries.name}
             </h1>
-            <p className="mt-1 text-sm text-gray-500">
+            <p className="mt-1 text-sm text-theme-tertiary">
               {categoryInfo?.label || timeSeries.category}
             </p>
           </div>
@@ -102,8 +102,8 @@ export function InsightsDetailPage() {
           <div
             className={`flex items-center gap-2 rounded-lg px-4 py-3 ${
               isHigh
-                ? 'bg-red-50 text-red-700'
-                : 'bg-amber-50 text-amber-700'
+                ? 'bg-danger-muted text-danger'
+                : 'bg-warning-muted text-warning'
             }`}
           >
             <AlertTriangle className="h-5 w-5" />
@@ -126,11 +126,11 @@ export function InsightsDetailPage() {
         {/* Reference info */}
         <Card>
           <CardContent>
-            <h3 className="font-medium text-gray-900">Reference Information</h3>
+            <h3 className="font-medium text-theme-primary">Reference Information</h3>
             <div className="mt-4 grid gap-4 sm:grid-cols-2">
               <div>
-                <p className="text-sm text-gray-500">Reference Range</p>
-                <p className="mt-1 text-lg font-medium text-gray-900">
+                <p className="text-sm text-theme-tertiary">Reference Range</p>
+                <p className="mt-1 text-lg font-medium text-theme-primary">
                   {timeSeries.referenceMin !== undefined &&
                   timeSeries.referenceMax !== undefined
                     ? `${timeSeries.referenceMin} - ${timeSeries.referenceMax} ${timeSeries.unit}`
@@ -138,8 +138,8 @@ export function InsightsDetailPage() {
                 </p>
               </div>
               <div>
-                <p className="text-sm text-gray-500">Data Points</p>
-                <p className="mt-1 text-lg font-medium text-gray-900">
+                <p className="text-sm text-theme-tertiary">Data Points</p>
+                <p className="mt-1 text-lg font-medium text-theme-primary">
                   {timeSeries.dataPoints.length} measurement
                   {timeSeries.dataPoints.length !== 1 ? 's' : ''}
                 </p>
@@ -148,20 +148,20 @@ export function InsightsDetailPage() {
 
             {/* Clinical significance from standard */}
             {standard?.clinicalSignificance && (
-              <div className="mt-6 border-t border-gray-100 pt-4">
-                <p className="text-sm font-medium text-gray-500">
+              <div className="mt-6 border-t border-theme-primary pt-4">
+                <p className="text-sm font-medium text-theme-tertiary">
                   Clinical Significance
                 </p>
-                <p className="mt-2 text-sm text-gray-700">
+                <p className="mt-2 text-sm text-theme-secondary">
                   {standard.clinicalSignificance}
                 </p>
               </div>
             )}
 
             {standard?.description && (
-              <div className="mt-4 border-t border-gray-100 pt-4">
-                <p className="text-sm font-medium text-gray-500">Description</p>
-                <p className="mt-2 text-sm text-gray-700">
+              <div className="mt-4 border-t border-theme-primary pt-4">
+                <p className="text-sm font-medium text-theme-tertiary">Description</p>
+                <p className="mt-2 text-sm text-theme-secondary">
                   {standard.description}
                 </p>
               </div>

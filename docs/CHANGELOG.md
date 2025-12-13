@@ -26,27 +26,35 @@ Version history and release notes for Digital Medical Twin. Lists all notable ch
 
 ### Added
 
-- **Theme Switching (Light/Dark/System)**
-  - New theme toggle in Settings page with Light, Dark, and System options
+- **Multi-Theme System (4 Themes)**
+  - New theme selector in Settings page: Light, Dark, Ocean, Forest, System
   - System mode follows OS preferences via `prefers-color-scheme`
+  - CSS Variables architecture with `[data-theme="name"]` selectors
+  - Semantic color tokens for consistent theming across all components
   - Theme persisted to localStorage
-  - `src/context/ThemeContext.tsx`, `src/types/theme.ts`
+  - `src/context/ThemeContext.tsx`, `src/types/theme.ts`, `src/styles/globals.css`
 
 ### Changed
 
-- **Dark Mode Color Palette Overhaul**
-  - Migrated from `slate` (blue-tinted) to `zinc` (true neutral gray) palette
-  - Improved WCAG accessibility compliance:
-    - Primary text: 15.4:1 contrast ratio
-    - Secondary text: 9.3:1 contrast ratio
-    - Placeholder text: 5.9:1 (was 2.7:1 - now WCAG AA compliant)
-  - New elevation-based background system:
-    - Base: `zinc-900` (#18181b) - less harsh than pure black
-    - Surface 1: `zinc-800` for cards
-    - Surface 2: `zinc-700` for elevated elements
-    - Hover: `zinc-600` for interactive states
-  - Updated 24 component files across layout, common, AI, event, and page layers
-  - Better visual hierarchy and reduced eye strain
+- **CSS Variables Theme Architecture**
+  - Replaced Tailwind `dark:` prefix approach with CSS Variables
+  - New semantic utility classes: `bg-theme-primary`, `text-theme-secondary`, etc.
+  - Status colors: `text-danger`, `bg-success-muted`, `text-warning`, etc.
+  - Event type colors: `bg-event-lab`, `text-event-medication`, etc.
+  - Input styling via `input-theme` class
+  - Updated 87 component files to use theme utility classes
+
+- **Subtle Dark Theme Colors**
+  - Event backgrounds now use low-saturation tints instead of harsh saturated colors
+  - Status backgrounds (danger, success, warning, info) softened for dark themes
+  - Lab Result cards: `#2a2020` (subtle warm gray) instead of `#450a0a` (harsh red)
+  - Better eye comfort for extended use in dark environments
+
+- **Header Redesign**
+  - Compact stacked app name: "DIGITAL" (small label) + "MedTwin" (brand)
+  - Header uses `bg-theme-tertiary` for visual separation from page content
+  - Navigation links now use `whitespace-nowrap` to prevent text wrapping
+  - Icons use `flex-shrink-0` for consistent sizing
 
 ### Added (previous)
 

@@ -35,14 +35,14 @@ export function SparklineCard({ biomarker }: SparklineCardProps) {
       className={cn(
         'flex flex-col rounded-lg border p-3 text-left transition-all hover:shadow-md',
         isOutOfRange
-          ? 'border-red-200 bg-red-50 hover:border-red-300'
-          : 'border-gray-200 bg-white hover:border-gray-300'
+          ? 'border-danger bg-danger-muted hover:opacity-90'
+          : 'border-theme-primary bg-theme-secondary hover:border-theme-secondary'
       )}
     >
       {/* Header */}
       <div className="mb-2 flex items-start justify-between">
         <div className="min-w-0 flex-1">
-          <h4 className="truncate text-sm font-medium text-gray-900">
+          <h4 className="truncate text-sm font-medium text-theme-primary">
             {biomarker.name}
           </h4>
         </div>
@@ -50,7 +50,7 @@ export function SparklineCard({ biomarker }: SparklineCardProps) {
           <AlertTriangle
             className={cn(
               'ml-2 h-4 w-4 flex-shrink-0',
-              isHigh ? 'text-red-500' : 'text-amber-500'
+              isHigh ? 'text-danger' : 'text-warning'
             )}
           />
         )}
@@ -91,7 +91,7 @@ export function SparklineCard({ biomarker }: SparklineCardProps) {
             <div
               className={cn(
                 'h-3 w-3 rounded-full',
-                isOutOfRange ? 'bg-red-500' : 'bg-blue-500'
+                isOutOfRange ? 'bg-danger' : 'bg-info'
               )}
             />
           </div>
@@ -103,12 +103,12 @@ export function SparklineCard({ biomarker }: SparklineCardProps) {
         <span
           className={cn(
             'text-lg font-semibold',
-            isOutOfRange ? 'text-red-700' : 'text-gray-900'
+            isOutOfRange ? 'text-danger' : 'text-theme-primary'
           )}
         >
           {biomarker.latestValue}
         </span>
-        <span className="text-sm text-gray-500">{biomarker.unit}</span>
+        <span className="text-sm text-theme-tertiary">{biomarker.unit}</span>
       </div>
 
       {/* Flag badge */}
@@ -118,8 +118,8 @@ export function SparklineCard({ biomarker }: SparklineCardProps) {
             className={cn(
               'inline-block rounded-full px-2 py-0.5 text-xs font-medium',
               isHigh
-                ? 'bg-red-100 text-red-700'
-                : 'bg-amber-100 text-amber-700'
+                ? 'bg-danger-muted text-danger'
+                : 'bg-warning-muted text-warning'
             )}
           >
             {isHigh ? 'HIGH' : 'LOW'}

@@ -98,10 +98,10 @@ export function LabUploadList({ onRefetchRef }: LabUploadListProps) {
   if (error) {
     return (
       <div className="text-center py-12">
-        <p className="text-red-600">{error}</p>
+        <p className="text-danger">{error}</p>
         <button
           onClick={() => refetch()}
-          className="mt-2 text-blue-600 hover:underline"
+          className="mt-2 text-info hover:underline"
         >
           Try again
         </button>
@@ -112,11 +112,11 @@ export function LabUploadList({ onRefetchRef }: LabUploadListProps) {
   if (uploads.length === 0) {
     return (
       <div className="text-center py-12">
-        <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-          <FileText className="h-8 w-8 text-gray-400" />
+        <div className="w-16 h-16 bg-theme-tertiary rounded-full flex items-center justify-center mx-auto mb-4">
+          <FileText className="h-8 w-8 text-theme-muted" />
         </div>
-        <h3 className="text-lg font-medium text-gray-900 mb-1">No uploads yet</h3>
-        <p className="text-gray-500">
+        <h3 className="text-lg font-medium text-theme-primary mb-1">No uploads yet</h3>
+        <p className="text-theme-tertiary">
           Upload a lab result PDF above to get started
         </p>
       </div>
@@ -136,7 +136,7 @@ export function LabUploadList({ onRefetchRef }: LabUploadListProps) {
         {/* Processing */}
         {processing.length > 0 && (
           <div>
-            <h3 className="text-sm font-medium text-gray-700 mb-3">Processing</h3>
+            <h3 className="text-sm font-medium text-theme-secondary mb-3">Processing</h3>
             <div className="space-y-3">
               {processing.map((upload) => (
                 <LabUploadCard
@@ -155,7 +155,7 @@ export function LabUploadList({ onRefetchRef }: LabUploadListProps) {
         {/* Pending */}
         {pending.length > 0 && (
           <div>
-            <h3 className="text-sm font-medium text-gray-700 mb-3">Pending</h3>
+            <h3 className="text-sm font-medium text-theme-secondary mb-3">Pending</h3>
             <div className="space-y-3">
               {pending.map((upload) => (
                 <LabUploadCard
@@ -174,7 +174,7 @@ export function LabUploadList({ onRefetchRef }: LabUploadListProps) {
         {/* Partial (extraction succeeded but post-processing failed) */}
         {partial.length > 0 && (
           <div>
-            <h3 className="text-sm font-medium text-gray-700 mb-3">Needs Review (Partial)</h3>
+            <h3 className="text-sm font-medium text-theme-secondary mb-3">Needs Review (Partial)</h3>
             <div className="space-y-3">
               {partial.map((upload) => (
                 <LabUploadCard
@@ -193,7 +193,7 @@ export function LabUploadList({ onRefetchRef }: LabUploadListProps) {
         {/* Failed */}
         {failed.length > 0 && (
           <div>
-            <h3 className="text-sm font-medium text-gray-700 mb-3">Failed</h3>
+            <h3 className="text-sm font-medium text-theme-secondary mb-3">Failed</h3>
             <div className="space-y-3">
               {failed.map((upload) => (
                 <LabUploadCard
@@ -212,7 +212,7 @@ export function LabUploadList({ onRefetchRef }: LabUploadListProps) {
         {/* Complete */}
         {complete.length > 0 && (
           <div>
-            <h3 className="text-sm font-medium text-gray-700 mb-3">
+            <h3 className="text-sm font-medium text-theme-secondary mb-3">
               Completed ({complete.length})
             </h3>
             <div className="space-y-3">

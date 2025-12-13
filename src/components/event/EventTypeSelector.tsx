@@ -139,8 +139,8 @@ export function EventTypeSelector({
           >
             <Icon className={cn('w-6 h-6', colors.icon)} />
           </div>
-          <h3 className="text-lg font-semibold text-gray-900 mb-1">{label}</h3>
-          <p className="text-sm text-gray-600">{description}</p>
+          <h3 className="text-lg font-semibold text-theme-primary mb-1">{label}</h3>
+          <p className="text-sm text-theme-secondary">{description}</p>
         </button>
       ))}
     </div>

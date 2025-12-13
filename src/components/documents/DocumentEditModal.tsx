@@ -63,9 +63,9 @@ export function DocumentEditModal({
   return (
     <Modal isOpen={isOpen} onClose={onClose} title="Edit Document">
       <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="text-sm text-gray-600 bg-gray-50 rounded-lg p-3">
+        <div className="text-sm text-theme-secondary bg-theme-secondary rounded-lg p-3">
           <p className="font-medium truncate">{document.filename}</p>
-          <p className="text-xs text-gray-500 mt-1">
+          <p className="text-xs text-theme-tertiary mt-1">
             Uploaded {new Date(document.createdAt).toLocaleDateString()}
           </p>
         </div>

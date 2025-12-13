@@ -33,19 +33,19 @@ function CustomTooltip({
   const isOutOfRange = flag === 'high' || flag === 'low';
 
   return (
-    <div className="rounded-lg border border-gray-200 bg-white p-3 shadow-lg">
-      <p className="text-sm text-gray-500">
+    <div className="rounded-lg border border-theme-primary bg-theme-elevated p-3 shadow-lg">
+      <p className="text-sm text-theme-tertiary">
         {format(parseISO(data.date), 'MMM d, yyyy')}
       </p>
-      <p className="text-lg font-semibold text-gray-900">
+      <p className="text-lg font-semibold text-theme-primary">
         {data.value} {biomarker.unit}
       </p>
       {isOutOfRange && (
         <span
           className={`mt-1 inline-block rounded-full px-2 py-0.5 text-xs font-medium ${
             flag === 'high'
-              ? 'bg-red-100 text-red-700'
-              : 'bg-amber-100 text-amber-700'
+              ? 'bg-danger-muted text-danger'
+              : 'bg-warning-muted text-warning'
           }`}
         >
           {flag?.toUpperCase()}

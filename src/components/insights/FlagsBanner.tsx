@@ -11,7 +11,7 @@ export function FlagsBanner({ flagCounts }: FlagsBannerProps) {
 
   if (total === 0) {
     return (
-      <div className="flex items-center gap-2 rounded-lg bg-green-50 px-4 py-3 text-green-700">
+      <div className="flex items-center gap-2 rounded-lg bg-success-muted px-4 py-3 text-success">
         <span className="text-sm font-medium">All biomarkers within normal range</span>
       </div>
     );
@@ -20,7 +20,7 @@ export function FlagsBanner({ flagCounts }: FlagsBannerProps) {
   return (
     <div className="flex flex-wrap items-center gap-3">
       {high > 0 && (
-        <div className="flex items-center gap-1.5 rounded-full bg-red-100 px-3 py-1.5 text-red-700">
+        <div className="flex items-center gap-1.5 rounded-full bg-danger-muted px-3 py-1.5 text-danger">
           <AlertTriangle className="h-4 w-4" />
           <span className="text-sm font-medium">
             {high} High
@@ -28,7 +28,7 @@ export function FlagsBanner({ flagCounts }: FlagsBannerProps) {
         </div>
       )}
       {low > 0 && (
-        <div className="flex items-center gap-1.5 rounded-full bg-amber-100 px-3 py-1.5 text-amber-700">
+        <div className="flex items-center gap-1.5 rounded-full bg-warning-muted px-3 py-1.5 text-warning">
           <AlertTriangle className="h-4 w-4" />
           <span className="text-sm font-medium">
             {low} Low

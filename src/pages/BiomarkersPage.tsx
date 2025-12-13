@@ -112,7 +112,7 @@ export function BiomarkersPage() {
       <PageWrapper title="Biomarker Reference">
         <Card>
           <CardContent>
-            <p className="text-red-600 text-center py-8">{error}</p>
+            <p className="text-danger text-center py-8">{error}</p>
           </CardContent>
         </Card>
       </PageWrapper>
@@ -127,10 +127,10 @@ export function BiomarkersPage() {
           <CardContent>
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <div>
-                <h2 className="text-lg font-semibold text-gray-900">
+                <h2 className="text-lg font-semibold text-theme-primary">
                   Standardized Biomarkers
                 </h2>
-                <p className="text-sm text-gray-600 mt-1">
+                <p className="text-sm text-theme-secondary mt-1">
                   Reference information for {allBiomarkers.length} biomarkers with standard
                   units and reference ranges
                 </p>
@@ -142,7 +142,7 @@ export function BiomarkersPage() {
                 >
                   Expand All
                 </button>
-                <span className="text-gray-300">|</span>
+                <span className="text-theme-muted">|</span>
                 <button
                   onClick={collapseAll}
                   className="text-sm text-cyan-600 hover:text-cyan-700"
@@ -153,7 +153,7 @@ export function BiomarkersPage() {
             </div>
 
             <div className="mt-4 relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-theme-muted" />
               <Input
                 type="text"
                 placeholder="Search biomarkers..."
@@ -174,27 +174,27 @@ export function BiomarkersPage() {
           return (
             <Card key={category}>
               <CardHeader
-                className="cursor-pointer hover:bg-gray-50 transition-colors"
+                className="cursor-pointer hover:bg-theme-secondary transition-colors"
                 onClick={() => toggleCategory(category)}
               >
                 <div className="flex items-center justify-between">
                   <div>
                     <CardTitle className="text-lg">{categoryInfo.label}</CardTitle>
-                    <p className="text-sm text-gray-500 mt-1">
+                    <p className="text-sm text-theme-tertiary mt-1">
                       {categoryInfo.description} ({items.length} biomarkers)
                     </p>
                   </div>
                   {isExpanded ? (
-                    <ChevronUp className="w-5 h-5 text-gray-400" />
+                    <ChevronUp className="w-5 h-5 text-theme-muted" />
                   ) : (
-                    <ChevronDown className="w-5 h-5 text-gray-400" />
+                    <ChevronDown className="w-5 h-5 text-theme-muted" />
                   )}
                 </div>
               </CardHeader>
 
               {isExpanded && (
                 <CardContent className="pt-0">
-                  <div className="divide-y divide-gray-100">
+                  <div className="divide-y divide-theme-primary">
                     {items.map((biomarker) => (
                       <BiomarkerRow
                         key={biomarker.id}
@@ -217,7 +217,7 @@ export function BiomarkersPage() {
         {categories.length === 0 && searchQuery && (
           <Card>
             <CardContent>
-              <p className="text-center text-gray-500 py-8">
+              <p className="text-center text-theme-tertiary py-8">
                 No biomarkers found matching "{searchQuery}"
               </p>
             </CardContent>
@@ -243,67 +243,67 @@ function BiomarkerRow({ biomarker, isSelected, onSelect }: BiomarkerRowProps) {
   return (
     <div className="py-3">
       <div
-        className="flex items-center justify-between cursor-pointer hover:bg-gray-50 -mx-4 px-4 py-2 rounded-lg"
+        className="flex items-center justify-between cursor-pointer hover:bg-theme-secondary -mx-4 px-4 py-2 rounded-lg"
         onClick={onSelect}
       >
         <div className="flex-1">
           <div className="flex items-center gap-2">
-            <span className="font-medium text-gray-900">{biomarker.name}</span>
-            <span className="text-xs text-gray-400 font-mono">{biomarker.code}</span>
+            <span className="font-medium text-theme-primary">{biomarker.name}</span>
+            <span className="text-xs text-theme-muted font-mono">{biomarker.code}</span>
           </div>
           <div className="flex items-center gap-4 mt-1 text-sm">
-            <span className="text-gray-500">
-              Unit: <span className="font-mono text-gray-700">{biomarker.standardUnit}</span>
+            <span className="text-theme-tertiary">
+              Unit: <span className="font-mono text-theme-secondary">{biomarker.standardUnit}</span>
             </span>
             {sameRange ? (
-              <span className="text-gray-500">
-                Range: <span className="text-gray-700">{maleRange.low} - {maleRange.high}</span>
+              <span className="text-theme-tertiary">
+                Range: <span className="text-theme-secondary">{maleRange.low} - {maleRange.high}</span>
               </span>
             ) : (
               <>
-                <span className="text-gray-500">
-                  M: <span className="text-gray-700">{maleRange.low} - {maleRange.high}</span>
+                <span className="text-theme-tertiary">
+                  M: <span className="text-theme-secondary">{maleRange.low} - {maleRange.high}</span>
                 </span>
-                <span className="text-gray-500">
-                  F: <span className="text-gray-700">{femaleRange.low} - {femaleRange.high}</span>
+                <span className="text-theme-tertiary">
+                  F: <span className="text-theme-secondary">{femaleRange.low} - {femaleRange.high}</span>
                 </span>
               </>
             )}
           </div>
         </div>
-        <Info className="w-4 h-4 text-gray-400" />
+        <Info className="w-4 h-4 text-theme-muted" />
       </div>
 
       {isSelected && (
         <div className="mt-3 ml-4 pl-4 border-l-2 border-cyan-200 space-y-3">
           {biomarker.description && (
             <div>
-              <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+              <p className="text-xs font-medium text-theme-tertiary uppercase tracking-wide">
                 Description
               </p>
-              <p className="text-sm text-gray-700 mt-1">{biomarker.description}</p>
+              <p className="text-sm text-theme-secondary mt-1">{biomarker.description}</p>
             </div>
           )}
 
           {biomarker.clinicalSignificance && (
             <div>
-              <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+              <p className="text-xs font-medium text-theme-tertiary uppercase tracking-wide">
                 Clinical Significance
               </p>
-              <p className="text-sm text-gray-700 mt-1">{biomarker.clinicalSignificance}</p>
+              <p className="text-sm text-theme-secondary mt-1">{biomarker.clinicalSignificance}</p>
             </div>
           )}
 
           {biomarker.aliases.length > 0 && (
             <div>
-              <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+              <p className="text-xs font-medium text-theme-tertiary uppercase tracking-wide">
                 Also Known As
               </p>
               <div className="flex flex-wrap gap-1 mt-1">
                 {biomarker.aliases.map((alias) => (
                   <span
                     key={alias}
-                    className="px-2 py-0.5 bg-gray-100 text-gray-600 rounded text-xs"
+                    className="px-2 py-0.5 bg-theme-tertiary text-theme-secondary rounded text-xs"
                   >
                     {alias}
                   </span>
@@ -314,14 +314,14 @@ function BiomarkerRow({ biomarker, isSelected, onSelect }: BiomarkerRowProps) {
 
           {Object.keys(biomarker.unitConversions).length > 0 && (
             <div>
-              <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+              <p className="text-xs font-medium text-theme-tertiary uppercase tracking-wide">
                 Unit Conversions
               </p>
               <div className="flex flex-wrap gap-2 mt-1">
                 {Object.entries(biomarker.unitConversions).map(([unit, factor]) => (
                   <span
                     key={unit}
-                    className="text-xs text-gray-600"
+                    className="text-xs text-theme-secondary"
                   >
                     1 {unit} = {factor} {biomarker.standardUnit}
                   </span>
@@ -332,18 +332,18 @@ function BiomarkerRow({ biomarker, isSelected, onSelect }: BiomarkerRowProps) {
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+              <p className="text-xs font-medium text-theme-tertiary uppercase tracking-wide">
                 Male Reference Range
               </p>
-              <p className="text-sm text-gray-700 mt-1">
+              <p className="text-sm text-theme-secondary mt-1">
                 {maleRange.low} - {maleRange.high} {biomarker.standardUnit}
               </p>
             </div>
             <div>
-              <p className="text-xs font-medium text-gray-500 uppercase tracking-wide">
+              <p className="text-xs font-medium text-theme-tertiary uppercase tracking-wide">
                 Female Reference Range
               </p>
-              <p className="text-sm text-gray-700 mt-1">
+              <p className="text-sm text-theme-secondary mt-1">
                 {femaleRange.low} - {femaleRange.high} {biomarker.standardUnit}
               </p>
             </div>

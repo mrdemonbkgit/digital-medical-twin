@@ -3,6 +3,15 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { ChatMessage } from './ChatMessage';
 import type { ChatMessage as ChatMessageType } from '@/types/ai';
 
+// Mock Supabase to prevent environment variable errors
+vi.mock('@/lib/supabase', () => ({
+  supabase: {
+    auth: {
+      getSession: vi.fn().mockResolvedValue({ data: { session: null }, error: null }),
+    },
+  },
+}));
+
 // Mock child components
 vi.mock('./ActivityPanel', () => ({
   ActivityPanel: ({ activities }: { activities: unknown[] }) => (
@@ -29,6 +38,28 @@ vi.mock('./MessageDetailsModal', () => ({
     isOpen ? (
       <div data-testid="details-modal">
         <button onClick={onClose}>Close</button>
+      </div>
+    ) : null,
+}));
+
+// Mock Modal component
+vi.mock('@/components/common', () => ({
+  Modal: ({
+    isOpen,
+    onClose,
+    children,
+    title,
+  }: {
+    isOpen: boolean;
+    onClose: () => void;
+    children: React.ReactNode;
+    title?: string;
+  }) =>
+    isOpen ? (
+      <div data-testid="modal" role="dialog">
+        {title && <h2>{title}</h2>}
+        {children}
+        <button onClick={onClose}>Close Modal</button>
       </div>
     ) : null,
 }));

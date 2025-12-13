@@ -61,7 +61,7 @@ export function Modal({
       {/* Modal content */}
       <div
         className={cn(
-          'relative w-full mx-4 bg-theme-primary rounded-lg shadow-xl',
+          'relative w-full mx-4 bg-theme-primary border border-theme-secondary rounded-lg shadow-xl',
           sizeClasses[size],
           className
         )}

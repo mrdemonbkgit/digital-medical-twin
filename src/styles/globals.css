@@ -38,8 +38,8 @@
   --status-info-bg: #dbeafe;
 
   /* Event type colors */
-  --event-lab: #ef4444;
-  --event-lab-bg: #fee2e2;
+  --event-lab: #0d9488;
+  --event-lab-bg: #ccfbf1;
   --event-visit: #3b82f6;
   --event-visit-bg: #dbeafe;
   --event-medication: #22c55e;
@@ -86,8 +86,8 @@
   --status-info-bg: #1a2028;
 
   /* Event types - subtle tints for dark (low saturation) */
-  --event-lab: #e09090;
-  --event-lab-bg: #2a2020;
+  --event-lab: #5eead4;
+  --event-lab-bg: #1a2828;
   --event-visit: #80b0e0;
   --event-visit-bg: #1a2030;
   --event-medication: #80c8a0;
@@ -134,8 +134,8 @@
   --status-info-bg: #102838;
 
   /* Event types - ocean palette (subtle tints) */
-  --event-lab: #e09098;
-  --event-lab-bg: #1c1820;
+  --event-lab: #5eead4;
+  --event-lab-bg: #102828;
   --event-visit: #60b8e8;
   --event-visit-bg: #102838;
   --event-medication: #60c8b8;
@@ -182,8 +182,8 @@
   --status-info-bg: #182028;
 
   /* Event types - forest palette (subtle tints) */
-  --event-lab: #d8a0a0;
-  --event-lab-bg: #282020;
+  --event-lab: #5eead4;
+  --event-lab-bg: #182820;
   --event-visit: #90b8d8;
   --event-visit-bg: #182028;
   --event-medication: #80d0a0;

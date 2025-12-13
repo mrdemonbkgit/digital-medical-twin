@@ -67,7 +67,7 @@ async function generateTitleOpenAI(message: string): Promise<string> {
 // Generate title using Gemini (fast, cheap model)
 async function generateTitleGemini(message: string): Promise<string> {
   const response = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GOOGLE_API_KEY}`,
+    `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${GOOGLE_API_KEY}`,
     {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },

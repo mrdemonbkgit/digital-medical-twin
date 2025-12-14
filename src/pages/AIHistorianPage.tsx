@@ -288,7 +288,7 @@ export function AIHistorianPage() {
   }
 
   return (
-    <PageWrapper fullWidth>
+    <PageWrapper fullWidth className="!py-0 overflow-hidden">
       {/* Skip link for keyboard navigation */}
       <a
         href="#chat-input"

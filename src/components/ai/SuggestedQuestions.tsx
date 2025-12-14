@@ -20,12 +20,12 @@ export function SuggestedQuestions({ onSelect }: SuggestedQuestionsProps) {
         <Sparkles className="h-4 w-4" />
         <span>Try asking:</span>
       </div>
-      <div className="flex flex-wrap gap-2">
-        {SUGGESTED_QUESTIONS.map((question) => (
+      <div className="flex flex-wrap gap-2 justify-center">
+        {SUGGESTED_QUESTIONS.map((question, index) => (
           <button
             key={question}
             onClick={() => onSelect(question)}
-            className="px-4 py-2.5 text-sm text-theme-secondary bg-theme-primary border border-theme-primary rounded-full hover:bg-theme-secondary hover:border-theme-secondary transition-colors min-h-[44px]"
+            className={`px-4 py-2 text-sm text-theme-secondary bg-theme-primary border border-theme-primary rounded-full hover:bg-theme-secondary hover:border-theme-secondary transition-colors ${index >= 4 ? 'hidden sm:block' : ''}`}
           >
             {question}
           </button>

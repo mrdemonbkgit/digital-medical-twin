@@ -311,7 +311,7 @@ export function AIHistorianPage() {
         {announcement}
       </div>
 
-      <div className="flex h-[calc(100vh-5rem)] max-h-[900px]">
+      <div className="flex chat-container-height max-h-[900px] overflow-hidden">
         {/* Mobile bottom sheet sidebar */}
         <BottomSheet
           isOpen={sidebarOpen}

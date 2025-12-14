@@ -289,6 +289,12 @@
   box-shadow: 0 0 0 1px var(--input-border-focus);
 }
 
+/* Mobile-safe viewport height for chat container */
+.chat-container-height {
+  height: calc(100vh - 5rem); /* Fallback for older browsers */
+  height: calc(100dvh - 5rem); /* Dynamic viewport height for mobile */
+}
+
 /* ============================================
    BASE STYLES
    ============================================ */

@@ -53,7 +53,7 @@ export function MobileNav() {
       {/* Drawer */}
       <div
         className={cn(
-          'fixed inset-y-0 left-0 w-72 bg-theme-primary z-50 transform transition-transform duration-200 ease-in-out shadow-xl',
+          'fixed inset-y-0 left-0 w-72 bg-theme-primary z-50 transform transition-transform duration-200 ease-in-out shadow-xl overflow-hidden',
           isOpen ? 'translate-x-0' : '-translate-x-full'
         )}
       >

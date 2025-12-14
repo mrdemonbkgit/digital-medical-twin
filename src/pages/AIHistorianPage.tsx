@@ -311,7 +311,7 @@ export function AIHistorianPage() {
         {announcement}
       </div>
 
-      <div className="flex chat-container-height max-h-[900px] overflow-hidden">
+      <div className="flex fixed inset-x-0 top-16 bottom-0 lg:relative lg:inset-auto lg:chat-container-height lg:max-h-[900px] overflow-hidden bg-theme-secondary">
         {/* Mobile bottom sheet sidebar */}
         <BottomSheet
           isOpen={sidebarOpen}

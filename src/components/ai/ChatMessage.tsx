@@ -273,7 +273,7 @@ export function ChatMessage({
           </div>
 
         {isAssistant ? (
-          <div className="text-sm text-theme-secondary prose prose-sm max-w-none prose-p:my-2 prose-ul:my-2 prose-ol:my-2 prose-li:my-0.5 prose-strong:text-theme-primary prose-headings:text-theme-primary prose-a:text-accent">
+          <div className="text-sm prose prose-sm max-w-none prose-p:text-theme-secondary prose-p:my-2 prose-li:text-theme-secondary prose-li:my-0.5 prose-ul:my-2 prose-ol:my-2 prose-strong:text-theme-primary prose-strong:font-semibold prose-headings:text-theme-primary prose-a:text-accent prose-code:text-theme-primary prose-code:bg-theme-tertiary prose-code:px-1 prose-code:rounded prose-blockquote:text-theme-tertiary prose-blockquote:border-theme-secondary prose-hr:border-theme-primary">
             {renderContentWithCitations(
               message.content,
               message.citations,

@@ -244,7 +244,7 @@ export function ChatMessage({
         <div
           {...swipeHandlers}
           className={cn(
-            'group flex gap-3 p-4 rounded-lg relative',
+            'group flex gap-2 sm:gap-3 p-3 sm:p-4 rounded-lg relative',
             isAssistant ? 'bg-theme-secondary' : 'bg-theme-primary',
             'sm:transform-none' // Disable transform on desktop
           )}
@@ -255,7 +255,7 @@ export function ChatMessage({
         >
         <div
           className={cn(
-            'flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center',
+            'flex-shrink-0 w-7 h-7 sm:w-8 sm:h-8 rounded-full hidden sm:flex items-center justify-center',
             isAssistant ? 'bg-info-muted text-info' : 'bg-theme-tertiary text-theme-tertiary'
           )}
         >

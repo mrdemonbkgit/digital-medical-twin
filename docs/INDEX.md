@@ -1,6 +1,6 @@
 # Documentation Index
 
-> Last Updated: 2025-12-13 (PWA support added)
+> Last Updated: 2025-12-14 (Theme system documentation added)
 
 ## Summary
 
@@ -61,6 +61,7 @@ Master index for all project documentation. Search here first to find relevant d
 | API specs | /docs/development/API_CONTRACTS.md | Full doc |
 | Testing | /docs/development/TESTING_STRATEGY.md | Full doc |
 | Security | /docs/SECURITY.md | Full doc |
+| Theme system | /docs/THEME_SYSTEM.md | Full doc |
 | Database migrations | /docs/DATABASE_MIGRATIONS.md | Full doc |
 | Design decisions | /docs/DECISION_LOG.md | Full doc |
 | Version history | /docs/CHANGELOG.md | Full doc |
@@ -113,8 +114,8 @@ Master index for all project documentation. Search here first to find relevant d
 
 ### D
 
-- **dark mode**: /docs/CHANGELOG.md#unreleased, src/styles/globals.css
-- **CSS variables**: src/styles/globals.css (theme tokens)
+- **dark mode**: /docs/THEME_SYSTEM.md, src/styles/globals.css
+- **CSS variables**: /docs/THEME_SYSTEM.md#css-variables-reference, src/styles/globals.css
 - **dashboard**: /docs/features/INSIGHTS_DASHBOARD.md
 - **database**: /docs/architecture/DATABASE_SCHEMA.md, /docs/DATABASE_MIGRATIONS.md
 - **decisions**: /docs/DECISION_LOG.md
@@ -259,10 +260,12 @@ Master index for all project documentation. Search here first to find relevant d
 
 - **tags**: /docs/features/DATA_TRACKING.md#tags-system, src/components/common/TagInput.tsx, src/hooks/useUserTags.ts
 - **Tailwind**: /docs/ONBOARDING.md#tech-stack
-- **theme**: /docs/CHANGELOG.md#unreleased, src/context/ThemeContext.tsx, src/styles/globals.css
-- **ThemeContext**: src/context/ThemeContext.tsx
-- **theme colors**: src/styles/globals.css (CSS Variables)
-- **multi-theme**: /docs/CHANGELOG.md#unreleased (Light, Dark, Ocean, Forest)
+- **theme**: /docs/THEME_SYSTEM.md, src/context/ThemeContext.tsx, src/styles/globals.css
+- **theme system**: /docs/THEME_SYSTEM.md (architecture, usage, limitations)
+- **ThemeContext**: src/context/ThemeContext.tsx, /docs/THEME_SYSTEM.md
+- **theme colors**: /docs/THEME_SYSTEM.md#css-variables-reference, src/styles/globals.css
+- **multi-theme**: /docs/THEME_SYSTEM.md (Light, Dark, Ocean, Forest)
+- **prose-themed**: /docs/THEME_SYSTEM.md#prosemarkdown-content, src/styles/globals.css
 - **touch targets**: /docs/CHANGELOG.md#unreleased (44px minimum)
 - **tech stack**: /docs/ONBOARDING.md#tech-stack
 - **testing**: /docs/development/TESTING_STRATEGY.md, /docs/testing/MANUAL_TEST_CASES.md

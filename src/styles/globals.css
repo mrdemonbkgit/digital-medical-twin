@@ -296,6 +296,42 @@
 }
 
 /* ============================================
+   PROSE THEMED - For markdown content
+   Overrides @tailwindcss/typography defaults
+   See docs/THEME_SYSTEM.md for details
+   ============================================ */
+.prose-themed {
+  --tw-prose-body: var(--text-secondary);
+  --tw-prose-headings: var(--text-primary);
+  --tw-prose-lead: var(--text-secondary);
+  --tw-prose-links: var(--accent-primary);
+  --tw-prose-bold: var(--text-primary);
+  --tw-prose-counters: var(--text-muted);
+  --tw-prose-bullets: var(--text-muted);
+  --tw-prose-hr: var(--border-primary);
+  --tw-prose-quotes: var(--text-tertiary);
+  --tw-prose-quote-borders: var(--border-secondary);
+  --tw-prose-captions: var(--text-tertiary);
+  --tw-prose-code: var(--text-primary);
+  --tw-prose-pre-code: var(--text-primary);
+  --tw-prose-pre-bg: var(--bg-tertiary);
+  --tw-prose-th-borders: var(--border-primary);
+  --tw-prose-td-borders: var(--border-primary);
+}
+
+.prose-themed code:not(pre code) {
+  background-color: var(--bg-tertiary);
+  padding: 0.125rem 0.375rem;
+  border-radius: 0.25rem;
+  font-weight: 500;
+}
+
+.prose-themed pre {
+  background-color: var(--bg-tertiary);
+  border: 1px solid var(--border-primary);
+}
+
+/* ============================================
    BASE STYLES
    ============================================ */
 

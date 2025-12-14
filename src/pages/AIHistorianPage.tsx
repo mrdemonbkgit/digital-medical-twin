@@ -288,7 +288,7 @@ export function AIHistorianPage() {
   }
 
   return (
-    <PageWrapper title="AI Historian" fullWidth>
+    <PageWrapper fullWidth>
       {/* Skip link for keyboard navigation */}
       <a
         href="#chat-input"
@@ -311,7 +311,7 @@ export function AIHistorianPage() {
         {announcement}
       </div>
 
-      <div className="flex h-[calc(100vh-8rem)] max-h-[900px]">
+      <div className="flex h-[calc(100vh-5rem)] max-h-[900px]">
         {/* Mobile bottom sheet sidebar */}
         <BottomSheet
           isOpen={sidebarOpen}
@@ -346,27 +346,27 @@ export function AIHistorianPage() {
         {/* Main chat area */}
         <div className="flex-1 flex flex-col min-w-0">
           {/* Header */}
-          <div className="flex items-center justify-between px-4 py-3 border-b border-theme-primary bg-theme-primary">
-            <div className="flex items-center gap-3">
+          <div className="flex items-center justify-between gap-1 sm:gap-2 px-3 sm:px-4 py-2 sm:py-3 border-b border-theme-primary bg-theme-primary">
+            <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
               {/* Mobile menu button */}
               <button
                 onClick={() => setSidebarOpen(true)}
-                className="lg:hidden p-1 hover:bg-theme-tertiary rounded"
+                className="lg:hidden p-1 hover:bg-theme-tertiary rounded flex-shrink-0"
               >
                 <Menu className="h-5 w-5 text-theme-tertiary" />
               </button>
 
-              <div className="w-9 h-9 bg-info-muted rounded-full flex items-center justify-center">
-                <Bot className="h-5 w-5 text-info" />
+              <div className="w-8 h-8 sm:w-9 sm:h-9 bg-info-muted rounded-full flex items-center justify-center flex-shrink-0">
+                <Bot className="h-4 w-4 sm:h-5 sm:w-5 text-info" />
               </div>
-              <div>
-                <h2 className="font-semibold text-theme-primary">AI Historian</h2>
-                <p className="text-xs text-theme-tertiary">
+              <div className="min-w-0">
+                <h2 className="font-semibold text-theme-primary text-sm sm:text-base truncate">AI Historian</h2>
+                <p className="text-[10px] sm:text-xs text-theme-tertiary truncate">
                   {effectiveSettings?.provider === 'google' ? 'Gemini' : 'GPT'} · {effectiveSettings?.model}
                 </p>
               </div>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
               {/* Agentic Mode Toggle - disabled for Gemini or after first message */}
               {effectiveSettings?.provider && (
                 <div className="relative">
@@ -481,9 +481,6 @@ export function AIHistorianPage() {
               isStreaming={isLoading}
               placeholder="Ask about your health history..."
             />
-            <p className="text-xs text-theme-muted mt-2 text-center">
-              AI responses are based on your recorded health data and should not replace medical advice.
-            </p>
           </div>
         </div>
       </div>

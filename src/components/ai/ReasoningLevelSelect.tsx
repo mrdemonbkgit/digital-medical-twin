@@ -36,14 +36,14 @@ export function ReasoningLevelSelect({
   };
 
   return (
-    <div className="flex items-center gap-1.5">
-      <Brain className="h-4 w-4 text-theme-muted" />
+    <div className="flex items-center gap-1 sm:gap-1.5">
+      <Brain className="h-4 w-4 text-theme-muted hidden sm:block" />
       <select
         value={currentValue}
         onChange={handleChange}
         disabled={disabled}
         className={cn(
-          'text-sm bg-theme-secondary border border-theme-primary rounded-md px-2 py-1',
+          'text-xs sm:text-sm bg-theme-secondary border border-theme-primary rounded-md px-1.5 sm:px-2 py-0.5 sm:py-1',
           'focus:outline-none focus:ring-1 focus:ring-accent focus:border-accent',
           'cursor-pointer hover:bg-theme-tertiary transition-colors',
           disabled && 'opacity-50 cursor-not-allowed'

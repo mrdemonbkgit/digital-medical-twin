@@ -72,25 +72,23 @@ export const ChatInput = forwardRef<ChatInputRef, ChatInputProps>(function ChatI
   };
 
   return (
-    <div className="flex gap-2 items-end">
-      <div className="flex-1 relative">
-        <textarea
-          ref={textareaRef}
-          value={value}
-          onChange={(e) => setValue(e.target.value)}
-          onKeyDown={handleKeyDown}
-          placeholder={placeholder || 'Ask about your health history...'}
-          disabled={disabled || isStreaming}
-          rows={1}
-          aria-label="Message input"
-          className="input-theme w-full px-4 py-3 pr-12 text-sm rounded-lg resize-none disabled:opacity-50 disabled:cursor-not-allowed"
-        />
-      </div>
+    <div className="flex flex-row items-end gap-2">
+      <textarea
+        ref={textareaRef}
+        value={value}
+        onChange={(e) => setValue(e.target.value)}
+        onKeyDown={handleKeyDown}
+        placeholder={placeholder || 'Ask about your health history...'}
+        disabled={disabled || isStreaming}
+        rows={1}
+        aria-label="Message input"
+        className="input-theme flex-1 min-w-0 px-4 py-3 text-sm rounded-lg resize-none disabled:opacity-50 disabled:cursor-not-allowed"
+      />
       {isStreaming ? (
         <Button
           onClick={handleStop}
           variant="secondary"
-          className="flex-shrink-0 gap-2"
+          className="gap-2"
           aria-label="Stop generating"
         >
           <Square className="h-4 w-4 fill-current" />
@@ -100,7 +98,6 @@ export const ChatInput = forwardRef<ChatInputRef, ChatInputProps>(function ChatI
         <Button
           onClick={handleSend}
           disabled={!value.trim() || disabled}
-          className="flex-shrink-0"
           aria-label="Send message"
         >
           <Send className="h-4 w-4" />
